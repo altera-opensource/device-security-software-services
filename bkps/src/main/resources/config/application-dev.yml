@@ -1,0 +1,75 @@
+logging:
+    level:
+        ROOT: DEBUG
+        com.intel.bkp: DEBUG
+
+spring:
+    devtools:
+        restart:
+            enabled: true
+        livereload:
+            enabled: false
+    jackson:
+        serialization.indent_output: true
+    datasource:
+        url: jdbc:h2:file:./build/h2db/db/bkps;DB_CLOSE_DELAY=-1;AUTO_SERVER=TRUE
+        username: bkps
+        password:
+        hikari:
+            maximum-pool-size: 50
+    h2:
+        console:
+            enabled: false
+    jpa:
+        show-sql: true
+        properties:
+            hibernate.id.new_generator_mappings: true
+            hibernate.cache.use_second_level_cache: false
+            hibernate.cache.use_query_cache: false
+            hibernate.generate_statistics: true
+    liquibase:
+        contexts: dev
+        drop-first: false
+        enabled: true
+    ssl:
+        bundle:
+            jks:
+                web-server:
+                    truststore:
+                        location: /tmp/bkps-nonprod.p12
+                        password: donotchange
+                        type: PKCS12
+                    keystore:
+                        location: /tmp/bkps-nonprod.p12
+                        password: donotchange
+                        type: PKCS12
+                    key:
+                        password: donotchange
+                        alias: bkps
+
+server:
+    ssl:
+        bundle: "web-server"
+
+application:
+    logging:
+        logstash: # Forward logs to logstash over a socket, used by LoggingConfiguration
+            enabled: false
+    distribution-point:
+        main-path: http://localhost:9090/
+        attestation-cert-base-path: content/IPCS/certs/
+        zip-base-path: content/IPCS/
+        trusted-root-hash: >
+            A1B5D25D0C2F991EB5B3CBD408717B3A9296BE6E90D60997E29FEB3694F60D80,
+            9DB7D8D004D650B40ED993F2B665E19DA65BD065D7BBD35D6C1439C4B4201259
+        proxy:
+            host: ''
+            port: 0
+
+service:
+    protocol:
+        sigma: true
+        spdm: true
+
+lib-spdm-params:
+    wrapper-library-path: ${LIBSPDM_WRAPPER_LIBRARY_PATH:}

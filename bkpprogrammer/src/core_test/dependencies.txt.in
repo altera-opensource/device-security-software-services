@@ -1,0 +1,4 @@
+gtest_@GTEST_VERSION@,cpp/@DEPENDENCIES_ARTIFACTORY_FOLDER@/gtest/@GTEST_VERSION@/gtest-@GTEST_VERSION@-%platform%-%arch%%platform-ext%
+libcurl_@LIBCURL_VERSION@,cpp/@DEPENDENCIES_ARTIFACTORY_FOLDER@/libcurl/@LIBCURL_VERSION@/libcurl-@LIBCURL_VERSION@-%platform%-%arch%%platform-ext%
+boost_@BOOST_VERSION@,cpp/@DEPENDENCIES_ARTIFACTORY_FOLDER@/boost/@BOOST_VERSION@/boost-@BOOST_VERSION@-%platform%-%arch%%platform-ext%
+openssl_@OPENSSL_VERSION@,cpp/@DEPENDENCIES_ARTIFACTORY_FOLDER@/openssl/@OPENSSL_VERSION@/openssl-@OPENSSL_VERSION@-%platform%-%arch%%platform-ext%

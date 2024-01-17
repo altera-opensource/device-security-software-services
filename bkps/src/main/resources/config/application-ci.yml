@@ -1,0 +1,26 @@
+logging:
+    level:
+        ROOT: TRACE
+        com.intel.bkp: TRACE
+
+service:
+    data-retention:
+        cron: 0 */2 * ? * *
+        preserve-items: 10
+        signing-key-threshold-days: 1
+        sealing-key-threshold-days: 1
+    protocol:
+        sigma: true
+        spdm: true
+
+application:
+    distribution-point:
+        main-path: http://awsmock:9090/
+        attestation-cert-base-path: content/IPCS/certs/
+        zip-base-path: content/IPCS/
+        trusted-root-hash: >
+            A1B5D25D0C2F991EB5B3CBD408717B3A9296BE6E90D60997E29FEB3694F60D80,
+            9DB7D8D004D650B40ED993F2B665E19DA65BD065D7BBD35D6C1439C4B4201259
+        proxy:
+            host: ''
+            port: 0

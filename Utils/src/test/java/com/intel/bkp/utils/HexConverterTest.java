@@ -1,0 +1,233 @@
+/*
+ * This project is licensed as below.
+ *
+ * **************************************************************************
+ *
+ * Copyright 2020-2024 Intel Corporation. All Rights Reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER
+ * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * **************************************************************************
+ */
+
+package com.intel.bkp.utils;
+
+import com.code_intelligence.jazzer.api.FuzzedDataProvider;
+import com.code_intelligence.jazzer.junit.FuzzTest;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
+
+import static com.intel.bkp.utils.HexConverter.fromHex;
+import static com.intel.bkp.utils.HexConverter.fromHexSingle;
+import static com.intel.bkp.utils.HexConverter.toFormattedHex;
+import static com.intel.bkp.utils.HexConverter.toHex;
+import static com.intel.bkp.utils.HexConverter.toLowerCaseHex;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+public class HexConverterTest {
+
+    @Tag("Fuzz")
+    @FuzzTest
+    void fromHex_Fuzz(FuzzedDataProvider data) {
+        // given
+        final int maxLength = data.consumeInt(0, 100000);
+        final byte[] expected = data.consumeBytes(maxLength);
+
+        // when
+        final byte[] result = fromHex(toHex(expected));
+
+        // then
+        assertArrayEquals(expected, result);
+    }
+
+    @Test
+    void fromHex_Success() {
+        // given
+        final byte[] expected = new byte[]{1, 2, 3, 4};
+
+        // when
+        final byte[] result = fromHex("01020304");
+
+        // then
+        assertArrayEquals(expected, result);
+    }
+
+    @Test
+    void fromHexSingle_WithSingleHexByte_Success() {
+        // given
+        final byte expected = 0x35;
+
+        // when
+        final byte result = fromHexSingle("0x35");
+
+        // then
+        assertEquals(expected, result);
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {"", "0x3545", "0x3", "0x999", "0x30x5"})
+    void fromHexSingle_ThrowsException(String input) {
+        // when-then
+        assertThrows(IllegalArgumentException.class, () -> fromHexSingle(input));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"0x35", "35"})
+    void fromHexSingle_Success(String input) {
+        // when-then
+        assertDoesNotThrow(() -> fromHexSingle(input));
+    }
+
+    @Test
+    void fromHex_EmptyString_ReturnsEmptyByteArray() {
+        // given
+        final byte[] expected = new byte[]{};
+
+        // when
+        final byte[] result = fromHex("");
+
+        // then
+        assertArrayEquals(expected, result);
+    }
+
+    @Test
+    void fromHex_InvalidData_Throws() {
+        // when-then
+        assertThrows(RuntimeException.class, () -> fromHex("XXXXXXXX"));
+    }
+
+    @Test
+    void toHex_Integer_Success() {
+        // given
+        final String expected = "0A";
+
+        // when
+        final String result = toHex(0x0A);
+
+        // then
+        assertEquals(expected, result);
+    }
+
+    @Test
+    void toHex_IntegerLarge_Success() {
+        // given
+        final String expected = "18C1A213";
+
+        // when
+        final String result = toHex(0x18C1A213);
+
+        // then
+        assertEquals(expected, result);
+    }
+
+    @Test
+    void toHex_Long_Success() {
+        // given
+        final String expected = "0A";
+
+        // when
+        final String result = toHex((long)0x0A);
+
+        // then
+        assertEquals(expected, result);
+    }
+
+    @Test
+    void toHex_SingleByte_Success() {
+        // given
+        final String expected = "0A";
+
+        // when
+        final String result = toHex((byte) 0x0a);
+
+        // then
+        assertEquals(expected, result);
+    }
+
+    @Test
+    void toHex_ByteArray_Success() {
+        // given
+        final String expected = "010203040A0B0C";
+
+        // when
+        final String result = toHex(new byte[]{1, 2, 3, 4, 10, 11, 12});
+
+        // then
+        assertEquals(expected, result);
+    }
+
+    @Test
+    void toLowerCaseHex_Success() {
+        // given
+        final String expected = "010203040a0b0c0d";
+
+        // when
+        final String result = toLowerCaseHex(new byte[]{1, 2, 3, 4, 10, 11, 12, 13});
+
+        // then
+        assertEquals(expected, result);
+    }
+
+    @Test
+    void toFormattedHex_SingleByte_Success() {
+        // given
+        final String expected = "0x0A";
+
+        // when
+        final String result = toFormattedHex((byte) 0x0a);
+
+        // then
+        assertEquals(expected, result);
+    }
+
+    @Test
+    void toFormattedHex_Integer_Success() {
+        // given
+        final String expected = "0x0A";
+
+        // when
+        final String result = toFormattedHex(0x0a);
+
+        // then
+        assertEquals(expected, result);
+    }
+
+    @Test
+    void toFormattedHex_Success() {
+        // given
+        final String expected = "0x01020304 0x0a0b0c0d";
+
+        // when
+        final String result = toFormattedHex(new byte[]{1, 2, 3, 4, 10, 11, 12, 13});
+
+        // then
+        assertEquals(expected, result);
+    }
+}
