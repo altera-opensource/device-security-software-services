@@ -1,0 +1,8 @@
+bkp_cfg_id=1001
+bkp_ip=localhost
+bkp_port=8082
+bkp_tls_ca_cert=./certs/root-ca.crt.pem
+bkp_tls_prog_cert=./certs/programmer.crt
+bkp_tls_prog_key=./certs/programmer.key
+bkp_tls_prog_key_pass=changeme
+bkp_proxy_address=http://proxy-mu.intel.com:912

@@ -1,0 +1,141 @@
+logging:
+    pattern:
+        console: '%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5p) %clr(${PID:- }){magenta} %clr(%X{TXID}) %clr(---){faint} %clr([%15.15t]){faint} %clr(%X{SECURITY}) %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wEx'
+    level:
+        ROOT: ${ROOT_LOGGING_LEVEL:INFO}
+        com.intel.bkp: ${BKP_LOGGING_LEVEL:INFO}
+    file:
+        path: ${LOGGING_PATH:logs}
+
+spring:
+    application:
+        name: bkps
+    profiles:
+        # The commented value for `active` can be replaced with valid Spring profiles to load.
+        # Otherwise, it will be filled in by gradle when building the WAR file
+        # Either way, it can be overridden by `--spring.profiles.active` value passed in the commandline or `-Dspring.profiles.active` set in `JAVA_OPTS`
+        active: #spring.profiles.active#
+    data:
+        jpa:
+            repositories:
+                bootstrap-mode: deferred
+        web:
+            pageable:
+                max-page-size: 1500
+    jpa:
+        open-in-view: false
+        hibernate:
+            ddl-auto: none
+            naming:
+                implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
+    main:
+        allow-bean-definition-overriding: true
+        banner-mode: off
+    servlet:
+        multipart:
+            max-file-size: 1024KB
+            max-request-size: 1024KB
+    mvc:
+        pathmatch:
+            matching-strategy: ANT_PATH_MATCHER
+
+server:
+    port: ${SERVICE_PORT:8082}
+    ssl:
+        enabled: true
+        client-auth: want
+        ciphers: TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+        protocol: TLS
+        enabled-protocols: TLSv1.2
+    servlet:
+        context-path: /
+        session:
+            cookie:
+                http-only: true
+    error:
+        whitelabel:
+            enabled: false
+
+info:
+    project:
+        version: #project.version#
+
+service:
+    protocol:
+        sigma: ${ENABLE_SIGMA_PROTOCOL:false}
+        spdm: ${ENABLE_SPDM_PROTOCOL:true}
+    async:
+        core-pool-size: 2
+        max-pool-size: 50
+        queue-capacity: 10000
+    data-retention:
+        enabled: ${DATA_RETENTION_ENABLE:true}
+        cron: ${DATA_RETENTION_CRON:0 0 1 * * MON} # Every monday at 1 AM
+        preserve-items: ${DATA_RETENTION_PRESERVE_ITEMS:10} # Number of how many items should be preserved
+        signing-key-threshold-days: ${DATA_RETENTION_SIGNINGKEY_THRESHOLD:30} # How old data must be to mark it for removal (in days)
+        sealing-key-threshold-days: ${DATA_RETENTION_SEALINGKEY_THRESHOLD:30} # How old data must be to mark it for removal (in days)
+        lock-at-least-for: ${DATA_RETENTION_LOCK_AT_LEAST_FOR:PT1M} # 1 min
+        lock-at-most-for: ${DATA_RETENTION_OCK_AT_MOST_FOR:PT2M} # 2 min
+
+application:
+    accept-unsigned-corim: ${ACCEPT_UNSIGNED_CORIM:false}
+    distribution-point:
+        main-path: ${AWS_S3_MAIN_PATH:https://tsci.intel.com/}
+        attestation-cert-base-path: ${AWS_S3_ATTESTATION_CERTIFICATES_PATH:content/IPCS/certs/}
+        zip-base-path: ${AWS_S3_ZIP_PATH:content/IPCS/}
+        trusted-root-hash: >
+            ${DP_TRUSTED_ROOT_HASH_S10:99B174476980A65FC581F499F60295B9DACA5E7DBAEEC25ECF3988049EC9ED5F},
+            ${DP_TRUSTED_ROOT_HASH_DICE:35E08599DD52CB7533764DEE65C915BBAFD0E35E6252BCCD77F3A694390F618B}
+        proxy:
+            host: ${DP_PROXY_HOST:}
+            port: ${DP_PROXY_PORT:0}
+    logging:
+        logstash: # Forward logs to logstash over a socket, used by LoggingConfiguration
+            enabled: ${LOGSTASH_ENABLED:false}
+            host: ${LOGSTASH_HOST:localhost}
+            port: ${LOGSTASH_PORT:5000}
+            queue-size: 512
+    users:
+        init-api-enabled: ${USER_INIT_API_ENABLED:true}
+        refresh-service-cron: ${USER_REFRESH_SERVICE_CRON:0 */30 * ? * *} # Every 30 minutes
+        clean-service-cron: ${CLEAN_REMOVED_CERTS_CRON:0 0 1 * * MON} # Every monday
+        clean-removed-after-days: ${CLEAN_REMOVED_CERTS_DAYS:7}
+        active-token-hours: ${USER_ACTIVE_TOKEN_HOURS:24}
+        active-token-cron: ${USER_ACTIVE_TOKEN_CRON:0 0 */12 ? * *} # Every 12 hours
+
+    security-provider-params:
+        provider:
+            name: BC
+            file-based: true
+            class-name: org.bouncycastle.jce.provider.BouncyCastleProvider
+
+        security:
+            key-store-name: uber
+            password: donotchange
+            input-stream-param: /tmp/bc-keystore-bkps-static.jks
+
+        key-types:
+            rsa:
+                key-name: RSA
+                key-size: 3072
+                cipher-type: RSA/None/OAEPWithSHA384AndMGF1Padding
+                signature-algorithm: SHA384withRSA
+            aes:
+                key-name: AES
+                key-size: 256
+                cipher-type: GCM
+            ec:
+                key-name: EC
+                curve-spec-384: secp384r1
+                curve-spec-256: secp256r1
+                signature-algorithm: SHA384withECDSA
+
+context-management:
+    context-key-recycle-interval: ${CONTEXT_KEY_RECYCLE_INTERVAL_IN_MILLIS:2592000000} # 1 month
+    lock-at-least-for: ${CONTEXT_KEY_RECYCLE_LOCK_AT_LEAST_FOR:PT1M} # 1 min
+    lock-at-most-for: ${CONTEXT_KEY_RECYCLE_LOCK_AT_MOST_FOR:PT2M} # 2 min
+
+lib-spdm-params:
+    wrapper-library-path: ${LIBSPDM_WRAPPER_LIBRARY_PATH:}
+    network-communication-timeout: ${LIBSPDM_NETWORK_COMMUNICATION_TIMEOUT:5}
+    library-communication-timeout: ${LIBSPDM_LIBRARY_COMMUNICATION_TIMEOUT:1}

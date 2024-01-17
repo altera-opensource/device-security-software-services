@@ -1,0 +1,139 @@
+/*
+ * This project is licensed as below.
+ *
+ * **************************************************************************
+ *
+ * Copyright 2020-2024 Intel Corporation. All Rights Reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER
+ * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * **************************************************************************
+ *
+ */
+
+plugins {
+    alias(libs.plugins.lombok)
+    alias(libs.plugins.gradle.versions)
+    alias(libs.plugins.modernizer)
+    id 'java'
+    id 'idea'
+}
+
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
+
+defaultTasks 'bootRun'
+
+apply from: rootProject.file('gradle/common.gradle')
+
+def buildVersion = ext.getBuildVersion()
+
+group = 'com.intel.bkp.workload'
+version = buildVersion
+description = ''
+
+sourceSets {
+    sealingTest {
+        java {
+            compileClasspath += main.output + test.output
+            runtimeClasspath += main.output + test.output
+            srcDir file('src/sealingTest/java')
+        }
+    }
+}
+
+configurations {
+    fatjar {
+        extendsFrom implementation
+    }
+    sealingTestImplementation.extendsFrom testImplementation
+    sealingTestRuntime.extendsFrom testRuntimeOnly
+}
+
+jar {
+    dependsOn configurations.fatjar
+    manifest {
+        attributes(
+            'Main-Class': "${main_class_name}",
+            'Implementation-Title': 'Sample FPGA Attestation Workload App',
+            'Implementation-Version': buildVersion
+        )
+    }
+
+    from {
+        configurations.fatjar.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    duplicatesStrategy DuplicatesStrategy.INCLUDE
+    exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
+}
+
+tasks.register('testReport', TestReport) {
+    destinationDir = file("$buildDir/reports/tests")
+    reportOn test
+}
+
+
+test {
+    useJUnitPlatform()
+}
+tasks.register('sealingTest', Test) {
+    useJUnitPlatform()
+    setTestClassesDirs(sourceSets.sealingTest.output.getClassesDirs())
+    classpath = sourceSets.sealingTest.runtimeClasspath
+    outputs.upToDateWhen { false }
+}
+check.dependsOn sealingTest
+sealingTest.mustRunAfter test
+
+configurations {
+    providedRuntime
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(':Verifier')
+
+    implementation libs.apache.commons.cli
+    implementation libs.apache.commons.codec
+    implementation libs.slf4j.api
+    implementation libs.bundles.logback
+
+    testImplementation platform(libs.junit.bom)
+    testImplementation libs.junit.jupiter
+    testImplementation libs.bundles.mockito
+}
+
+tasks.register('cleanResources', Delete) {
+    delete 'build/resources'
+}
+
+tasks.register('deploy', Copy) {
+    dependsOn jar
+    from layout.buildDirectory.dir("${buildDir}/libs")
+    include "*.jar"
+    into "${projectDir}/../out"
+}

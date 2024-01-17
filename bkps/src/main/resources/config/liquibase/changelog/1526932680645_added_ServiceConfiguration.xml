@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ This project is licensed as below.
+  ~
+  ~ ***************************************************************************
+  ~
+  ~ Copyright 2020-2024 Intel Corporation. All Rights Reserved.
+  ~
+  ~ Redistribution and use in source and binary forms, with or without
+  ~ modification, are permitted provided that the following conditions are met:
+  ~
+  ~ 1. Redistributions of source code must retain the above copyright notice,
+  ~ this list of conditions and the following disclaimer.
+  ~
+  ~ 2. Redistributions in binary form must reproduce the above copyright
+  ~ notice, this list of conditions and the following disclaimer in the
+  ~ documentation and/or other materials provided with the distribution.
+  ~
+  ~ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+  ~ "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+  ~ LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+  ~ PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER
+  ~ OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+  ~ EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+  ~ PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+  ~ OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+  ~ WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+  ~ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+  ~ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  ~
+  ~ ***************************************************************************
+  -->
+
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <!--
+        Added the entity ServiceConfiguration.
+    -->
+    <changeSet id="1526932680645-1" author="intel">
+        <createTable tableName="service_configuration">
+
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="puf_type" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="overbuild_max" type="integer">
+                <constraints nullable="true"/>
+            </column>
+
+            <column name="overbuild_current" type="integer" defaultValue="0">
+                <constraints nullable="true"/>
+            </column>
+
+            <column name="attestation_config_id" type="bigint">
+                <constraints unique="true" nullable="true"/>
+            </column>
+            <column name="confidential_data_id" type="bigint">
+                <constraints unique="true" nullable="true"/>
+            </column>
+        </createTable>
+
+    </changeSet>
+
+    <!--
+       Added the entity AttestationConfiguration.
+    -->
+    <changeSet id="1526932680645-2" author="intel">
+        <createTable tableName="attestation_configuration">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="black_list_id" type="bigint">
+                <constraints unique="true" nullable="true"/>
+            </column>
+            <column name="efuses_public_id" type="bigint">
+                <constraints unique="true" nullable="true"/>
+            </column>
+        </createTable>
+
+    </changeSet>
+
+    <!--
+    Added the entity ConfidentialData.
+    -->
+    <changeSet id="1526932680645-3" author="intel">
+        <createTable tableName="confidential_data">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="import_mode" type="varchar(255)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="aes_key_id" type="bigint">
+                <constraints unique="true" nullable="true"/>
+            </column>
+            <column name="efuses_private_id" type="bigint">
+                <constraints unique="true" nullable="true"/>
+            </column>
+        </createTable>
+
+    </changeSet>
+
+    <!--
+       Added the entity BlackList.
+    -->
+    <changeSet id="1526932680645-4" author="intel">
+        <createTable tableName="black_list">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+        </createTable>
+
+    </changeSet>
+
+    <!--
+    Added the entity SdmBuildIdString.
+    -->
+    <changeSet id="1526932680645-5" author="intel">
+        <createTable tableName="sdm_build_id_string">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="jhi_value" type="varchar(5000)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="black_list_id" type="bigint">
+                <constraints nullable="true"/>
+            </column>
+
+        </createTable>
+
+    </changeSet>
+
+    <!--
+        Added the entity SdmSvn.
+    -->
+    <changeSet id="1526932680645-6" author="intel">
+        <createTable tableName="sdm_svn">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="jhi_value" type="integer">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="black_list_id" type="bigint">
+                <constraints nullable="true"/>
+            </column>
+
+        </createTable>
+
+    </changeSet>
+
+    <!--
+        Added the entity RomVersion.
+    -->
+    <changeSet id="1526932680645-7" author="intel">
+        <createTable tableName="rom_version">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="jhi_value" type="integer">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="black_list_id" type="bigint">
+                <constraints nullable="true"/>
+            </column>
+
+        </createTable>
+
+    </changeSet>
+
+    <!--
+        Added the entity EfusesPublic.
+    -->
+    <changeSet id="1526932680645-8" author="intel">
+        <createTable tableName="efuses_public">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="mask" type="varchar(512)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="jhi_value" type="varchar(512)">
+                <constraints nullable="false"/>
+            </column>
+
+        </createTable>
+
+    </changeSet>
+
+    <!--
+        Added the entity EfusesPrivate.
+    -->
+    <changeSet id="1526932680645-9" author="intel">
+        <createTable tableName="efuses_private">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="jhi_value" type="varchar(5000)">
+                <constraints nullable="false"/>
+            </column>
+
+        </createTable>
+
+    </changeSet>
+
+    <!--
+        Added the entity AesKey.
+    -->
+    <changeSet id="1526932680645-10" author="intel">
+        <createTable tableName="aes_key">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="jhi_storage" type="varchar(10)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="jhi_value" type="varchar(5000)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="test_program" type="boolean">
+                <constraints nullable="true"/>
+            </column>
+
+        </createTable>
+
+    </changeSet>
+
+    <!--
+        Added the constraints for entity Attestation configuration.
+    -->
+    <changeSet id="1526932680645-11" author="intel">
+
+        <addForeignKeyConstraint baseColumnNames="attestation_config_id"
+                                 baseTableName="service_configuration"
+                                 constraintName="fk_service_configuration_attestation_config_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="attestation_configuration"/>
+
+        <addForeignKeyConstraint baseColumnNames="confidential_data_id"
+                                 baseTableName="service_configuration"
+                                 constraintName="fk_service_configuration_confidential_data_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="confidential_data"/>
+
+    </changeSet>
+
+    <!--
+       Added the constraints for entity AttestationConfiguration.
+    -->
+    <changeSet id="1526932680645-12" author="intel">
+
+        <addForeignKeyConstraint baseColumnNames="black_list_id"
+                                 baseTableName="attestation_configuration"
+                                 constraintName="fk_attestation_configuration_black_list_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="black_list"/>
+
+        <addForeignKeyConstraint baseColumnNames="efuses_public_id"
+                                 baseTableName="attestation_configuration"
+                                 constraintName="fk_attestation_configuration_efuses_public_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="efuses_public"/>
+
+    </changeSet>
+
+    <!--
+        Added the constraints for entity ConfidentialData.
+    -->
+    <changeSet id="1526932680645-13" author="intel">
+
+        <addForeignKeyConstraint baseColumnNames="aes_key_id"
+                                 baseTableName="confidential_data"
+                                 constraintName="fk_confidential_data_aes_key_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="aes_key"/>
+
+        <addForeignKeyConstraint baseColumnNames="efuses_private_id"
+                                 baseTableName="confidential_data"
+                                 constraintName="fk_confidential_data_efuses_private_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="efuses_private"/>
+    </changeSet>
+
+    <!--
+        Added the constraints for entity SdmBuildIdString.
+    -->
+    <changeSet id="1526932680645-14" author="intel">
+
+        <addForeignKeyConstraint baseColumnNames="black_list_id"
+                                 baseTableName="sdm_build_id_string"
+                                 constraintName="fk_sdm_build_id_string_black_list_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="black_list"/>
+
+    </changeSet>
+
+    <!--
+        Added the constraints for entity SdmSvn.
+    -->
+    <changeSet id="1526932680645-15" author="intel">
+
+        <addForeignKeyConstraint baseColumnNames="black_list_id"
+                                 baseTableName="sdm_svn"
+                                 constraintName="fk_sdm_svn_black_list_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="black_list"/>
+
+    </changeSet>
+
+    <!--
+        Added the constraints for entity RomVersion.
+    -->
+    <changeSet id="1526932680645-16" author="intel">
+
+        <addForeignKeyConstraint baseColumnNames="black_list_id"
+                                 baseTableName="rom_version"
+                                 constraintName="fk_rom_version_black_list_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="black_list"/>
+
+    </changeSet>
+</databaseChangeLog>

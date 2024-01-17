@@ -1,0 +1,43 @@
+spring:
+    devtools:
+        restart:
+            enabled: false
+        livereload:
+            enabled: false
+    datasource:
+        url: ${DATASOURCE_URL:jdbc:postgresql://localhost:5433/bkps}
+        username: ${DATASOURCE_USERNAME:bkps}
+        password: ${DATASOURCE_PASSWORD:donotchange}
+    jpa:
+        show-sql: false
+        properties:
+            hibernate.id.new_generator_mappings: true
+            hibernate.cache.use_second_level_cache: false
+            hibernate.cache.use_query_cache: false
+            hibernate.generate_statistics: false
+    liquibase:
+        contexts: prod
+    ssl:
+        bundle:
+            jks:
+                web-server:
+                    truststore:
+                        location: ${KEYSTORE_TRUSTSTORE_PATH:bkps-nonprod.p12}
+                        password: ${KEYSTORE_PASS:donotchange}
+                        type: PKCS12
+                    keystore:
+                        location: ${KEYSTORE_TRUSTSTORE_PATH:bkps-nonprod.p12}
+                        password: ${KEYSTORE_PASS:donotchange}
+                        type: PKCS12
+                    key:
+                        password: ${KEYSTORE_PASS:donotchange}
+                        alias: bkps
+
+server:
+    compression:
+        enabled: true
+        mime-types: text/html,text/xml,text/plain,text/css, application/javascript, application/json
+        min-response-size: 1024
+    ssl:
+        bundle: "web-server"
+

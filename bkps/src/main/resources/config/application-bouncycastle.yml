@@ -1,0 +1,27 @@
+application:
+    security-provider-params:
+        provider:
+            name: BC
+            file-based: true
+            class-name: org.bouncycastle.jce.provider.BouncyCastleProvider
+
+        security:
+            key-store-name: uber
+            password: ${SECURITY_PROVIDER_PASSWORD}
+            input-stream-param: /tmp/bc-keystore-bkps.jks
+
+        key-types:
+            rsa:
+                key-name: RSA
+                key-size: 3072
+                cipher-type: RSA/None/OAEPWithSHA384AndMGF1Padding
+                signature-algorithm: SHA384withRSA
+            aes:
+                key-name: AES
+                key-size: 256
+                cipher-type: GCM
+            ec:
+                key-name: EC
+                curve-spec-384: secp384r1
+                curve-spec-256: secp256r1
+                signature-algorithm: SHA384withECDSA

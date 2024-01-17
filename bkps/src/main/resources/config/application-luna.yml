@@ -1,0 +1,27 @@
+application:
+    security-provider-params:
+        provider:
+            name: LunaProvider
+            file-based: false
+            class-name: com.safenetinc.luna.provider.LunaProvider
+
+        security:
+            key-store-name: Luna
+            password: ${SECURITY_PROVIDER_PASSWORD}
+            input-stream-param: tokenlabel:${HSM_PARTITION_LABEL:BKPPartition}
+
+        key-types:
+            rsa:
+                key-name: RSA
+                key-size: 3072
+                cipher-type: RSA/None/OAEPWithSHA384AndMGF1Padding
+                signature-algorithm: SHA384withRSA
+            aes:
+                key-name: AES
+                key-size: 256
+                cipher-type: AES/GCM/NoPadding
+            ec:
+                key-name: EC
+                curve-spec-384: secp384r1
+                curve-spec-256: secp256r1
+                signature-algorithm: SHA384withECDSA

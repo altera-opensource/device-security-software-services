@@ -1,0 +1,44 @@
+package require systemconsole 22.3
+
+proc claim_packet_service {} {
+    set p [claim_packet_service_internal !!CABLE_ID!!]
+    return $p
+}
+
+proc claim_packet_service_internal {cableID} {
+    if {$cableID eq ""} {
+        set p [sdm_get_packet_service_path_claim_auto_discovery]
+        return $p
+    } else {
+        set p [sdm_get_packet_service_path_claim_with_cableID $cableID]
+        return $p
+    }
+}
+
+proc sdm_get_packet_service_path_claim_auto_discovery {} {
+    foreach i [get_service_paths packet] {
+        if [string match {*/JTAG/packet} $i] {
+            set p [claim_service packet $i ""]
+            return $p
+        }
+    }
+}
+
+proc sdm_get_packet_service_path_claim_with_cableID {cableID} {
+    set p [lindex [get_service_paths packet] $cableID]
+    set p [claim_service packet $p ""]
+    return $p
+}
+
+proc close_packet_service {p} {
+    close_service packet $p
+}
+
+proc sdm_send_command_debug {service_path command} {
+    set response_hex {}
+    set response [packet_send_command -format 32 $service_path $command]
+    foreach resp $response {
+        lappend response_hex [format 0x%08x [expr $resp & 0xffffffff]];
+    }
+    return $response_hex
+}

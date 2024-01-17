@@ -1,0 +1,121 @@
+spring:
+    application:
+        name: bkps
+    datasource:
+        url: jdbc:h2:mem:bkps;DB_CLOSE_DELAY=-1
+        name:
+        username:
+        password:
+    jpa:
+        open-in-view: false
+        show-sql: false
+        hibernate:
+            ddl-auto: create-drop
+            naming:
+                implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
+        properties:
+            hibernate.id.new_generator_mappings: true
+            hibernate.cache.use_second_level_cache: false
+            hibernate.cache.use_query_cache: false
+            hibernate.generate_statistics: true
+    main:
+        allow-bean-definition-overriding: true
+    liquibase:
+        contexts: test
+        enabled: false
+    mvc:
+        pathmatch:
+            matching-strategy: ant_path_matcher
+    ssl:
+        bundle:
+            jks:
+                web-server:
+                    truststore:
+                        location: /tmp/bkps-nonprod.p12
+                        type: PKCS12
+                        password: donotchange
+                    keystore:
+                        location: /tmp/bkps-nonprod.p12
+                        password: donotchange
+                        type: PKCS12
+                    key:
+                        password: donotchange
+                        alias: bkps
+
+server:
+    port: 10344
+    address: localhost
+    ssl:
+        bundle: "web-server"
+        enabled: true
+        client-auth: want
+        ciphers: TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+        protocol: TLS
+        enabled-protocols: TLSv1.2
+
+info:
+    project:
+        version: 1.0.0-SNAPSHOT
+
+service:
+    protocol:
+        sigma: true
+        spdm: true
+    async:
+        core-pool-size: 1
+        max-pool-size: 50
+        queue-capacity: 10000
+    data-retention:
+        enabled: true
+        cron: 0 0 1 * * MON # Every monday at 1 AM
+        preserve-items: 10
+        signing-key-threshold-days: 30
+        sealing-key-threshold-days: 30
+
+application:
+    accept-unsigned-corim: false
+    distribution-point:
+        main-path: https://pre1-tsci.intel.com/
+        attestation-cert-base-path: content/IPCS/certs/
+        zip-base-path: content/IPCS/
+        trusted-root-hash: >
+            A1B5D25D0C2F991EB5B3CBD408717B3A9296BE6E90D60997E29FEB3694F60D80,
+            9DB7D8D004D650B40ED993F2B665E19DA65BD065D7BBD35D6C1439C4B4201259
+        proxy:
+            host: ''
+            port: 0
+    # To test logstash appender
+    logging:
+        logstash:
+            enabled: false
+            host: localhost
+            port: 5000
+            queue-size: 512
+    users:
+        init-api-enabled: true
+        refresh-service-cron: 0 */2 * ? * * # Every 2 minutes
+        clean-service-cron: 0 0 1 * * MON # Every monday
+        clean-removed-after-days: 7
+        active-token-hours: 24
+        active-token-cron: 0 0 */12 ? * * # Every 12 hours
+
+context-management:
+    context-key-recycle-interval: 2592000000 # 1 month
+
+springdoc:
+    pathsToMatch:
+        - /prov/**
+        - /init/**
+        - /config/**
+        - /prefetch/**
+        - /user/**
+        - /health/**
+    api-docs:
+        path: /api-docs
+    default-consumes-media-type: application/json
+    default-produces-media-type: application/json
+
+lib-spdm-params:
+    wrapper-library-path: ${LIBSPDM_WRAPPER_LIBRARY_PATH:}
+    network-communication-timeout: ${LIBSPDM_NETWORK_COMMUNICATION_TIMEOUT:5}
+    library-communication-timeout: ${LIBSPDM_LIBRARY_COMMUNICATION_TIMEOUT:1}
