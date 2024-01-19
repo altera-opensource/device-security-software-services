@@ -122,14 +122,14 @@ void Context::writeWkeyToFlash(std::vector<BYTE> wkeyData, PufType_t pufType)
 {
     Logger::log("Writing AES wrapped key to flash...", Debug);
     PufHandler pufHandler;
-    pufHandler.writeWkeyToFlash(wkeyData, pufType);
+    pufHandler.writeWkeyToFlash(std::move(wkeyData), pufType);
 }
 
 void Context::writePufHelpDataToFlash(std::vector<BYTE> pufHelpData, PufType_t pufType)
 {
     Logger::log("Writing PUF help data to flash...", Debug);
     PufHandler pufHandler;
-    pufHandler.writePufHelpDataToFlash(pufHelpData, pufType);
+    pufHandler.writePufHelpDataToFlash(std::move(pufHelpData), pufType);
 }
 
 Status_t Context::send_message(Message_t messageType,

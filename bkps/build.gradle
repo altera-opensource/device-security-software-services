@@ -79,13 +79,6 @@ sourceSets {
     }
 }
 
-if (project.hasProperty('release')) {
-    println 'Cleaning liquibase files and internal application yml'
-    jar {
-        processResources.exclude('**/liquibase/*', '**/application-dev.yml', '**/application-ci.yml')
-    }
-}
-
 configurations {
     integrationTestImplementation.extendsFrom testImplementation
     integrationTestRuntime.extendsFrom testRuntimeOnly
@@ -135,6 +128,13 @@ test {
 tasks.register('testReport', TestReport) {
     destinationDir = file("$buildDir/reports/tests")
     reportOn test
+}
+
+if (project.hasProperty('prod')) {
+    println 'Applying prod configuration'
+    apply from: rootProject.file('gradle/profile_prod.gradle')
+} else {
+    apply from: rootProject.file('gradle/profile_dev.gradle')
 }
 
 
@@ -226,6 +226,5 @@ tasks.register('copyConfigurationMetadata', Copy) {
 
 compileJava.finalizedBy copyConfigurationMetadata
 compileJava.dependsOn processResources
-copyDockerFiles.dependsOn bootJar
 processResources.dependsOn cleanResources, bootBuildInfo
 bootBuildInfo.mustRunAfter cleanResources

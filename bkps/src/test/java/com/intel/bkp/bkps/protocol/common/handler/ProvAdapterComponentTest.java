@@ -34,7 +34,6 @@ package com.intel.bkp.bkps.protocol.common.handler;
 
 import com.intel.bkp.bkps.exception.ProvisioningConverterException;
 import com.intel.bkp.bkps.exception.ProvisioningGenericException;
-import com.intel.bkp.bkps.protocol.sigma.handler.ProvHandlerTestUtil;
 import com.intel.bkp.bkps.rest.provisioning.model.dto.ProvisioningRequestDTO;
 import com.intel.bkp.bkps.rest.provisioning.model.dto.ProvisioningRequestDTOReader;
 import com.intel.bkp.bkps.rest.provisioning.model.dto.ProvisioningTransferObject;
