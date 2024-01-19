@@ -59,6 +59,12 @@ public abstract class CacheObjectFetcherBase<T> {
             .or(() -> downloadAndSaveInCache(url));
     }
 
+    public Optional<T> fetchSkipCache(String url) {
+        findValidInCache(url).ifPresent(data ->
+            log.debug("Found valid data in cache, but fresh content shall be retrieved from url: {}", url));
+        return downloadAndSaveInCache(url);
+    }
+
     private Optional<T> findValidInCache(String url) {
         return repositoryService.find(url)
             .filter(this::isValid);

@@ -30,54 +30,26 @@
  * **************************************************************************
  */
 
-package com.intel.bkp.bkps.protocol.sigma.verification;
+package com.intel.bkp.bkps.protocol.common.handler;
 
-import com.intel.bkp.bkps.exception.ProvisioningGenericException;
-import com.intel.bkp.command.responses.sigma.SigmaM2Message;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import com.intel.bkp.bkps.rest.provisioning.model.dto.ProvisioningTransferObject;
 
-import static com.intel.bkp.utils.HexConverter.fromHex;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
-@ExtendWith(MockitoExtension.class)
-public class SigmaM2DeviceIdVerifierTest {
+public class ProvHandlerTestUtil {
 
-    private static final String EXPECTED_DEVICE_ID = "08090A0B0C0D0E0F";
-
-    @Mock
-    private SigmaM2Message sigmaM2Message;
-
-    private SigmaM2DeviceIdVerifier sut;
-
-    @BeforeEach
-    void setUp() {
-        sut = new SigmaM2DeviceIdVerifier(EXPECTED_DEVICE_ID, sigmaM2Message);
+    public static void runAndVerifyException(ProvisioningHandler sut, ProvisioningTransferObject transferObject,
+                                             Class<? extends Exception> exception) {
+        assertThrows(exception, () -> sut.handle(transferObject));
     }
 
-    @Test
-    void verify_Success() {
-        // given
-        mockDeviceIdInSigmaM2(EXPECTED_DEVICE_ID);
-
-        // when
-        sut.verify();
+    public static void verifySuccessorCalled(ProvisioningHandler successor, ProvisioningTransferObject transferObject) {
+        verify(successor).handle(transferObject);
     }
 
-    @Test
-    void verify_Fails() {
-        // given
-        mockDeviceIdInSigmaM2("0000000000000000");
-
-        // when-then
-        assertThrows(ProvisioningGenericException.class, () -> sut.verify());
-    }
-
-    private void mockDeviceIdInSigmaM2(String deviceId) {
-        when(sigmaM2Message.getDeviceUniqueId()).thenReturn(fromHex(deviceId));
+    public static void verifySuccessorNeverCalled(ProvisioningHandler successor, ProvisioningTransferObject transferObject) {
+        verify(successor, never()).handle(transferObject);
     }
 }

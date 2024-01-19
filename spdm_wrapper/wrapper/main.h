@@ -45,6 +45,24 @@ extern "C" {
 #include "hal/library/memlib.h"
 };
 
+//@formatter:off
+#if defined(_WIN32) || defined(WIN32)
+    #define LIBRARY_EXPORT_ATTRIBUTE __declspec (dllexport)
+#else
+    #if __GNUC__ == 4
+        #if __GNUC_MINOR__ >= 5 && __GNUC_MINOR__ <= 8
+            #define LIBRARY_EXPORT_ATTRIBUTE __attribute__((visibility("default")))
+        #else
+            #define LIBRARY_EXPORT_ATTRIBUTE  __attribute__((visibility("protected")))
+        #endif
+    #elif __GNUC__ >= 5
+        #define LIBRARY_EXPORT_ATTRIBUTE __attribute__((visibility("default")))
+    #else
+        #define LIBRARY_EXPORT_ATTRIBUTE UNKNOWN
+    #endif
+#endif
+//@formatter:on
+
 const uint8_t MCTP_ALIGNMENT_LEN = 3;
 const uint8_t MCTP_RESERVED = 0x0;
 const uint8_t MCTP_INITIATOR_ID = 0x0;
@@ -123,6 +141,7 @@ libspdm_return_t libspdm_transport_mctp_decode_message_w(
 
 extern "C" {
 
+LIBRARY_EXPORT_ATTRIBUTE
 bool libspdm_psk_handshake_secret_hkdf_expand(
         spdm_version_number_t spdm_version,
         uint32_t base_hash_algo,
@@ -130,23 +149,23 @@ bool libspdm_psk_handshake_secret_hkdf_expand(
         size_t psk_hint_size,
         const uint8_t *info,
         size_t info_size,
-        uint8_t *out, size_t out_size)
-{
+        uint8_t *out, size_t out_size) {
     printf("[ERROR] Called libspdm_psk_handshake_secret_hkdf_expand but it is not implemented.");
     return false;
 }
 
+LIBRARY_EXPORT_ATTRIBUTE
 bool libspdm_responder_data_sign(
         spdm_version_number_t spdm_version, uint8_t op_code,
         uint32_t base_asym_algo,
         uint32_t base_hash_algo, bool is_data_hash,
         const uint8_t *message, size_t message_size,
-        uint8_t *signature, size_t *sig_size)
-{
+        uint8_t *signature, size_t *sig_size) {
     printf("[ERROR] Called libspdm_responder_data_sign but it is not implemented.");
     return false;
 }
 
+LIBRARY_EXPORT_ATTRIBUTE
 bool libspdm_psk_master_secret_hkdf_expand(
         spdm_version_number_t spdm_version,
         uint32_t base_hash_algo,
@@ -154,24 +173,24 @@ bool libspdm_psk_master_secret_hkdf_expand(
         size_t psk_hint_size,
         const uint8_t *info,
         size_t info_size, uint8_t *out,
-        size_t out_size)
-{
+        size_t out_size) {
     printf("[ERROR] Called libspdm_psk_master_secret_hkdf_expand but it is not implemented.");
     return false;
 }
 
+LIBRARY_EXPORT_ATTRIBUTE
 bool libspdm_encap_challenge_opaque_data(
         spdm_version_number_t spdm_version,
         uint8_t slot_id,
         uint8_t *measurement_summary_hash,
         size_t measurement_summary_hash_size,
         void *opaque_data,
-        size_t *opaque_data_size)
-{
+        size_t *opaque_data_size) {
     printf("[ERROR] Called libspdm_encap_challenge_opaque_data but it is not implemented.");
     return false;
 }
 
+LIBRARY_EXPORT_ATTRIBUTE
 bool libspdm_requester_data_sign(
         spdm_version_number_t spdm_version, uint8_t op_code,
         uint16_t req_base_asym_alg,
@@ -179,47 +198,60 @@ bool libspdm_requester_data_sign(
         const uint8_t *message, size_t message_size,
         uint8_t *signature, size_t *sig_size);
 
+LIBRARY_EXPORT_ATTRIBUTE
 void set_callbacks(session_callbacks_t *callbacks);
 
+LIBRARY_EXPORT_ATTRIBUTE
 void libspdm_get_version_w(void *spdm_context_p,
                            uint8_t *version_p);
 
+LIBRARY_EXPORT_ATTRIBUTE
 libspdm_return_t libspdm_set_data_w(void *spdm_context,
                                     libspdm_data_type_t data_type,
                                     const libspdm_data_parameter_t *parameter,
                                     void *data,
                                     size_t data_size);
 
+LIBRARY_EXPORT_ATTRIBUTE
 size_t libspdm_get_context_size_w();
 
+LIBRARY_EXPORT_ATTRIBUTE
 void libspdm_deinit_context_w(void *spdm_context);
 
+LIBRARY_EXPORT_ATTRIBUTE
 bool libspdm_is_capabilities_flag_supported_by_responder(void *spdm_context,
                                                          uint32_t responder_capabilities_flag);
 
+LIBRARY_EXPORT_ATTRIBUTE
 libspdm_return_t libspdm_prepare_context_w(void *spdm_context,
                                            uint32_t bufferSize);
 
+LIBRARY_EXPORT_ATTRIBUTE
 size_t libspdm_get_sizeof_required_scratch_buffer_w(void *spdm_context);
 
+LIBRARY_EXPORT_ATTRIBUTE
 void libspdm_set_scratch_buffer_w(void *spdm_context,
                                   void *scratch_buffer,
                                   size_t scratch_buffer_size);
 
+LIBRARY_EXPORT_ATTRIBUTE
 libspdm_return_t libspdm_init_connection_w(void *spdm_context,
                                            bool get_version_only);
 
+LIBRARY_EXPORT_ATTRIBUTE
 libspdm_return_t libspdm_get_digest_w(void *spdm_context,
                                       const uint32_t *session_id,
                                       uint8_t *slot_mask,
                                       void *total_digest_buffer);
 
+LIBRARY_EXPORT_ATTRIBUTE
 libspdm_return_t libspdm_get_certificate_w(void *spdm_context,
                                            const uint32_t *session_id,
                                            uint8_t slot_id,
                                            size_t *cert_chain_size,
                                            void *cert_chain);
 
+LIBRARY_EXPORT_ATTRIBUTE
 libspdm_return_t libspdm_get_measurement_w(void *spdm_context,
                                            const uint32_t *session_id,
                                            uint8_t request_attribute,
@@ -230,10 +262,12 @@ libspdm_return_t libspdm_get_measurement_w(void *spdm_context,
                                            uint32_t *measurement_record_length,
                                            void *measurement_record);
 
+LIBRARY_EXPORT_ATTRIBUTE
 libspdm_return_t libspdm_set_certificate_w(void *spdm_context,
                                            const uint32_t *session_id, uint8_t slot_id,
                                            void *cert_chain, size_t cert_chain_size);
 
+LIBRARY_EXPORT_ATTRIBUTE
 libspdm_return_t libspdm_start_session_w(void *spdm_context,
                                          bool use_psk,
                                          const void *psk_hint,
@@ -245,10 +279,12 @@ libspdm_return_t libspdm_start_session_w(void *spdm_context,
                                          uint8_t *heartbeat_period,
                                          void *measurement_hash);
 
+LIBRARY_EXPORT_ATTRIBUTE
 libspdm_return_t libspdm_stop_session_w(void *spdm_context,
                                         uint32_t session_id,
                                         uint8_t end_session_attributes);
 
+LIBRARY_EXPORT_ATTRIBUTE
 libspdm_return_t libspdm_send_receive_data_w(void *spdm_context,
                                              const uint32_t *session_id,
                                              bool is_app_message,

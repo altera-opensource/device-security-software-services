@@ -59,7 +59,7 @@ info:
 
 service:
     protocol:
-        sigma: true
+        sigma: false
         spdm: true
     async:
         core-pool-size: 1
