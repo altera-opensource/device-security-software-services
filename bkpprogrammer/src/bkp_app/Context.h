@@ -55,8 +55,8 @@ public:
     void setShouldSaveWkeyToMachine(bool param) { shouldSaveWkeyToMachine = param; }
 private:
     void writeWkeyToFile(std::vector<uint8_t> wkeyData);
-    void writeWkeyToFlash(std::vector<uint8_t> wkeyData, PufType_t pufType);
-    void writePufHelpDataToFlash(std::vector<uint8_t> pufHelpData, PufType_t pufType);
+    bool writeWkeyToFlash(std::vector<uint8_t> wkeyData, PufType_t pufType);
+    bool writePufHelpDataToFlash(std::vector<uint8_t> pufHelpData, PufType_t pufType);
     static const inline std::string wkeyFilename = "bkp_auto.wkey";
     po::variables_map parsedConfig;
     bool shouldSaveWkeyToMachine = false;

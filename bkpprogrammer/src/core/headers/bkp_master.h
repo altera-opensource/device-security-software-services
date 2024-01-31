@@ -53,8 +53,8 @@ namespace operation_status {
 }
 
 namespace provisioning_stage {
-    const std::string received_from_bkps = "Received commands from BKPS.";
-    const std::string received_from_quartus = "Received response from Quartus.";
+    const std::string received_from_bkps = "Received commands from Black Key Provisioning Service (BKPS).";
+    const std::string received_from_quartus = "Received response from device.";
 }
 
 namespace communication_status {

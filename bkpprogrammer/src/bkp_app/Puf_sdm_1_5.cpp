@@ -303,8 +303,7 @@ bool PufHandlerSdm1_5::updateBosPartition(std::vector<BYTE> data, BOS_PARTITION_
     Logger::log("Update BOS partition", Debug);
     for (size_t retry = 1; retry <= 8; retry++)
     {
-        Qspi::qspiReadMultiple(current_address, BOS_PARTITION_HEADER_SIZE, bos_partition_data);
-        status = (bos_partition_data.size() == (BOS_PARTITION_HEADER_SIZE * 4));
+        status = Qspi::qspiReadMultiple(current_address, BOS_PARTITION_HEADER_SIZE, bos_partition_data);
         if (status)
         {
             status = verify_bos_partition_header(reinterpret_cast<DWORD*>(bos_partition_data.data()), address_block0, address_block1, size_in_word);
@@ -333,8 +332,7 @@ bool PufHandlerSdm1_5::updateBosPartition(std::vector<BYTE> data, BOS_PARTITION_
         // get the BOS partition content
         Logger::log("Read BOS partition data content at address " + Utils::toHexString(current_address), Debug);
         bos_partition_data.clear();
-        Qspi::qspiReadMultiple(current_address, size_in_word, bos_partition_data);
-        status = (bos_partition_data.size() == (size_in_word * 4));
+        status = Qspi::qspiReadMultiple(current_address, size_in_word, bos_partition_data);
         if (status)
         {
             bos_partition = new DWORD[size_in_word];
@@ -364,11 +362,19 @@ bool PufHandlerSdm1_5::updateBosPartition(std::vector<BYTE> data, BOS_PARTITION_
         do
         {
             Logger::log("Update BOS partition data block" + std::to_string(block_index) + " at address " + Utils::toHexString(current_address), Debug);
-            Qspi::qspiErase(current_address, size_in_word);
-            std::vector<DWORD> bos_partition_vec(bos_partition, bos_partition + size_in_word);
-            std::vector<BYTE> writeData = convert_word_to_bytes(std::move(bos_partition_vec));
-            Qspi::qspiWriteMultiple(current_address, size_in_word, writeData); 
-            status = status && Qspi::qspiVerify(current_address, size_in_word, std::move(writeData));
+            status = Qspi::qspiErase(current_address, size_in_word);
+            if (status)
+            {
+                std::vector<DWORD> bos_partition_vec(bos_partition, bos_partition + size_in_word);
+                std::vector<BYTE> writeData = convert_word_to_bytes(std::move(bos_partition_vec));
+                Logger::log("Calling qspiWriteMultiple at address " + Utils::toHexString(current_address));
+                status = Qspi::qspiWriteMultiple(current_address, size_in_word, writeData);
+                if (status)
+                {
+                    Logger::log("Calling qspiVerify at address " + Utils::toHexString(current_address));
+                    status = Qspi::qspiVerify(current_address, size_in_word, std::move(writeData));
+                }
+            }
             if (status && block_index == 0)
             {
                 // Update for block 1

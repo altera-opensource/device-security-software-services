@@ -33,6 +33,7 @@
 package com.intel.bkp.protocol.spdm.service;
 
 import com.intel.bkp.protocol.spdm.exceptions.SpdmCommandFailedException;
+import com.intel.bkp.protocol.spdm.jna.model.MctpEncapsulationTypeCallback;
 import com.intel.bkp.protocol.spdm.jna.model.SpdmProtocol;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,6 +47,13 @@ public class SpdmVcaMessageSender {
     public String send() throws SpdmCommandFailedException {
         log.info("*** INITIALIZING SPDM CONNECTION - GET_VERSION, GET_CAPABILITIES and NEGOTIATE_ALGORITHMS (VCA) ***");
         spdmProtocol.initSpdmConnection();
+        return spdmProtocol.retrieveSpdmVersion();
+    }
+
+    public String send(MctpEncapsulationTypeCallback callback) throws SpdmCommandFailedException {
+        log.info("*** INITIALIZING SPDM CONNECTION with MctpCallback - "
+            + "GET_VERSION, GET_CAPABILITIES and NEGOTIATE_ALGORITHMS (VCA) ***");
+        spdmProtocol.initSpdmConnection(callback);
         return spdmProtocol.retrieveSpdmVersion();
     }
 }

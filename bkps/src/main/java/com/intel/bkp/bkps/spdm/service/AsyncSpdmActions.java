@@ -64,8 +64,10 @@ import com.intel.bkp.protocol.spdm.exceptions.SpdmNotSupportedException;
 import com.intel.bkp.protocol.spdm.exceptions.UnsupportedCapabilityException;
 import com.intel.bkp.protocol.spdm.exceptions.UnsupportedSpdmVersionException;
 import com.intel.bkp.protocol.spdm.exceptions.ValidChainNotFoundException;
+import com.intel.bkp.protocol.spdm.jna.model.MctpEncapsulationTypeCallback;
 import com.intel.bkp.protocol.spdm.jna.model.SpdmParametersProvider;
 import com.intel.bkp.protocol.spdm.jna.model.SpdmProtocol;
+import com.intel.bkp.protocol.spdm.jna.model.Uint8;
 import com.intel.bkp.protocol.spdm.service.SpdmGetVersionMessageSender;
 import com.intel.bkp.protocol.spdm.service.SpdmSecureSessionMessageSender;
 import com.intel.bkp.protocol.spdm.service.SpdmSetAuthorityMessageSender;
@@ -93,6 +95,7 @@ import static com.intel.bkp.utils.HexConverter.toHex;
 public class AsyncSpdmActions {
 
     private static final String SPDM_SUPPORTED_VERSION = "12";
+    private static final Uint8 MCTP_ENCAPSULATION_FOR_SECURE_SESSION = new Uint8(0);
 
     private final SpdmVersionVerifier spdmVersionVerifier = new SpdmVersionVerifier(SPDM_SUPPORTED_VERSION);
     private final SpdmParametersProvider spdmParametersProvider = new SpdmParametersProviderImpl();
@@ -214,7 +217,7 @@ public class AsyncSpdmActions {
         try (final SpdmProtocol spdmProtocol = initializeLibrary()) {
             processing = true;
 
-            initializeConnectionAndEnsureVersionSupported(spdmProtocol);
+            initializeConnectionAndEnsureVersionSupported(spdmProtocol, () -> MCTP_ENCAPSULATION_FOR_SECURE_SESSION);
             log.info("SPDM Responder initialized for Secure Session.");
 
             log.info("Fetch configuration data for cfg id: " + cfgId);
@@ -284,6 +287,14 @@ public class AsyncSpdmActions {
     private void initializeConnectionAndEnsureVersionSupported(
         SpdmProtocol spdmProtocol) throws SpdmCommandFailedException, UnsupportedSpdmVersionException {
         final String responderVersion = new SpdmVcaMessageSender(spdmProtocol).send();
+
+        spdmVersionVerifier.ensureVersionIsSupported(responderVersion);
+    }
+
+    private void initializeConnectionAndEnsureVersionSupported(SpdmProtocol spdmProtocol,
+                                                               MctpEncapsulationTypeCallback callback)
+        throws SpdmCommandFailedException, UnsupportedSpdmVersionException {
+        final String responderVersion = new SpdmVcaMessageSender(spdmProtocol).send(callback);
 
         spdmVersionVerifier.ensureVersionIsSupported(responderVersion);
     }

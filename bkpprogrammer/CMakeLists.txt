@@ -105,6 +105,5 @@ else ()
 
 endif (WIN32)
 
-include(../tools/dependency_resolver.cmake)
 
 add_subdirectory(src)

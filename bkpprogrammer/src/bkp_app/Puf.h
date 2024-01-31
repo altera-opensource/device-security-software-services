@@ -84,8 +84,8 @@ public:
         UdsIidPufHelpData = 0x3000,
         UdsIidPufWrappedAesKey = 0x4000
     };
-    virtual void writeWkeyToFlash(std::vector<BYTE> wkeyData, PufType_t pufType);
-    virtual void writePufHelpDataToFlash(std::vector<BYTE> pufHelpData, PufType_t pufType);
+    bool writeWkeyToFlash(std::vector<BYTE> wkeyData, PufType_t pufType);
+    bool writePufHelpDataToFlash(std::vector<BYTE> pufHelpData, PufType_t pufType);
     bool isMbrSignatureCorrect(std::vector<BYTE> &mbrBuffer);
     DWORD getConfigurationDataPartitionAddressFromMbr(std::vector<BYTE> &mbrBuffer);
     void updatePufDataSection(std::vector<BYTE> &pufData,
@@ -123,9 +123,9 @@ private:
     // { address offset , expected value }
     std::map<DWORD, BYTE> expectedMbrSignatureFields = {{0x1FE, 0x55}, {0x1FF, 0xAA}};
 
-    DWORD getConfigurationDataAddress();
-    DWORD getPufDataBlockPointer(DWORD configDataAddress, DWORD pointerOffset);
-    void updatePufData(std::vector<BYTE> newSection, PufDataBlockSectionOffset sectionOffset);
+    bool getConfigurationDataAddress(DWORD& configurationDataAddress);
+    bool getPufDataBlockPointer(DWORD configDataAddress, DWORD pointerOffset, DWORD& pufDataBlockPointerOffset);
+    bool updatePufData(std::vector<BYTE> newSection, PufDataBlockSectionOffset sectionOffset);
 };
 
 class PufHandlerSdm1_5 : public PufHandler

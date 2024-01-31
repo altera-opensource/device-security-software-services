@@ -118,24 +118,25 @@ void Context::writeWkeyToFile(std::vector<BYTE> wkeyData)
     file.close();
 }
 
-void Context::writeWkeyToFlash(std::vector<BYTE> wkeyData, PufType_t pufType)
+bool Context::writeWkeyToFlash(std::vector<BYTE> wkeyData, PufType_t pufType)
 {
     Logger::log("Writing AES wrapped key to flash...", Debug);
     PufHandler pufHandler;
-    pufHandler.writeWkeyToFlash(std::move(wkeyData), pufType);
+    return pufHandler.writeWkeyToFlash(std::move(wkeyData), pufType);
 }
 
-void Context::writePufHelpDataToFlash(std::vector<BYTE> pufHelpData, PufType_t pufType)
+bool Context::writePufHelpDataToFlash(std::vector<BYTE> pufHelpData, PufType_t pufType)
 {
     Logger::log("Writing PUF help data to flash...", Debug);
     PufHandler pufHandler;
-    pufHandler.writePufHelpDataToFlash(std::move(pufHelpData), pufType);
+    return pufHandler.writePufHelpDataToFlash(std::move(pufHelpData), pufType);
 }
 
 Status_t Context::send_message(Message_t messageType,
                                const DWORD *inBuf, size_t inBufSize,
                                DWORD **outBuf, size_t &outBufSize)
 {
+    bool status = true;
     std::vector <BYTE> messageVector = Utils::byteBufferFromWordPointer(static_cast<const DWORD *>(inBuf),
                                                                            inBufSize);
     std::vector <BYTE> responseVector;
@@ -148,27 +149,31 @@ Status_t Context::send_message(Message_t messageType,
             writeWkeyToFile(messageVector);
             break;
         case Message_t::PUSH_WRAPPED_KEY_USER_IID:
-            writeWkeyToFlash(messageVector, USER_IID);
-            if (shouldSaveWkeyToMachine)
+            status = writeWkeyToFlash(messageVector, USER_IID);
+            if (status && shouldSaveWkeyToMachine)
             {
                 writeWkeyToFile(messageVector);
             }
             break;
         case Message_t::PUSH_WRAPPED_KEY_UDS_IID:
-            writeWkeyToFlash(messageVector, UDS_IID);
-            if (shouldSaveWkeyToMachine)
+            status = writeWkeyToFlash(messageVector, UDS_IID);
+            if (status && shouldSaveWkeyToMachine)
             {
                 writeWkeyToFile(messageVector);
             }
             break;
         case Message_t::PUSH_HELPER_DATA_UDS_IID:
-            writePufHelpDataToFlash(messageVector, UDS_IID);
+            status = writePufHelpDataToFlash(messageVector, UDS_IID);
             break;
         case Message_t::PUSH_HELPER_DATA_UDS_INTEL:
-            writePufHelpDataToFlash(messageVector, UDS_INTEL);
+            status = writePufHelpDataToFlash(messageVector, UDS_INTEL);
             break;
         default:
             return ST_GENERIC_ERROR;
+    }
+    if (!status)
+    {
+        return ST_GENERIC_ERROR;
     }
     Utils::writeToWordPointerFromByteBuffer(responseVector, static_cast<DWORD **>(outBuf), outBufSize);
     return ST_OK;
