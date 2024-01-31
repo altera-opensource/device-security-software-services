@@ -1,7 +1,7 @@
 
 # VERIFIER dependency list
 ## Dependency License Report
-_2024-01-19 09:36:36 CET_
+_2024-01-31 11:43:36 CET_
 ## Apache License 2.0
 
 **1** **Group:** `io.swagger.core.v3` **Name:** `swagger-annotations` **Version:** `2.2.20` 
@@ -154,11 +154,11 @@ _2024-01-19 09:36:36 CET_
 > - **Embedded license files**: [jackson-databind-2.16.1.jar/META-INF/LICENSE](jackson-databind-2.16.1.jar/META-INF/LICENSE) 
     - [jackson-databind-2.16.1.jar/META-INF/NOTICE](jackson-databind-2.16.1.jar/META-INF/NOTICE)
 
-**24** **Group:** `org.xerial` **Name:** `sqlite-jdbc` **Version:** `3.44.1.0` 
+**24** **Group:** `org.xerial` **Name:** `sqlite-jdbc` **Version:** `3.45.0.0` 
 > - **POM Project URL**: [https://github.com/xerial/sqlite-jdbc](https://github.com/xerial/sqlite-jdbc)
 > - **POM License**: The Apache Software License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0.txt](https://www.apache.org/licenses/LICENSE-2.0.txt)
-> - **Embedded license files**: [sqlite-jdbc-3.44.1.0.jar/META-INF/maven/org.xerial/sqlite-jdbc/LICENSE](sqlite-jdbc-3.44.1.0.jar/META-INF/maven/org.xerial/sqlite-jdbc/LICENSE) 
-    - [sqlite-jdbc-3.44.1.0.jar/META-INF/maven/org.xerial/sqlite-jdbc/LICENSE.zentus](sqlite-jdbc-3.44.1.0.jar/META-INF/maven/org.xerial/sqlite-jdbc/LICENSE.zentus)
+> - **Embedded license files**: [sqlite-jdbc-3.45.0.0.jar/META-INF/maven/org.xerial/sqlite-jdbc/LICENSE](sqlite-jdbc-3.45.0.0.jar/META-INF/maven/org.xerial/sqlite-jdbc/LICENSE) 
+    - [sqlite-jdbc-3.45.0.0.jar/META-INF/maven/org.xerial/sqlite-jdbc/LICENSE.zentus](sqlite-jdbc-3.45.0.0.jar/META-INF/maven/org.xerial/sqlite-jdbc/LICENSE.zentus)
 
 ## Unknown
 

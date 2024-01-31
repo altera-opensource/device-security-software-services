@@ -114,6 +114,8 @@ typedef bool (*spdm_requester_data_sign_callback)
          const uint8_t *message, size_t message_size,
          uint8_t *signature, size_t *sig_size);
 
+typedef uint8_t (*mctp_encapsulation_type_callback) ();
+
 typedef struct {
     print_callback printCallback;
     mctp_encode_callback mctpEncodeCallback;
@@ -125,6 +127,7 @@ typedef struct {
     spdm_device_acquire_receiver_buffer_callback spdmDeviceAcquireReceiverBufferCallback;
     spdm_device_release_receiver_buffer_callback spdmDeviceReleaseReceiverBufferCallback;
     spdm_requester_data_sign_callback spdmRequesterDataSignCallback;
+    mctp_encapsulation_type_callback mctpEncapsulationTypeCallback;
 
 } session_callbacks_t;
 

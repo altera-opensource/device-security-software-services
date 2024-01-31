@@ -32,38 +32,9 @@
 
 package com.intel.bkp.protocol.spdm.jna.model;
 
-import com.sun.jna.Structure;
-import lombok.Setter;
+import com.sun.jna.Callback;
 
-@Setter
-@Structure.FieldOrder({
-    "printCallback",
-    "mctpEncodeCallback",
-    "mctpDecodeCallback",
-    "spdmDeviceSendMessageCallback",
-    "spdmDeviceReceiveMessageCallback",
-    "spdmDeviceAcquireSenderBufferCallback",
-    "spdmDeviceReleaseSenderBufferCallback",
-    "spdmDeviceAcquireReceiverBufferCallback",
-    "spdmDeviceReleaseReceiverBufferCallback",
-    "spdmRequesterDataSignCallback",
-    "mctpEncapsulationTypeCallback"
-})
-public class SessionCallbacks extends Structure {
+public interface MctpEncapsulationTypeCallback extends Callback {
 
-    public PrintCallback printCallback;
-    public MctpEncodeCallback mctpEncodeCallback;
-    public MctpDecodeCallback mctpDecodeCallback;
-    public SpdmDeviceSendMessageCallback spdmDeviceSendMessageCallback;
-    public SpdmDeviceReceiveMessageCallback spdmDeviceReceiveMessageCallback;
-    public SpdmDeviceAcquireSenderBufferCallback spdmDeviceAcquireSenderBufferCallback;
-    public SpdmDeviceReleaseSenderBufferCallback spdmDeviceReleaseSenderBufferCallback;
-    public SpdmDeviceAcquireReceiverBufferCallback spdmDeviceAcquireReceiverBufferCallback;
-    public SpdmDeviceReleaseReceiverBufferCallback spdmDeviceReleaseReceiverBufferCallback;
-    public SpdmRequesterDataSignCallback spdmRequesterDataSignCallback;
-    public MctpEncapsulationTypeCallback mctpEncapsulationTypeCallback;
-
-    private static class ByReference extends SessionCallbacks implements Structure.ByReference {
-
-    }
+    Uint8 callback();
 }

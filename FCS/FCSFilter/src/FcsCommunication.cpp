@@ -33,6 +33,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FcsCommunication.h"
 #include "Logger.h"
 #include "utils.h"
+#include "Qspi.h"
 
 #include "intel_fcs-ioctl.h"
 #include "intel_fcs_structs.h"
@@ -41,6 +42,8 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string>
 #include <sys/ioctl.h>
 #include <unistd.h>
+#include <sstream>
+#include <iomanip>
 
 #define FCS_DEVICE_PATH "/dev/fcs"
 
@@ -69,7 +72,7 @@ bool FcsCommunication::sendIoctl(
 bool FcsCommunication::getChipId(
     std::vector<uint8_t> &outBuffer, int32_t &fcsStatus)
 {
-    Logger::log("Calling getChipId");
+    Logger::log("Calling mailbox command: GET_CHIPID");
     intel_fcs_dev_ioctl data = {};
     if (!sendIoctl(&data, INTEL_FCS_DEV_CHIP_ID))
     {
@@ -161,7 +164,7 @@ bool FcsCommunication::getAttestationCertificate(
     std::vector<uint8_t> &outBuffer,
     int32_t &fcsStatus)
 {
-    Logger::log("Calling getAttestationCertificate");
+    Logger::log("Calling mailbox command: GET_ATTESTATION_CERTIFICATE");
     outBuffer.resize(ATTESTATION_CERTIFICATE_RSP_MAX_SZ);
 
     intel_fcs_dev_ioctl data = {};
@@ -180,13 +183,54 @@ bool FcsCommunication::getAttestationCertificate(
     return true;
 }
 
+std::string FcsCommunication::get_mailbox_name(uint32_t commandCode)
+{
+    std::string cmd_name = "";
+    switch(commandCode)
+    {
+        case Qspi::CommandCodes::GET_IDCODE:
+            cmd_name = "GET_IDCODE";
+            break;
+        case Qspi::CommandCodes::GET_DEVICE_IDENTITY:
+            cmd_name = "GET_DEVICE_IDENTITY";
+            break;
+        case Qspi::CommandCodes::QSPI_OPEN:
+            cmd_name = "QSPI_OPEN";
+            break;
+        case Qspi::CommandCodes::QSPI_CLOSE:
+            cmd_name = "QSPI_CLOSE";
+            break;
+        case Qspi::CommandCodes::QSPI_SET_CS:
+            cmd_name = "QSPI_SET_CS";
+            break;
+        case Qspi::CommandCodes::QSPI_ERASE:
+            cmd_name = "QSPI_ERASE";
+            break;
+        case Qspi::CommandCodes::QSPI_WRITE:
+            cmd_name = "QSPI_WRITE";
+            break;
+        case Qspi::CommandCodes::QSPI_READ:
+            cmd_name = "QSPI_READ";
+            break;
+        case Qspi::CommandCodes::MCTP:
+            cmd_name = "MCTP";
+            break;
+        default:
+            std::ostringstream stream;
+            stream << "0x" << std::hex << std::setw(8) << std::setfill('0') << commandCode;
+            cmd_name = stream.str();
+            break;
+    }
+    return cmd_name;
+}
+
 bool FcsCommunication::mailboxGeneric(
     uint32_t commandCode,
     std::vector<uint8_t> &inBuffer,
     std::vector<uint8_t> &outBuffer,
     int32_t &fcsStatus)
 {
-    Logger::log("Calling mailbox generic command with code: " + std::to_string(commandCode));
+    Logger::log("Calling mailbox generic command: " + get_mailbox_name(commandCode));
     outBuffer.resize(MBOX_SEND_RSP_MAX_SZ);
 
     intel_fcs_dev_ioctl data = {};

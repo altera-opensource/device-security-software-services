@@ -30,36 +30,23 @@
 # ***************************************************************************
 #
 
-if( (NOT DEFINED DEPENDENCIES_ARTIFACTORY_FOLDER) OR (DEPENDENCIES_ARTIFACTORY_FOLDER STREQUAL "#AUTOMATIC#") )
-    resolve_automatic_artifactory_folder(result_artifactory_folder)
-    set(DEPENDENCIES_ARTIFACTORY_FOLDER "${result_artifactory_folder}")
-    message("Setting automatic parameter --> DEPENDENCIES_ARTIFACTORY_FOLDER: ${DEPENDENCIES_ARTIFACTORY_FOLDER}")
-endif()
 
 if(NOT DEFINED OPENSSL_VERSION)
-    set(OPENSSL_VERSION "3.1.1")
+    set(OPENSSL_VERSION "3.1.4")
 endif()
 
 if(NOT DEFINED BOOST_VERSION)
-    set(BOOST_VERSION "1.82.0")
+    set(BOOST_VERSION "1.84.0")
 endif()
 
 if(NOT DEFINED LIBCURL_VERSION)
-    set(LIBCURL_VERSION "8.2.0")
+    set(LIBCURL_VERSION "8.5.0")
 endif()
 
 if(NOT DEFINED GTEST_VERSION)
-    set(GTEST_VERSION "1.12.1")
+    set(GTEST_VERSION "1.14.0")
 endif()
 
-set(DEPENDENCY_FILENAME_CORE "${BASE_PATH}/src/core/dependencies.txt")
-set(DEPENDENCY_FILENAME_BKP_APP "${BASE_PATH}/src/bkp_app/dependencies.txt")
-set(DEPENDENCY_FILENAME_TEST "${BASE_PATH}/src/core_test/dependencies.txt")
-set(DEPENDENCY_FILENAME_BKP_APP_TEST "${BASE_PATH}/src/bkp_app_test/dependencies.txt")
-configure_file(${DEPENDENCY_FILENAME_BKP_APP}.in ${DEPENDENCY_FILENAME_BKP_APP})
-configure_file(${DEPENDENCY_FILENAME_CORE}.in ${DEPENDENCY_FILENAME_CORE})
-configure_file(${DEPENDENCY_FILENAME_TEST}.in ${DEPENDENCY_FILENAME_TEST})
-configure_file(${DEPENDENCY_FILENAME_BKP_APP_TEST}.in ${DEPENDENCY_FILENAME_BKP_APP_TEST})
 
 if (NOT DISABLE_PROGRAMMER)
     add_subdirectory(core)

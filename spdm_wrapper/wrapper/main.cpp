@@ -107,8 +107,10 @@ libspdm_return_t libspdm_transport_mctp_encode_message_w(
     tmp_buffer_with_mctp_header[1] = MCTP_INITIATOR_ID;
 
     uint8_t mctp_encapsulation_type = tmp_buffer_with_mctp_header[3] == SECURE_MCTP_MESSAGE_TYPE
-            ? MCTP_ENCAPSULATION_TYPE_0
-            : MCTP_ENCAPSULATION_TYPE_1;
+                                      ? MCTP_ENCAPSULATION_TYPE_0
+                                      : (cb->mctpEncapsulationTypeCallback != nullptr)
+                                        ? cb->mctpEncapsulationTypeCallback()
+                                        : MCTP_ENCAPSULATION_TYPE_1;
     tmp_buffer_with_mctp_header[2] = MCTP_MSG_TAG << 5 | MCTP_TO << 4 | MCTP_RSVD << 1 | mctp_encapsulation_type;
 
     size_t new_size = *transport_message_size + MCTP_ALIGNMENT_LEN;

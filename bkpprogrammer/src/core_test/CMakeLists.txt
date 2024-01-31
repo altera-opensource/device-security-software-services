@@ -38,19 +38,19 @@ include_directories("${PROJECT_BINARY_DIR}")
 
 file(GLOB_RECURSE SOURCE_FILES cpp/*.cpp)
 add_executable(core_test ${SOURCE_FILES})
-resolve_dependencies()
-get_platform_name(platform)
+
+
 if(NOT DEFINED DEPENDENCIES_PATH)
     set(DEPENDENCIES_PATH ${CMAKE_SOURCE_DIR}/dependencies)
 endif()
-set(OPENSSL_LIB_DIR ${DEPENDENCIES_PATH}/openssl_${OPENSSL_VERSION}_${platform}_${ARCH}/lib)
-set(OPENSSL_INCLUDE_DIR ${DEPENDENCIES_PATH}/openssl_${OPENSSL_VERSION}_${platform}_${ARCH}/include)
-set(LIBCURL_LIB_DIR ${DEPENDENCIES_PATH}/libcurl_${LIBCURL_VERSION}_${platform}_${ARCH}/lib)
-set(LIBCURL_INCLUDE_DIR ${DEPENDENCIES_PATH}/libcurl_${LIBCURL_VERSION}_${platform}_${ARCH}/include)
-set(BOOST_LIB_DIR ${DEPENDENCIES_PATH}/boost_${BOOST_VERSION}_${platform}_${ARCH}/lib)
-set(BOOST_INCLUDE_DIR ${DEPENDENCIES_PATH}/boost_${BOOST_VERSION}_${platform}_${ARCH}/include)
-set(GTEST_LIB_DIR ${DEPENDENCIES_PATH}/gtest_${GTEST_VERSION}_${platform}_${ARCH}/lib)
-set(GTEST_INCLUDE_DIR ${DEPENDENCIES_PATH}/gtest_${GTEST_VERSION}_${platform}_${ARCH}/include)
+set(OPENSSL_LIB_DIR ${DEPENDENCIES_PATH}/openssl/lib)
+set(OPENSSL_INCLUDE_DIR ${DEPENDENCIES_PATH}/openssl/include)
+set(LIBCURL_LIB_DIR ${DEPENDENCIES_PATH}/libcurl/lib)
+set(LIBCURL_INCLUDE_DIR ${DEPENDENCIES_PATH}/libcurl/include)
+set(BOOST_LIB_DIR ${DEPENDENCIES_PATH}/boost/lib)
+set(BOOST_INCLUDE_DIR ${DEPENDENCIES_PATH}/boost/include)
+set(GTEST_LIB_DIR ${DEPENDENCIES_PATH}/gtest/lib)
+set(GTEST_INCLUDE_DIR ${DEPENDENCIES_PATH}/gtest/include)
 
 target_include_directories(${TARGET_NAME} SYSTEM PRIVATE ${OPENSSL_INCLUDE_DIR})
 target_include_directories(${TARGET_NAME} SYSTEM PRIVATE ${LIBCURL_INCLUDE_DIR})
@@ -88,6 +88,3 @@ endif ()
 
 target_link_libraries(core_test PRIVATE pthread bkpprog)
 
-set_property(DIRECTORY PROPERTY ADDITIONAL_MAKE_CLEAN_FILES
-        "${DEPENDENCY_FILENAME_TEST}"
-        )

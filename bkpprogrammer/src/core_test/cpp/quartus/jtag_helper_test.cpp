@@ -81,19 +81,19 @@ void JtagHelperTest::mockQuartusCallToSendMessageTooBigBufOutSize() const {
 void JtagHelperTest::mockLoggerCallsSendingToQuartus(const std::string &message, const size_t messageLenIn4ByteWords) const {
     EXPECT_CALL(*mockLoggerPtr, log(_, GTEST_MATCH_SUBSTR(message))).Times(1);
     EXPECT_CALL(*mockLoggerPtr, log(_, GTEST_MATCH_SUBSTR("Decoded command length in 4-byte words: " + std::to_string(messageLenIn4ByteWords)))).Times(1);
-    EXPECT_CALL(*mockLoggerPtr, log(_, GTEST_MATCH_SUBSTR("Sending JTAG command to Quartus..."))).Times(1);
+    EXPECT_CALL(*mockLoggerPtr, log(_, GTEST_MATCH_SUBSTR("Sending JTAG command to device..."))).Times(1);
 }
 
 void JtagHelperTest::mockLoggerCallsJtagResponsesFromQuartus() const {
-    EXPECT_CALL(*mockLoggerPtr, log(_, GTEST_MATCH_SUBSTR("JtagResponses from Quartus: "))).Times(1);
+    EXPECT_CALL(*mockLoggerPtr, log(_, GTEST_MATCH_SUBSTR("JtagResponses from device: "))).Times(1);
 }
 
 void JtagHelperTest::mockLoggerCallsErrorResponseFromQuartus() const {
-    EXPECT_CALL(*mockLoggerPtr, log(_, GTEST_MATCH_SUBSTR("Quartus responded with status error."))).Times(1);
+    EXPECT_CALL(*mockLoggerPtr, log(_, GTEST_MATCH_SUBSTR("Device responded with status error."))).Times(1);
 }
 
 void JtagHelperTest::mockLoggerCallsQuartusMemoryAccess() const {
-    EXPECT_CALL(*mockLoggerPtr, log(_, GTEST_MATCH_SUBSTR("Quartus tried to write response beyond allocated memory."))).Times(1);
+    EXPECT_CALL(*mockLoggerPtr, log(_, GTEST_MATCH_SUBSTR("Device tried to write response beyond allocated memory."))).Times(1);
 }
 
 TEST_F(JtagHelperTest, exchange_jtag_cmd_Success)

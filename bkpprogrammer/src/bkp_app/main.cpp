@@ -41,6 +41,7 @@
 #include <boost/property_tree/ini_parser.hpp>
 
 #define MAX_SLOT_ID 7
+using namespace boost::algorithm;
 
 const std::map<std::string, PufType_t> PufTypeMap
 {
@@ -107,6 +108,40 @@ bool extractForceEnrollment()
     return vm.count("force_enrollment");
 }
 
+void checkUserInputs(po::options_description opts, int argc, char* argv[])
+{
+    auto opts_vec = opts.options();
+    std::string token;
+    auto search_arg_func = [&token](boost::shared_ptr<boost::program_options::option_description> opt)
+    {
+        bool status = false;
+        if (token.find("=") != std::string::npos)
+        {
+            token = token.substr(0, token.find("="));
+        }
+        if (opt.get()->match(token, false, false, false) == boost::program_options::option_description::full_match)
+        {
+            return true;
+        }
+        return status;
+    };
+
+    std::vector<std::string> args(argv, argv + argc);
+    for (auto& arg : args)
+    {
+        token = arg;
+        if (starts_with(token, "--"))
+        {
+            token = token.substr(2);
+            if (std::find_if(opts_vec.begin(), opts_vec.end(), search_arg_func) == opts_vec.end())
+            {
+                exitWithMessage("Command line has invalid argument " + arg + ". Please cross-check with --help message.");
+                break;
+            }
+        }
+    }
+}
+
 int main(int argc, char* argv[]) try
 {
     commandlineDesc.add_options()
@@ -123,6 +158,7 @@ int main(int argc, char* argv[]) try
 
     try
     {
+        checkUserInputs(commandlineDesc, argc, argv);
         po::store(po::parse_command_line(argc, argv, commandlineDesc), vm);
         po::notify(vm);
     }

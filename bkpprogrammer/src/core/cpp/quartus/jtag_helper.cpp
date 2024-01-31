@@ -52,25 +52,24 @@ Status_t JtagHelperImpl::exchange_jtag_cmd_internal(const Message_t messageType,
     ProtectedMemory::Page page(BUF_OUT_SIZE_MAX_IN_BYTES);
 
     if (!is_page_guarded(page.state())) {
-        LOG(L_ERROR, "Buffer for Quartus response not allocated.");
+        LOG(L_ERROR, "Buffer for Device response not allocated.");
         outResponse = "";
         return ST_GENERIC_ERROR;
     }
 
     auto *outBuffer = static_cast<uint32_t *>(page.get());
 #endif // _WIN32
-
-    LOG(L_DEBUG, "Sending JTAG command to Quartus...");
+    LOG(L_DEBUG, "Sending JTAG command to device...");
     auto result = qc->send_message(messageType, inBuffer, bufInSizeIn4ByteWords, &outBuffer, bufOutSizeIn4ByteWords);
 
     if (!is_result_ok(result)) {
-        LOG(L_ERROR, "Quartus responded with status error.");
+        LOG(L_ERROR, "Device responded with status error.");
         outResponse = "";
         return ST_GENERIC_ERROR;
     }
 
     if (!is_buffer_size_in_range(bufOutSizeIn4ByteWords)) {
-        LOG(L_ERROR, "Quartus tried to write response beyond allocated memory.");
+        LOG(L_ERROR, "Device tried to write response beyond allocated memory.");
         outResponse = "";
         return ST_GENERIC_ERROR;
     }
@@ -115,14 +114,14 @@ bool JtagHelperImpl::is_buffer_size_in_range(size_t bufOutSizeIn4ByteWords) {
 std::string JtagHelperImpl::encode_command(const std::string &decodedCmd) {
     try {
         std::string encodedCmd = b64_utils::encode64(decodedCmd);
-        LOG(L_DEBUG, "JtagResponses from Quartus: " + encodedCmd);
+        LOG(L_DEBUG, "JtagResponses from device: " + encodedCmd);
         return encodedCmd;
     }
     catch (const std::exception &ex) {
         std::string exceptionMessage(ex.what());
         std::string internalMessage = str_utils::concat_strings(
                 {"Encoding of command failed with message: ", exceptionMessage});
-        // If something happens during encoding responses from Quartus, the flow shall not be halted by Programmer
+        // If something happens during encoding responses from Device, the flow shall not be halted by Programmer
         // All responses should be collected and send back to BKPS
         LOG(L_ERROR, internalMessage);
     }
@@ -130,7 +129,7 @@ std::string JtagHelperImpl::encode_command(const std::string &decodedCmd) {
 }
 
 std::string JtagHelperImpl::decode_command(const std::string &encodedCmd) {
-    LOG(L_DEBUG, "JtagCommands from BKPS: " + encodedCmd);
+    LOG(L_DEBUG, "JtagCommands from Black Key Provisioning Service (BKPS): " + encodedCmd);
     try {
         return b64_utils::decode64(encodedCmd);
     }
