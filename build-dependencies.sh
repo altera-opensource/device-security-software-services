@@ -332,7 +332,7 @@ function build_libcurl() {
         export RANLIB=${CROSS_COMPILE}-ranlib
         export CC=${CROSS_COMPILE}-gcc
         export NM=${CROSS_COMPILE}-nm
-        export LDFLAGS="-L${OPENSSL_ROOT_DIR}/lib"
+        export LDFLAGS="-L${OPENSSL_ROOT_DIR}/lib -Wl,-rpath,${OPENSSL_ROOT_DIR}/lib"
         ./configure --target=${CROSS_COMPILE} --host=${CROSS_COMPILE} --build=i586-pc-linux-gnu --with-openssl=${OPENSSL_ROOT_DIR} --without-zlib --without-zstd --prefix=$(pwd)/output
         check_error_code
         make

@@ -1,7 +1,7 @@
 
 # BKPS dependency list
 ## Dependency License Report
-_2024-01-31 11:43:35 CET_
+_2024-02-05 16:27:58 CET_
 ## Apache 2
 
 **1** **Group:** `com.opencsv` **Name:** `opencsv` **Version:** `5.8` 
@@ -1100,6 +1100,6 @@ _2024-01-31 11:43:35 CET_
 
 **169** **Group:** `com.intel.bkp.utils` **Name:** `Utils` **Version:** `unspecified` 
 
-**170** **Group:** `org.hibernate` **Name:** `hibernate-core` **Version:** `6.4.2.Final` 
+**170** **Group:** `org.hibernate` **Name:** `hibernate-core` **Version:** `6.4.3.Final` 
 
 

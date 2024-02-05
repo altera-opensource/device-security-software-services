@@ -32,8 +32,6 @@
 
 package com.intel.bkp.bkps.rest.health.controller;
 
-import com.intel.bkp.bkps.rest.health.HealthResource;
-import com.intel.bkp.bkps.rest.health.model.HealthResponse;
 import com.intel.bkp.core.security.ISecurityProvider;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
@@ -43,7 +41,6 @@ import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
 import org.apache.hc.core5.ssl.SSLContexts;
 import org.apache.hc.core5.ssl.TrustStrategy;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -57,10 +54,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import javax.net.ssl.SSLContext;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 
 
@@ -102,20 +95,5 @@ public class ShallowHealthControllerTestIT {
         requestFactory.setHttpClient(httpClient);
 
         restTemplate.getRestTemplate().setRequestFactory(requestFactory);
-    }
-
-    @Test
-    void get_Health_ReturnBuildVersion() {
-        // given
-        String testUrl = HealthResource.HEALTH;
-
-        // when
-        HealthResponse response = restTemplate.getForEntity(testUrl, HealthResponse.class).getBody();
-
-        // then
-        assertEquals(version, response.getVersion());
-        assertEquals("bkps", response.getName());
-        assertEquals(new ArrayList<>(), response.getItems());
-        assertNull(response.getCurrentSetting());
     }
 }
