@@ -4,7 +4,7 @@ FCS Server supports build for ARM64 (since HPS is ARM based) and x86 for testing
 
 # Related components
 
-- [Verifier](https://github.com/altera-opensource/verifier)
+- [Verifier](../Verifier/README.md)
 
 ## Build for x86
 
