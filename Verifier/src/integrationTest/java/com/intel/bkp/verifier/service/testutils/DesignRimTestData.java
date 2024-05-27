@@ -73,7 +73,7 @@ public class DesignRimTestData extends TestDataBase {
     // Below digest value is randomly generated
     private static final String LAYER_0_INDEX1_DIGEST =
         "58E352D2D00A37B69398223EDFAA1012BC7F81BEDAA8D323AF18B00E4E384FF7CA56F3C62A4BBAE6A0EC08511A93DD7F";
-
+    private static final String CORIM_ID_VALID = "7E91B3F99ADC494C86E11D5A7853F7A2";
     private static final String COMID_ID_VALID = "51F505F82911480B9F44B8A614FF2B18";
 
     private static final String FAMILY_AGILEX = Family.AGILEX.getFamilyName();
@@ -86,6 +86,7 @@ public class DesignRimTestData extends TestDataBase {
             .layer1Digest(LAYER_1_DIGEST)
             .design(true)
             .keyPair(keyPair)
+            .manifestId(CORIM_ID_VALID)
             .designComid(prepareDesignRimComid())
             .generate();
 
@@ -95,6 +96,7 @@ public class DesignRimTestData extends TestDataBase {
 
         final var signedRimGenerator = RimGenerator.instance()
             .distributionPointUrl(buildPath(BASE_URL_PRE, "IPCS"))
+            .manifestId(CORIM_ID_VALID)
             .layer1Digest(LAYER_1_DIGEST)
             .fwComid(prepareRimComid())
             .keyPair(keyPair);
@@ -173,7 +175,7 @@ public class DesignRimTestData extends TestDataBase {
                 .roles(List.of(0))
                 .build()))
             .linkedTags(List.of(LinkedTag.builder()
-                .linkedTagId(COMID_ID_VALID)
+                .linkedTagId(CORIM_ID_VALID)
                 .tagRel(0)
                 .build()))
             .claims(Claims.builder()

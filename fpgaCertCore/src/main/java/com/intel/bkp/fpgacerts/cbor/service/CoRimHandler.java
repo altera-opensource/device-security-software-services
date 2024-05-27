@@ -172,10 +172,10 @@ public class CoRimHandler implements IRimHandler<CBORObject> {
         verifyXCoRim(helperDTO);
 
         if (!linkedTags.isEmpty() && !helperDTO.rim.isDesign()) {
-            final String comidId = helperDTO.rim.getComIds().get(0).getId().getValue();
-            if (!linkedTags.contains(comidId)) {
+            final String corimId = helperDTO.rim.getManifestId();
+            if (!linkedTags.contains(corimId)) {
                 throw new RimVerificationException("Detected unexpected linked item: %s, expected one of: [%s]"
-                    .formatted(comidId, String.join(",", linkedTags)
+                    .formatted(corimId, String.join(",", linkedTags)
                     ));
             }
         }

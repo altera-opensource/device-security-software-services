@@ -46,11 +46,13 @@ import java.util.stream.Stream;
 
 @AllArgsConstructor
 public enum PsgAesKeyType {
-    SDM_1_2(0, PsgAesKeyBuilderSDM12::new),
-    SDM_1_5(1, PsgAesKeyBuilderSDM15::new);
+    SDM_1_2(0, true, PsgAesKeyBuilderSDM12::new),
+    SDM_1_5(1, false, PsgAesKeyBuilderSDM15::new);
 
     @Getter
     private final int version;
+    @Getter
+    private final Boolean testprogramSupported;
     private final Supplier<IPsgAesKeyBuilder<? extends StructureBuilder<?, ? extends IStructure>>> builderSupplier;
 
     public IPsgAesKeyBuilder<? extends StructureBuilder<?, ? extends IStructure>> getBuilder() {
