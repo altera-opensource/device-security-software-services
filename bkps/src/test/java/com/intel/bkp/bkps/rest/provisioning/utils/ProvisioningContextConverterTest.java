@@ -38,16 +38,20 @@ import com.intel.bkp.bkps.programmer.model.ProgrammerResponse;
 import com.intel.bkp.bkps.programmer.model.dto.MessageDTO;
 import com.intel.bkp.bkps.programmer.model.dto.ResponseDTO;
 import com.intel.bkp.bkps.protocol.common.model.ProvContext;
-import com.intel.bkp.bkps.protocol.sigma.model.ProvContext1;
 import com.intel.bkp.bkps.rest.provisioning.model.dto.ContextDTO;
 import com.intel.bkp.crypto.ecdh.EcdhKeyPair;
 import com.intel.bkp.test.RandomUtils;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -59,8 +63,8 @@ public class ProvisioningContextConverterTest {
     private static final String TEST_COMMAND_STRING_2 = "testCommand2";
     private static final long TEST_CFG_ID = 1555L;
     private static final String TEST_DEVICE_ID = RandomUtils.generateDeviceIdHex();
-    private static final byte[] TEST_PUBLIC_KEY = new byte[] { 1, 2, 3, 4 };
-    private static final byte[] TEST_PRIVATE_KEY = new byte[] { 5, 6, 7, 8 };
+    private static final byte[] TEST_PUBLIC_KEY = new byte[]{1, 2, 3, 4};
+    private static final byte[] TEST_PRIVATE_KEY = new byte[]{5, 6, 7, 8};
 
     private static final List<ProgrammerMessage> PROGRAMMER_COMMANDS = new ArrayList<>();
     private static final List<ResponseDTO> JTAG_ENCODED_COMMANDS_STRING = new ArrayList<>();
@@ -106,7 +110,7 @@ public class ProvisioningContextConverterTest {
     @Test
     void serialize_OnlyPublicKey_Success() throws ProvisioningConverterException {
         // given
-        ProvContext provContext = prepareProvContext1(false);
+        ProvContext provContext = prepareProvContext(false);
 
         // when
         byte[] output = ProvisioningContextConverter.serialize(provContext);
@@ -120,7 +124,7 @@ public class ProvisioningContextConverterTest {
     @Test
     void serialize_PublicAndPrivateKey_Success() throws ProvisioningConverterException {
         // given
-        ProvContext provContext = prepareProvContext1(true);
+        ProvContext provContext = prepareProvContext(true);
 
         // when
         byte[] output = ProvisioningContextConverter.serialize(provContext);
@@ -134,12 +138,12 @@ public class ProvisioningContextConverterTest {
     @Test
     void deserialize_OnlyPublicKey_Success() throws ProvisioningConverterException {
         // given
-        ProvContext1 provContext = prepareProvContext1(false);
+        ProvContextTest provContext = prepareProvContext(false);
         byte[] serializedContext = ProvisioningContextConverter.serialize(provContext);
 
         // when
-        ProvContext1 output = (ProvContext1) ProvisioningContextConverter
-            .deserialize(serializedContext, ProvContext1.class);
+        ProvContextTest output = (ProvContextTest) ProvisioningContextConverter
+            .deserialize(serializedContext, ProvContextTest.class);
 
         // then
         assertEquals(provContext.getCfgId(), output.getCfgId());
@@ -151,12 +155,12 @@ public class ProvisioningContextConverterTest {
     @Test
     void deserialize_PublicAndPrivateKey_Success() throws ProvisioningConverterException {
         // given
-        ProvContext1 provContext = prepareProvContext1(true);
+        ProvContextTest provContext = prepareProvContext(true);
         byte[] serializedContext = ProvisioningContextConverter.serialize(provContext);
 
         // when
-        ProvContext1 output = (ProvContext1) ProvisioningContextConverter
-            .deserialize(serializedContext, ProvContext1.class);
+        ProvContextTest output = (ProvContextTest) ProvisioningContextConverter
+            .deserialize(serializedContext, ProvContextTest.class);
 
         // then
         assertEquals(provContext.getCfgId(), output.getCfgId());
@@ -170,14 +174,14 @@ public class ProvisioningContextConverterTest {
     @Test
     void serialize_encode_decode_deserialize_Success() throws ProvisioningConverterException {
         // given
-        ProvContext1 provContext = prepareProvContext1(true);
+        ProvContextTest provContext = prepareProvContext(true);
 
         // when
         byte[] serializedContext = ProvisioningContextConverter.serialize(provContext);
         ContextDTO encodedContext = ContextDTO.from(serializedContext);
         byte[] decodedContext = encodedContext.decoded();
-        ProvContext1 output = (ProvContext1) ProvisioningContextConverter
-            .deserialize(decodedContext, ProvContext1.class);
+        ProvContextTest output = (ProvContextTest) ProvisioningContextConverter
+            .deserialize(decodedContext, ProvContextTest.class);
 
         // then
         assertEquals(provContext.getCfgId(), output.getCfgId());
@@ -188,12 +192,37 @@ public class ProvisioningContextConverterTest {
             output.getEcdhKeyPair().getPrivateKey());
     }
 
-    private ProvContext1 prepareProvContext1(boolean setPrivate) {
+    private ProvContextTest prepareProvContext(boolean setPrivate) {
         EcdhKeyPair ecdhKeyPair = new EcdhKeyPair();
         ecdhKeyPair.setPublicKey(TEST_PUBLIC_KEY);
         if (setPrivate) {
             ecdhKeyPair.setPrivateKey(TEST_PRIVATE_KEY);
         }
-        return new ProvContext1(TEST_CFG_ID, TEST_DEVICE_ID, ecdhKeyPair);
+        return new ProvContextTest(TEST_CFG_ID, TEST_DEVICE_ID, ecdhKeyPair);
+    }
+
+    @Getter
+    @Setter
+    @ToString
+    @NoArgsConstructor
+    private static class ProvContextTest implements ProvContext {
+
+        private Long cfgId;
+        private String chipId;
+        private EcdhKeyPair ecdhKeyPair;
+        private String deviceIdEnrollmentCert;
+
+        public ProvContextTest(Long cfgId, String chipId, EcdhKeyPair ecdhKeyPair) {
+            this(cfgId, chipId, ecdhKeyPair, Optional.empty());
+        }
+
+        public ProvContextTest(Long cfgId, String chipId, EcdhKeyPair ecdhKeyPair,
+                               Optional<String> deviceIdEnrollmentCert) {
+            this.cfgId = cfgId;
+            this.chipId = chipId;
+            this.ecdhKeyPair = ecdhKeyPair;
+            this.deviceIdEnrollmentCert = deviceIdEnrollmentCert
+                .orElse("");
+        }
     }
 }

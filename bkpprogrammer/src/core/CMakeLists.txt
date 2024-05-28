@@ -49,17 +49,16 @@ file(GLOB_RECURSE SOURCES "cpp/*.cpp")
 
 add_library(${TARGET_NAME} SHARED ${SOURCES})
 
-resolve_dependencies()
-get_platform_name(platform)
+
 if(NOT DEFINED DEPENDENCIES_PATH)
     set(DEPENDENCIES_PATH ${CMAKE_SOURCE_DIR}/dependencies)
 endif()
-set(OPENSSL_LIB_DIR ${DEPENDENCIES_PATH}/openssl_${OPENSSL_VERSION}_${platform}_${ARCH}/lib)
-set(OPENSSL_INCLUDE_DIR ${DEPENDENCIES_PATH}/openssl_${OPENSSL_VERSION}_${platform}_${ARCH}/include)
-set(LIBCURL_LIB_DIR ${DEPENDENCIES_PATH}/libcurl_${LIBCURL_VERSION}_${platform}_${ARCH}/lib)
-set(LIBCURL_INCLUDE_DIR ${DEPENDENCIES_PATH}/libcurl_${LIBCURL_VERSION}_${platform}_${ARCH}/include)
-set(BOOST_LIB_DIR ${DEPENDENCIES_PATH}/boost_${BOOST_VERSION}_${platform}_${ARCH}/lib)
-set(BOOST_INCLUDE_DIR ${DEPENDENCIES_PATH}/boost_${BOOST_VERSION}_${platform}_${ARCH}/include)
+set(OPENSSL_LIB_DIR ${DEPENDENCIES_PATH}/openssl/lib)
+set(OPENSSL_INCLUDE_DIR ${DEPENDENCIES_PATH}/openssl/include)
+set(LIBCURL_LIB_DIR ${DEPENDENCIES_PATH}/libcurl/lib)
+set(LIBCURL_INCLUDE_DIR ${DEPENDENCIES_PATH}/libcurl/include)
+set(BOOST_LIB_DIR ${DEPENDENCIES_PATH}/boost/lib)
+set(BOOST_INCLUDE_DIR ${DEPENDENCIES_PATH}/boost/include)
 
 target_include_directories(${TARGET_NAME} SYSTEM PRIVATE ${OPENSSL_INCLUDE_DIR})
 target_include_directories(${TARGET_NAME} SYSTEM PRIVATE ${LIBCURL_INCLUDE_DIR})
@@ -118,7 +117,6 @@ else ()
 endif ()
 
 set_property(DIRECTORY PROPERTY ADDITIONAL_MAKE_CLEAN_FILES
-        "${DEPENDENCY_FILENAME_CORE}"
         "${BASE_HEADER_VERSION_PATH}"
         "${TARGET_FILE_PATH}"
         )

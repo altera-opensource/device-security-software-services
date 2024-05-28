@@ -91,14 +91,14 @@ class CacheZipFetcherTest {
         final String path = "somePath";
         final Optional<byte[]> expected = Optional.of(new byte[]{0x02, 0x02});
         final var sutSpy = spy(sut);
-        when(sutSpy.fetch(path)).thenReturn(expected);
+        when(sutSpy.fetchSkipCache(path)).thenReturn(expected);
 
         // when
         final var result = sutSpy.fetchCertificate(path);
 
         // then
         assertEquals(expected, result);
-        verify(sutSpy).fetch(path);
+        verify(sutSpy).fetchSkipCache(path);
 
     }
 }

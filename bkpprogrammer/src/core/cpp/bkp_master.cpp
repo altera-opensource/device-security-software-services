@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2024 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -43,7 +43,7 @@ Config BkpMaster::getConfigFromQuartusContext() const
     conf.clientKeyFilePath = qc->get_config(CFG_TLS_PROG_KEY);
     LOG(L_DEBUG, logMessages::cert::load_key + conf.clientKeyFilePath);
     conf.clientKeyPassword = qc->get_config(CFG_TLS_PROG_KEY_PASS);
-    LOG(L_DEBUG, logMessages::password::looking_for_password + "Quartus config.");
+    LOG(L_DEBUG, logMessages::password::looking_for_password + "device config.");
 
     conf.bkpsAddress = qc->get_config(CFG_BKPSVC_IP);
     conf.bkpsPort = qc->get_config(CFG_BKPSVC_PORT);

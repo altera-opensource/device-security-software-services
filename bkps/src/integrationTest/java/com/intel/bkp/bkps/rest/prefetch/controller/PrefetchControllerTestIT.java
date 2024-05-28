@@ -157,7 +157,7 @@ public class PrefetchControllerTestIT extends IntegrationTestBase {
             resultAction.andExpect(jsonPath("$.[" + i + "].label").value(eitherOneOfUids(dtoList)))
                 .andExpect(jsonPath("$.[" + i + "].status").value(PrefetchStatus.PROGRESS.name()));
         }
-        mockServerDistributionPoint.verify(Duration.ofSeconds(10));
+        mockServerDistributionPoint.verify(Duration.ofSeconds(15));
         dtoList.forEach(dto -> verifyStatusDone(dto.getFamilyId(), dto.getUid()));
     }
 

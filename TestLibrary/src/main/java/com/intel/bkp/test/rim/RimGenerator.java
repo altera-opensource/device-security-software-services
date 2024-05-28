@@ -117,6 +117,11 @@ public class RimGenerator {
         return this;
     }
 
+    public RimGenerator manifestId(String manifestId) {
+        this.manifestId = manifestId;
+        return this;
+    }
+
     public byte[] generate() {
         if (signed) {
             return generateSigned();

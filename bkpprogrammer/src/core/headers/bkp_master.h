@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2024 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -53,8 +53,8 @@ namespace operation_status {
 }
 
 namespace provisioning_stage {
-    const std::string received_from_bkps = "Received commands from BKPS.";
-    const std::string received_from_quartus = "Received response from Quartus.";
+    const std::string received_from_bkps = "Received commands from Black Key Provisioning Service (BKPS).";
+    const std::string received_from_quartus = "Received response from device.";
 }
 
 namespace communication_status {

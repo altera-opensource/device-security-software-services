@@ -12,41 +12,19 @@ set(BASE_PATH ${CMAKE_SOURCE_DIR})
 if(NOT DEFINED DEPENDENCIES_PATH)
     set(DEPENDENCIES_PATH ${BASE_PATH}/dependencies)
 endif()
+
 if(NOT DEFINED LIBSPDM_LIB_DIR)
-    set(LIBSPDM_LIB_DIR "${DEPENDENCIES_PATH}/libspdm/build/lib")
+    set(LIBSPDM_LIB_DIR ${DEPENDENCIES_PATH}/libspdm/lib)
 endif()
+
 if(NOT DEFINED OPENSSL_LIB_DIR)
-    set(OPENSSL_LIB_DIR "${DEPENDENCIES_PATH}/openssl")
+    set(OPENSSL_LIB_DIR ${DEPENDENCIES_PATH}/openssl/lib)
 endif()
+
 if(NOT DEFINED LIBSPDM_INCLUDE_DIR)
-    set(LIBSPDM_INCLUDE_DIR "${DEPENDENCIES_PATH}/libspdm/include")
+    set(LIBSPDM_INCLUDE_DIR ${DEPENDENCIES_PATH}/libspdm/include)
 endif()
 
-if(DEFINED INTERNAL_BUILD)
-    if(NOT DEFINED LIBSPDM_VERSION)
-        set(LIBSPDM_VERSION "3.2.0")
-    endif()
-    if(NOT DEFINED OPENSSL_VERSION)
-        set(OPENSSL_VERSION "3.1.1")
-    endif()
-
-    include(../../tools/dependency_resolver.cmake)
-    if( (NOT DEFINED DEPENDENCIES_ARTIFACTORY_FOLDER) OR (DEPENDENCIES_ARTIFACTORY_FOLDER STREQUAL "#AUTOMATIC#") )
-        resolve_automatic_artifactory_folder(result_artifactory_folder)
-        set(DEPENDENCIES_ARTIFACTORY_FOLDER "${result_artifactory_folder}")
-        message("Setting automatic parameter --> DEPENDENCIES_ARTIFACTORY_FOLDER: ${DEPENDENCIES_ARTIFACTORY_FOLDER}")
-    endif()
-    set(DEPENDENCY_FILENAME "${BASE_PATH}/dependencies.txt")
-    configure_file(${DEPENDENCY_FILENAME}.in ${DEPENDENCY_FILENAME})
-    get_platform_name(platform)
-    resolve_dependencies()
-
-    set(LIBSPDM_LIB_DIR ${DEPENDENCIES_PATH}/libspdm_${LIBSPDM_VERSION}_${platform}_${ARCH}/lib)
-    set(LIBSPDM_INCLUDE_DIR ${DEPENDENCIES_PATH}/libspdm_${LIBSPDM_VERSION}_${platform}_${ARCH}/include)
-    set(OPENSSL_LIB_DIR ${DEPENDENCIES_PATH}/openssl_${OPENSSL_VERSION}_${platform}_${ARCH}/lib)
-endif()
-
-set(LIBSPDM_WRAPPER_INCLUDE_DIR ${BASE_PATH}/wrapper)
 
 include_directories(${LIBSPDM_INCLUDE_DIR})
 

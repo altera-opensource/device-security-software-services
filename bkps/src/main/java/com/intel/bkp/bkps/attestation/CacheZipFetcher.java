@@ -51,7 +51,7 @@ public class CacheZipFetcher extends CacheObjectFetcherBase<byte[]>
 
     @Override
     public Optional<byte[]> fetchCertificate(String url) {
-        return super.fetch(url);
+        return super.fetchSkipCache(url);
     }
 
     @Override

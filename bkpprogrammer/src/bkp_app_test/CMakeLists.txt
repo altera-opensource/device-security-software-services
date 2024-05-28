@@ -40,19 +40,19 @@ include_directories(${FCS_FILTER_DIR}/include)
 
 file(GLOB SOURCE_FILES *.cpp ../bkp_app/Puf.cpp ../bkp_app/Puf_sdm_1_5.cpp ../bkp_app/Context.cpp ${FCS_FILTER_DIR}/src/*.cpp)
 add_executable(bkp_app_test ${SOURCE_FILES})
-resolve_dependencies()
-get_platform_name(platform)
+
+
 if(NOT DEFINED DEPENDENCIES_PATH)
     set(DEPENDENCIES_PATH ${CMAKE_SOURCE_DIR}/dependencies)
 endif()
-set(OPENSSL_LIB_DIR ${DEPENDENCIES_PATH}/openssl_${OPENSSL_VERSION}_${platform}_${ARCH}/lib)
-set(OPENSSL_INCLUDE_DIR ${DEPENDENCIES_PATH}/openssl_${OPENSSL_VERSION}_${platform}_${ARCH}/include)
-set(LIBCURL_LIB_DIR ${DEPENDENCIES_PATH}/libcurl_${LIBCURL_VERSION}_${platform}_${ARCH}/lib)
-set(LIBCURL_INCLUDE_DIR ${DEPENDENCIES_PATH}/libcurl_${LIBCURL_VERSION}_${platform}_${ARCH}/include)
-set(GTEST_LIB_DIR ${DEPENDENCIES_PATH}/gtest_${GTEST_VERSION}_${platform}_${ARCH}/lib)
-set(GTEST_INCLUDE_DIR ${DEPENDENCIES_PATH}/gtest_${GTEST_VERSION}_${platform}_${ARCH}/include)
-set(BOOST_LIB_DIR ${DEPENDENCIES_PATH}/boost_${BOOST_VERSION}_${platform}_${ARCH}/lib)
-set(BOOST_INCLUDE_DIR ${DEPENDENCIES_PATH}/boost_${BOOST_VERSION}_${platform}_${ARCH}/include)
+set(OPENSSL_LIB_DIR ${DEPENDENCIES_PATH}/openssl/lib)
+set(OPENSSL_INCLUDE_DIR ${DEPENDENCIES_PATH}/openssl/include)
+set(LIBCURL_LIB_DIR ${DEPENDENCIES_PATH}/libcurl/lib)
+set(LIBCURL_INCLUDE_DIR ${DEPENDENCIES_PATH}/libcurl/include)
+set(GTEST_LIB_DIR ${DEPENDENCIES_PATH}/gtest/lib)
+set(GTEST_INCLUDE_DIR ${DEPENDENCIES_PATH}/gtest/include)
+set(BOOST_LIB_DIR ${DEPENDENCIES_PATH}/boost/lib)
+set(BOOST_INCLUDE_DIR ${DEPENDENCIES_PATH}/boost/include)
 
 target_include_directories(${TARGET_NAME} SYSTEM PRIVATE ${GTEST_INCLUDE_DIR} ${BOOST_INCLUDE_DIR} ${OPENSSL_INCLUDE_DIR} ${LIBCURL_INCLUDE_DIR})
 target_link_libraries(${TARGET_NAME} PRIVATE
@@ -72,6 +72,3 @@ target_link_libraries(${TARGET_NAME} PRIVATE dl)
 
 add_test(NAME bkp_app_test_suite COMMAND bkp_app_test)
 
-set_property(DIRECTORY PROPERTY ADDITIONAL_MAKE_CLEAN_FILES
-        "${DEPENDENCY_FILENAME_TEST}"
-        )

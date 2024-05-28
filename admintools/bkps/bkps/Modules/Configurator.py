@@ -67,7 +67,8 @@ class ConfigurationDTO:
 
         self.import_mode = parsed['confidentialData']['importMode']
         self.name = parsed['name']
-        self.test_program = parsed['confidentialData']['aesKey']['testProgram']
+        if 'testProgram' in parsed['confidentialData']['aesKey']:
+            self.test_program = parsed['confidentialData']['aesKey']['testProgram']
         self.puf_type = parsed['pufType']
         if 'requireIidUds' in parsed:
             self.require_iid_uds = parsed['requireIidUds']

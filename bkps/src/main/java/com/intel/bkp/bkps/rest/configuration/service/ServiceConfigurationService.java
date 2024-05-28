@@ -37,7 +37,6 @@ import com.intel.bkp.bkps.crypto.sealingkey.SealingKeyManager;
 import com.intel.bkp.bkps.domain.AesKey;
 import com.intel.bkp.bkps.domain.ConfidentialData;
 import com.intel.bkp.bkps.domain.enumeration.ImportMode;
-import com.intel.bkp.bkps.exception.DetectedAesKeyTestProgramException;
 import com.intel.bkp.bkps.exception.ProvisioningGenericException;
 import com.intel.bkp.bkps.exception.ServiceConfigurationNotFound;
 import com.intel.bkp.bkps.repository.ServiceConfigurationRepository;
@@ -56,7 +55,6 @@ import com.intel.bkp.core.interfaces.IStructure;
 import com.intel.bkp.core.psgcertificate.IPsgAesKeyBuilder;
 import com.intel.bkp.core.psgcertificate.PsgAesKeyBuilderFactory;
 import com.intel.bkp.core.psgcertificate.enumerations.StorageType;
-import com.intel.bkp.core.psgcertificate.model.EfuseTestFlag;
 import com.intel.bkp.core.psgcertificate.model.PsgAesKeyType;
 import com.intel.bkp.crypto.exceptions.EncryptionProviderException;
 import lombok.AccessLevel;
@@ -131,23 +129,23 @@ public class ServiceConfigurationService {
             aesKey.setStorage(builder.getStorageType());
             aesKey.setKeyWrappingType(builder.getKeyWrappingType());
             verifyEfusesStorageTypeRequiredField(aesKey, builder.getAesKeyType());
-            handleTestFlag(aesKey, builder.getTestFlag());
+            handleTestFlag(aesKey, builder.getAesKeyType());
         } catch (ParseStructureException e) {
             throw new BKPBadRequestException(ErrorCodeMap.CORRUPTED_AES_KEY, e);
         }
     }
 
-    private void handleTestFlag(AesKey aesKeyFromDTO, EfuseTestFlag testFlagBuilder) {
-        Optional.ofNullable(testFlagBuilder)
-            .map(EfuseTestFlag::isTestFlagSet)
-            .ifPresent(testFlagFromBuilder -> {
-                if (aesKeyFromDTO.getTestProgram() != null
-                    && !aesKeyFromDTO.getTestProgram().equals(testFlagFromBuilder)) {
-                    throw new DetectedAesKeyTestProgramException(aesKeyFromDTO.getTestProgram(), testFlagFromBuilder);
-                } else if (aesKeyFromDTO.getTestProgram() == null) {
-                    aesKeyFromDTO.setTestProgram(testFlagFromBuilder);
+    private void handleTestFlag(AesKey aesKeyFromDTO, PsgAesKeyType type) {
+        if (aesKeyFromDTO.getTestProgram() != null) {
+            if (!type.getTestprogramSupported()) {
+                if (aesKeyFromDTO.getTestProgram()) {
+                    log.warn("Compact certificate version (%d) does not support testProgram flag. Hence, resetting it to false.".formatted(type.getVersion()));
+                    aesKeyFromDTO.setTestProgram(false);
                 }
-            });
+            }
+        } else {
+            aesKeyFromDTO.setTestProgram(false);
+        }
     }
 
     private void verifyEfusesStorageTypeRequiredField(AesKey aesKey, PsgAesKeyType type) {

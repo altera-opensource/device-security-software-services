@@ -1,11 +1,16 @@
-# bkps
+# Black Key Provisioning Service (BKPS)
+
+The Black Key Provisioning Service is a suite of applications used to securely provision an AES root key to an Intel Stratix 10 or Intel Agilex Device.
+Black key provisioning involves a multi-step process to establish a mutually authenticated secure connection between an SDM-based device at an untrusted manufacturing facility and an instance of the Intel-provided black key provisioning service that runs on a trusted system in a trusted location.
+All connections between the Black Key Provisioning Service and the tools it relies on are authenticated connections using mTLS.
+The mutually authenticated secure connection helps to ensure that the black key provisioning service can program the AES root key and other confidential information without exposing any data to an intermediate or third party.
+This quick start guide describes the Black Key Provisioning Service, its dependencies, and provides example instructions to set up the Black Key Provisioning Service.
 
 ## Development
 
 To start your application in the dev profile, simply run:
 
     ./gradlew
-
 
 ## Building for production
 
@@ -30,28 +35,6 @@ To package your application as a war in order to deploy it to an application ser
 To launch your application's tests, run:
 
     ./gradlew test
-
-## Using Docker to simplify development (optional)
-
-You can use Docker to improve your JHipster development experience. A number of docker-compose configuration are available in the [src/main/docker](src/main/docker) folder to launch required third party services.
-
-For example, to start a postgresql database in a docker container, run:
-
-    docker-compose -f src/main/docker/postgresql.yml up -d
-
-To stop it and remove the container, run:
-
-    docker-compose -f src/main/docker/postgresql.yml down
-
-You can also fully dockerize your application and all the services that it depends on.
-To achieve this, first build a docker image of your app by running:
-
-    ./gradlew bootJar -Pprod buildDocker
-
-Then run:
-
-    docker-compose -f src/main/docker/app.yml up -d
-
 
 ### Build REST API HTML/PDF DOC
 

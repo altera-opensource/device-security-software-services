@@ -36,6 +36,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdint.h>
 #include <stddef.h>
 #include <vector>
+#include <string>
 
 #include "intel_fcs-ioctl.h"
 #include "intel_fcs_structs.h"
@@ -67,6 +68,7 @@ class FcsCommunication
 
     private:
         static bool sendIoctl(intel_fcs_dev_ioctl *data, unsigned long commandCode);
+        static std::string get_mailbox_name(uint32_t commandCode);
 };
 
 #endif /* FCS_COMMUNICATION */

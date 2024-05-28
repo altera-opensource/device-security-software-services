@@ -46,7 +46,8 @@ import lombok.Setter;
     "spdmDeviceReleaseSenderBufferCallback",
     "spdmDeviceAcquireReceiverBufferCallback",
     "spdmDeviceReleaseReceiverBufferCallback",
-    "spdmRequesterDataSignCallback"
+    "spdmRequesterDataSignCallback",
+    "mctpEncapsulationTypeCallback"
 })
 public class SessionCallbacks extends Structure {
 
@@ -60,6 +61,7 @@ public class SessionCallbacks extends Structure {
     public SpdmDeviceAcquireReceiverBufferCallback spdmDeviceAcquireReceiverBufferCallback;
     public SpdmDeviceReleaseReceiverBufferCallback spdmDeviceReleaseReceiverBufferCallback;
     public SpdmRequesterDataSignCallback spdmRequesterDataSignCallback;
+    public MctpEncapsulationTypeCallback mctpEncapsulationTypeCallback;
 
     private static class ByReference extends SessionCallbacks implements Structure.ByReference {
 
