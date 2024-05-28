@@ -35,6 +35,7 @@ package com.intel.bkp.bkps.rest.provisioning.model.dto;
 import com.intel.bkp.bkps.programmer.model.ProgrammerMessage;
 import com.intel.bkp.bkps.protocol.common.model.FlowStage;
 import com.intel.bkp.bkps.protocol.common.model.ProtocolType;
+import com.intel.bkp.bkps.protocol.sigma.model.ProvContextEnc;
 import com.intel.bkp.crypto.aesgcm.AesGcmProvider;
 import com.intel.bkp.crypto.exceptions.EncryptionProviderException;
 import org.junit.jupiter.api.Test;
@@ -54,8 +55,12 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class ProvisioningResponseDTOBuilderTest {
 
-    private static final String JSON_CONTEXT = "{\"flowStage\":\"SPDM_GET_CHIPID\",\"protocolType\":\"SPDM\","
-        + "\"contextData\":null}";
+    private static final String CONTEXT_DATA = "eyJjZmdJZCI6bnVsbCwiY2hpcElkIjpudWxsLCJzZXNzaW9uRW5jcnlwdGlvbktleSI6bn"
+        + "VsbCwic2Vzc2lvbk1hY0tleSI6bnVsbCwic2RtU2Vzc2lvbklkIjpudWxsLCJzaWdtYUVuY0l2IjpudWxsLCJtZXNzYWdlUmVzcG9uc2VDb" +
+        "3VudGVyIjotMn0=";
+
+    private static final String JSON_CONTEXT = "{\"flowStage\":\"SIGMA_ENC_ASSET\",\"protocolType\":\"SIGMA\","
+        + "\"contextData\":\"" + CONTEXT_DATA + "\"}";
 
     @Mock
     private List<ProgrammerMessage> programmerMessages;
@@ -119,8 +124,9 @@ public class ProvisioningResponseDTOBuilderTest {
 
     private ProvisioningResponseDTOBuilder basicBuilder() {
         return new ProvisioningResponseDTOBuilder()
-            .flowStage(FlowStage.SPDM_GET_CHIPID)
-            .protocolType(ProtocolType.SPDM);
+            .context(new ProvContextEnc())
+            .flowStage(FlowStage.SIGMA_ENC_ASSET)
+            .protocolType(ProtocolType.SIGMA);
     }
 }
 

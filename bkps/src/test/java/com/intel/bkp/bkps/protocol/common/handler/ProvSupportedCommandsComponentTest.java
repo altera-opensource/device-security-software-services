@@ -37,6 +37,7 @@ import com.intel.bkp.bkps.domain.ConfidentialData;
 import com.intel.bkp.bkps.domain.ServiceConfiguration;
 import com.intel.bkp.bkps.exception.CommandNotSupportedException;
 import com.intel.bkp.bkps.exception.InvalidConfigurationException;
+import com.intel.bkp.bkps.protocol.sigma.handler.ProvHandlerTestUtil;
 import com.intel.bkp.bkps.rest.provisioning.model.dto.ProvisioningRequestDTO;
 import com.intel.bkp.bkps.rest.provisioning.model.dto.ProvisioningTransferObject;
 import com.intel.bkp.bkps.rest.provisioning.service.IServiceConfiguration;

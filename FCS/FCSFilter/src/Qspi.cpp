@@ -1,34 +1,34 @@
 /*
- This project, FPGA Crypto Service Server, is licensed as below
+This project, FPGA Crypto Service Server, is licensed as below
 
- ***************************************************************************
+***************************************************************************
 
- Copyright 2020-2024 Intel Corporation. All Rights Reserved.
+Copyright 2023 Intel Corporation. All Rights Reserved.
 
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions are met:
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
 
- 1. Redistributions of source code must retain the above copyright notice,
- this list of conditions and the following disclaimer.
+1. Redistributions of source code must retain the above copyright notice,
+this list of conditions and the following disclaimer.
 
- 2. Redistributions in binary form must reproduce the above copyright
- notice, this list of conditions and the following disclaimer in the
- documentation and/or other materials provided with the distribution.
+2. Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.
 
- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
- PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER
- OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER
+OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
- ***************************************************************************
- */
+***************************************************************************
+*/
 
 #include "Logger.h"
 #include "Qspi.h"
@@ -36,12 +36,11 @@
 #include "utils.h"
 #include <stdexcept>
 
-bool Qspi::callFcs(uint32_t commandCode,
+void Qspi::callFcs(uint32_t commandCode,
              std::vector<uint8_t> &inBuffer,
              std::vector<uint8_t> &outBuffer,
              std::string functionName)
 {
-    bool status = true;
     int32_t statusReturnedFromFcs = -1;
     std::string payloadHex;
     for (auto byteValue : inBuffer)
@@ -51,122 +50,37 @@ bool Qspi::callFcs(uint32_t commandCode,
     Logger::log("Calling FCS. Payload: " + payloadHex, Debug);
     if (!FcsCommunication::mailboxGeneric(commandCode, inBuffer, outBuffer, statusReturnedFromFcs))
     {
-        Logger::log(functionName + ": FCS call failed.", Error);
-        status = false;
+        throw std::runtime_error(functionName + ": FCS call failed.");
     }
-    if (status && statusReturnedFromFcs != 0)
+    if (statusReturnedFromFcs != 0)
     {
-        std::string err_desc = decode_sdm_response_error_code(statusReturnedFromFcs);
-        Logger::log(err_desc, Error);
-        status = false;
+        throw std::runtime_error(functionName + ": Error code: " + Utils::toHexString(statusReturnedFromFcs));
     }
-
-    if (status)
+    std::string outputHex;
+    for (auto byteValue : outBuffer)
     {
-        std::string outputHex;
-        for (auto byteValue : outBuffer)
-        {
-            outputHex += Utils::toHexString(byteValue) + " ";
-        }
-        Logger::log("Output from FCS: " + outputHex, Debug);
+        outputHex += Utils::toHexString(byteValue) + " ";
     }
-    return status;
+    Logger::log("Output from FCS: " + outputHex, Debug);
 }
 
-std::string Qspi::decode_sdm_response_error_code(uint32_t error_code)
-{
-    std::string err_code_hex = Utils::toHexString(error_code);
-    std::string description(err_code_hex);
-    switch(error_code)
-    {
-        case SDM_RESPONSE_CODE::SDM_RESPONSE_CODE_OK:
-            description += "The command completed successfully.";
-            break;
-        case SDM_RESPONSE_CODE::SDM_RESPONSE_CODE_INVALID_CMD:
-        case SDM_RESPONSE_CODE::SDM_RESPONSE_CODE_UNKNOWN_BR:
-            description += "The currently loaded boot ROM cannot decode or recognize the command code.";
-            break;
-        case SDM_RESPONSE_CODE::SDM_RESPONSE_CODE_UNKNOWN:
-            description += "The currently loaded firmware cannot decode the command code.";
-            break;
-        case SDM_RESPONSE_CODE::SDM_RESPONSE_CODE_INVALID_COMMAND_PARAMS:
-            description += "The command is incorrectly formatted.";
-            break;
-        case SDM_RESPONSE_CODE::SDM_RESPONSE_CODE_CMD_INVALID_ON_SOURCE:
-            description += "The command is from a source for which it is not enabled.";
-            break;
-        case SDM_RESPONSE_CODE::SDM_RESPONSE_CODE_CLIENT_ID_NO_MATCH:
-            description += "The client ID does not match the existing client with the current exclusive access to quad SPI.";
-            break;
-        case SDM_RESPONSE_CODE::SDM_RESPONSE_CODE_INVALID_ADDRESS:
-            description += "The address is invalid.";
-            break;
-        case SDM_RESPONSE_CODE::SDM_RESPONSE_CODE_AUTHENTICATION_FAIL:
-            description += "The configuration bitstream signature authentication failure.";
-            break;
-        case SDM_RESPONSE_CODE::SDM_RESPONSE_CODE_TIMEOUT:
-            description += "Command timed out.";
-            break;
-        case SDM_RESPONSE_CODE::SDM_RESPONSE_CODE_HW_NOT_READY:
-            description += "The hardware is not ready due to either an initialization or configuration problem.";
-            break;
-        case SDM_RESPONSE_CODE::SDM_RESPONSE_CODE_HW_ERROR:
-            description += "The command unable to complete due to unrecoverable hardware error.";
-            break;
-        case SDM_RESPONSE_CODE::SDM_RESPONSE_CODE_SYNC_LOST:
-            description += "The device is out of sync after recovery reset.";
-            break;
-        case SDM_RESPONSE_CODE::SDM_RESPONSE_CODE_FUNCTION_NOT_SUPPORT:
-            description += "The function is currently not supported.";
-            break;
-
-        case SDM_RESPONSE_CODE::SDM_RESPONSE_CODE_QSPI_HW_ERROR:
-            description += "Indicates QSPI flash memory error. This error indicates one of the following conditions:\n1. A QSPI flash chip select setting problem\n2. A QSPI flash initialization problem\n3. A QSPI flash resetting problem\n4. A QSPI flash settings update problem";
-            break;
-        case SDM_RESPONSE_CODE::SDM_RESPONSE_CODE_QSPI_ALREADY_OPEN:
-            description += "The client's exclusive access to QSPI flash via QSPI_OPEN command is already open.";
-            break;
-        case SDM_RESPONSE_CODE::SDM_RESPONSE_CODE_EFUSE_SYSTEM_FAILURE:
-            description += "The eFuse cache pointer is invalid.";
-            break;
-
-        case SDM_RESPONSE_CODE::SDM_RESPONSE_CODE_NOT_CONFIGURED:
-            description += "The device is not configured.";
-            break;
-        case SDM_RESPONSE_CODE::SDM_RESPONSE_CODE_DEVICE_BUSY:
-            description += "The device is busy due to following use cases:\n1. RSU: Firmware is unable to transition to different version due to an internal error.\n2. HPS: HPS is busy when in HPS reconfiguration process or HPS cold reset.";
-            break;
-        case SDM_RESPONSE_CODE::SDM_RESPONSE_CODE_NO_VALID_RESP_AVAILABLE:
-            description += "There is no valid response available.";
-            break;
-        case SDM_RESPONSE_CODE::SDM_RESPONSE_CODE_RESPONSE_ERROR :
-            description += "General Error.";
-            break;
-        default:
-            description += "Unknown error.";
-            Logger::log("Detected unknown error code " + err_code_hex, Fatal);
-            break;
-    }
-    return description;
-}
-
-bool Qspi::qspiOpen()
+void Qspi::qspiOpen()
 {
     Logger::log("QSPI Open", Debug);
     std::vector<uint8_t> request;
     std::vector<uint8_t> response;
-    return callFcs(CommandCodes::QSPI_OPEN, request, response, "qspiOpen");
+    callFcs(CommandCodes::QSPI_OPEN, request, response, "qspiOpen");
 }
 
-bool Qspi::qspiClose()
+void Qspi::qspiClose()
 {
     Logger::log("QSPI Close", Debug);
     std::vector<uint8_t> request;
     std::vector<uint8_t> response;
-    return callFcs(CommandCodes::QSPI_CLOSE, request, response, "qspiClose");
+    callFcs(CommandCodes::QSPI_CLOSE, request, response, "qspiClose");
 }
 
-bool Qspi::qspiSetCs(uint8_t cs, bool mode, bool ca)
+void Qspi::qspiSetCs(uint8_t cs, bool mode, bool ca)
 {
     Logger::log("QSPI Set CS", Debug);
     if (cs > 0xF)
@@ -183,10 +97,10 @@ bool Qspi::qspiSetCs(uint8_t cs, bool mode, bool ca)
 
     std::vector<uint8_t> response;
 
-    return callFcs(CommandCodes::QSPI_SET_CS, request, response, "qspiSetCs");
+    callFcs(CommandCodes::QSPI_SET_CS, request, response, "qspiSetCs");
 }
 
-bool Qspi::qspiErase(uint32_t address, uint32_t sizeInWords)
+void Qspi::qspiErase(uint32_t address, uint32_t sizeInWords)
 {
     if (!is4kAligned(address))
     {
@@ -200,32 +114,29 @@ bool Qspi::qspiErase(uint32_t address, uint32_t sizeInWords)
     Utils::encodeToLittleEndianBuffer(address, request);
     Utils::encodeToLittleEndianBuffer(sizeInWords, request, sizeof(uint32_t));
     std::vector<uint8_t> response;
-    return callFcs(CommandCodes::QSPI_ERASE, request, response, "qspiErase");
+    callFcs(CommandCodes::QSPI_ERASE, request, response, "qspiErase");
 }
 
-bool Qspi::qspiReadMultiple(uint32_t address, uint32_t sizeInWords, std::vector<uint8_t> &outBuffer)
+void Qspi::qspiReadMultiple(uint32_t address, uint32_t sizeInWords, std::vector<uint8_t> &outBuffer)
 {
     uint32_t wordsLeft = sizeInWords;
-    bool status = true;
     do
     {
         uint32_t wordsToRead = wordsLeft > maxTransferSizeInWords ? maxTransferSizeInWords : wordsLeft;
         std::vector<uint8_t> readBuffer(wordsToRead * WORD_SIZE);
         uint32_t byteOffset = (sizeInWords - wordsLeft) * WORD_SIZE;
-        status  = qspiRead(address + byteOffset, wordsToRead, readBuffer);
+        qspiRead(address + byteOffset, wordsToRead, readBuffer);
         std::copy(
                 readBuffer.begin(),
                 readBuffer.end(),
                 std::back_inserter(outBuffer));
         wordsLeft -= wordsToRead;
-    } while (status && wordsLeft > 0);
-    return status;
+    } while (wordsLeft > 0);
 }
 
-bool Qspi::qspiWriteMultiple(uint32_t address, uint32_t sizeInWords, std::vector<uint8_t> &inBuffer)
+void Qspi::qspiWriteMultiple(uint32_t address, uint32_t sizeInWords, std::vector<uint8_t> &inBuffer)
 {
     uint32_t wordsLeft = sizeInWords;
-    bool status = true;
     do
     {
         uint32_t wordsToWrite = wordsLeft > maxTransferSizeInWords ? maxTransferSizeInWords : wordsLeft;
@@ -235,45 +146,38 @@ bool Qspi::qspiWriteMultiple(uint32_t address, uint32_t sizeInWords, std::vector
                 inBuffer.begin() + byteOffset,
                 inBuffer.begin() + byteOffset + (wordsToWrite * WORD_SIZE),
                 std::back_inserter(writeBuffer));
-        status = qspiWrite(address + byteOffset, wordsToWrite, writeBuffer);
+        Qspi::qspiWrite(address + byteOffset, wordsToWrite, writeBuffer);
         wordsLeft -= wordsToWrite;
-    } while (status && wordsLeft > 0);
-    return status;
+    } while (wordsLeft > 0);
 }
 
-bool Qspi::qspiRead(uint32_t address, uint32_t sizeInWords, std::vector<uint8_t> &outBuffer)
+void Qspi::qspiRead(uint32_t address, uint32_t sizeInWords, std::vector<uint8_t> &outBuffer)
 {
     std::vector<uint8_t> request(2 * sizeof(uint32_t));
     Utils::encodeToLittleEndianBuffer(address, request);
     Utils::encodeToLittleEndianBuffer(sizeInWords, request, sizeof(uint32_t));
     Logger::log("qspiRead called. Address: " + Utils::toHexString(address) +
                 " Length in words: " + Utils::toHexString(sizeInWords), Debug);
-    bool status = callFcs(CommandCodes::QSPI_READ, request, outBuffer, "qspiRead");
-    if (status && !outBuffer.empty())
-    {
-        std::vector<uint32_t> output_data = Utils::wordBufferFromByteBuffer(outBuffer);
-        status = (output_data.size() == sizeInWords);
-    }
-    return status;
+    callFcs(CommandCodes::QSPI_READ, request, outBuffer, "qspiRead");
 }
 
-bool Qspi::qspiWrite(uint32_t address, uint32_t sizeInWords, std::vector<uint8_t> &inBuffer)
+void Qspi::qspiWrite(uint32_t address, uint32_t sizeInWords, std::vector<uint8_t> &inBuffer)
 {
     std::vector<uint8_t> request(2 * sizeof(uint32_t));
     Utils::encodeToLittleEndianBuffer(address, request);
     Utils::encodeToLittleEndianBuffer(sizeInWords, request, sizeof(uint32_t));
     std::copy (inBuffer.begin(), inBuffer.end(), std::back_inserter(request));
     std::vector<uint8_t> response;
-    return callFcs(CommandCodes::QSPI_WRITE, request, response, "qspiWrite");
+    callFcs(CommandCodes::QSPI_WRITE, request, response, "qspiWrite");
 }
 
-void Qspi::qspiAssert(bool condition, std::string exceptionMessage)
+void Qspi::qspiAssert(bool condition, std::string exceptionMessage) 
 {
      if (!condition)
      {
         throw std::invalid_argument(exceptionMessage);
      }
-
+ 
 }
 
 bool Qspi::qspiVerify(uint32_t address, uint32_t sizeInWords, std::vector<uint8_t> inBuffer)
@@ -283,7 +187,8 @@ bool Qspi::qspiVerify(uint32_t address, uint32_t sizeInWords, std::vector<uint8_
     qspiAssert(!inBuffer.empty(), "qspiVerify: input buffer should not be empty");
     Logger::log("qspiVerify called. start address = " + Utils::toHexString(address), Debug);
     std::vector<uint8_t> respBuf;
-    bool status = qspiReadMultiple(address, sizeInWords, respBuf);
+    qspiReadMultiple(address, sizeInWords, respBuf);
+    bool status = !respBuf.empty();
     if (status)
     {
         uint32_t offset = 0;

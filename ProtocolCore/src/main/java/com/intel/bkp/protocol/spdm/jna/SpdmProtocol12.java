@@ -39,7 +39,6 @@ import com.intel.bkp.protocol.spdm.exceptions.SpdmSecureSessionNotInitialized;
 import com.intel.bkp.protocol.spdm.jna.model.CustomMemory;
 import com.intel.bkp.protocol.spdm.jna.model.LibSpdmLibraryWrapper;
 import com.intel.bkp.protocol.spdm.jna.model.LibSpdmReturn;
-import com.intel.bkp.protocol.spdm.jna.model.MctpEncapsulationTypeCallback;
 import com.intel.bkp.protocol.spdm.jna.model.MessageSender;
 import com.intel.bkp.protocol.spdm.jna.model.NativeSize;
 import com.intel.bkp.protocol.spdm.jna.model.SessionCallbacks;
@@ -131,13 +130,6 @@ public abstract class SpdmProtocol12 implements SpdmProtocol {
     public void initSpdmConnection() throws SpdmCommandFailedException {
         initializeLibrary();
         initializeSpdmContext();
-        initializeConnection();
-    }
-
-    @Override
-    public void initSpdmConnection(MctpEncapsulationTypeCallback callback) throws SpdmCommandFailedException {
-        initializeLibrary();
-        initializeSpdmContext(callback);
         initializeConnection();
     }
 
@@ -252,20 +244,7 @@ public abstract class SpdmProtocol12 implements SpdmProtocol {
         }
     }
 
-    private void registerCallbacks(long spdmContextSize, MctpEncapsulationTypeCallback mctpEncapsulationTypeCallback) {
-        spdmCallbacks.setSpdmContextSize(spdmContextSize);
-        callbacks.setPrintCallback(spdmCallbacks::printCallback);
-        callbacks.setSpdmDeviceSendMessageCallback(spdmCallbacks::spdmDeviceSendMessage);
-        callbacks.setSpdmDeviceReceiveMessageCallback(spdmCallbacks::spdmDeviceReceiveMessage);
-        callbacks.setSpdmRequesterDataSignCallback(spdmCallbacks::spdmRequesterDataSignCallback);
-        callbacks.setMctpEncapsulationTypeCallback(mctpEncapsulationTypeCallback);
-    }
-
     private void initializeSpdmContext() {
-        initializeSpdmContext(null);
-    }
-
-    private void initializeSpdmContext(MctpEncapsulationTypeCallback mctpEncapsulationTypeCallback) {
         if (spdmContext != null) {
             log.debug("SPDM context already initialized.");
             return;
@@ -274,7 +253,7 @@ public abstract class SpdmProtocol12 implements SpdmProtocol {
         log.debug("Initializing SPDM context.");
 
         final long spdmContextSize = jnaInterface.libspdm_get_context_size_w().longValue();
-        registerCallbacks(spdmContextSize, mctpEncapsulationTypeCallback);
+        registerCallbacks(spdmContextSize);
         jnaInterface.set_callbacks(callbacks);
 
         spdmContext = new SpdmContext(spdmContextSize);
@@ -478,6 +457,14 @@ public abstract class SpdmProtocol12 implements SpdmProtocol {
         log.debug("END_SESSION status: {}", toFormattedHex(status.asLong()));
 
         throwOnError(status);
+    }
+
+    private void registerCallbacks(long spdmContextSize) {
+        spdmCallbacks.setSpdmContextSize(spdmContextSize);
+        callbacks.setPrintCallback(spdmCallbacks::printCallback);
+        callbacks.setSpdmDeviceSendMessageCallback(spdmCallbacks::spdmDeviceSendMessage);
+        callbacks.setSpdmDeviceReceiveMessageCallback(spdmCallbacks::spdmDeviceReceiveMessage);
+        callbacks.setSpdmRequesterDataSignCallback(spdmCallbacks::spdmRequesterDataSignCallback);
     }
 
     private Uint8 getRequestAttributes() {

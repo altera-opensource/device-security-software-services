@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2024 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -55,8 +55,8 @@ public:
     void setShouldSaveWkeyToMachine(bool param) { shouldSaveWkeyToMachine = param; }
 private:
     void writeWkeyToFile(std::vector<uint8_t> wkeyData);
-    bool writeWkeyToFlash(std::vector<uint8_t> wkeyData, PufType_t pufType);
-    bool writePufHelpDataToFlash(std::vector<uint8_t> pufHelpData, PufType_t pufType);
+    void writeWkeyToFlash(std::vector<uint8_t> wkeyData, PufType_t pufType);
+    void writePufHelpDataToFlash(std::vector<uint8_t> pufHelpData, PufType_t pufType);
     static const inline std::string wkeyFilename = "bkp_auto.wkey";
     po::variables_map parsedConfig;
     bool shouldSaveWkeyToMachine = false;

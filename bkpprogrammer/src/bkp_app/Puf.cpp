@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2024 Intel Corporation. All Rights Reserved.
+ * Copyright 2020-2023 Intel Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -60,48 +60,38 @@ DWORD PufHandler::getConfigurationDataPartitionAddressFromMbr(std::vector<BYTE> 
             return lbaStartSector * mbrSectorSizeInBytes;
         }
     }
-    Logger::log("Configuration data partition not found.", Fatal);
+    throw std::runtime_error("Configuration data partition not found.");
     return 0;
 }
 
-bool PufHandler::getConfigurationDataAddress(DWORD& configurationDataAddress)
+DWORD PufHandler::getConfigurationDataAddress()
 {
     Logger::log("Geting configuration data address", Debug);
-    configurationDataAddress = 0x0;
+    DWORD result = 0x0;
 
     // The configuration data doesn't start with offset 0x0 when MBR is used.
     // Read 512 bytes from address 0x0 to check for MBR info
     std::vector<BYTE> mbrBuffer;
     Logger::log("QSPI read from address 0x0", Debug);
-    bool status = Qspi::qspiReadMultiple(0x0, mbrSectorSizeInBytes / WORD_SIZE, mbrBuffer);
-    if (status)
+    Qspi::qspiReadMultiple(0x0, mbrSectorSizeInBytes / WORD_SIZE, mbrBuffer);
+    if (isMbrSignatureCorrect(mbrBuffer))
     {
-        if (isMbrSignatureCorrect(mbrBuffer))
-        {
-            Logger::log("MBR found", Debug);
-            configurationDataAddress = getConfigurationDataPartitionAddressFromMbr(mbrBuffer);
-            status = (configurationDataAddress != 0);
-        }
+        Logger::log("MBR found", Debug);
+        result = getConfigurationDataPartitionAddressFromMbr(mbrBuffer);
     }
-    return status;
+    return result;
 }
 
-bool PufHandler::getPufDataBlockPointer(DWORD configDataAddress, DWORD pointerOffset, DWORD& pufDataBlockPointerOffset)
+DWORD PufHandler::getPufDataBlockPointer(DWORD configDataAddress, DWORD pointerOffset)
 {
     std::vector<BYTE> pufDataBlockPointerBuffer;
-    pufDataBlockPointerOffset = 0;
-    bool status = Qspi::qspiReadMultiple(configDataAddress + pointerOffset, 1, pufDataBlockPointerBuffer);
-    if (status)
+    Qspi::qspiReadMultiple(configDataAddress + pointerOffset, 1, pufDataBlockPointerBuffer);
+    DWORD pufDataBlockPointer = Utils::decodeFromLittleEndianBuffer(pufDataBlockPointerBuffer);
+    if (pufDataBlockPointer == 0x0 || pufDataBlockPointer == 0xFFFFFFFF)
     {
-        DWORD pufDataBlockPointer = Utils::decodeFromLittleEndianBuffer(pufDataBlockPointerBuffer);
-        if (pufDataBlockPointer == 0x0 || pufDataBlockPointer == 0xFFFFFFFF)
-        {
-            status = false;
-            Logger::log("getPufDataBlockPointer: invalid pointer: " + std::to_string(pufDataBlockPointer), Error);
-        }
-        pufDataBlockPointerOffset = (configDataAddress + pufDataBlockPointer);
+        throw std::runtime_error("getPufDataBlockPointer: invalid pointer: " + std::to_string(pufDataBlockPointer));
     }
-    return status;
+    return configDataAddress + pufDataBlockPointer;
 }
 
 void PufHandler::updatePufDataSection(std::vector<BYTE> &pufData,
@@ -166,143 +156,90 @@ void PufHandler::updatePufDataSection(std::vector<BYTE> &pufData,
     }
 }
 
-bool PufHandler::updatePufData(std::vector<BYTE> newSection, PufDataBlockSectionOffset sectionOffset)
+void PufHandler::updatePufData(std::vector<BYTE> newSection, PufDataBlockSectionOffset sectionOffset)
 {
     Logger::log("Updating PUF Data", Debug);
-    bool status = true;
     std::vector<BYTE> pufData;
-    DWORD configDataAddress = 0;
-    DWORD pufDataBlock0Pointer = 0;
-    DWORD pufDataBlock1Pointer = 0;
-    status = getConfigurationDataAddress(configDataAddress);
+    DWORD configDataAddress = getConfigurationDataAddress();
 
-    if (status)
+    Logger::log("Reading PUF Data block 0 pointer", Debug);
+    DWORD pufDataBlock0Pointer = getPufDataBlockPointer(configDataAddress, pufDataBlock0PointerOffset);
+    Logger::log("Reading PUF Data block 1 pointer", Debug);
+    DWORD pufDataBlock1Pointer = getPufDataBlockPointer(configDataAddress, pufDataBlock1PointerOffset);
+    if (pufDataBlock1Pointer - pufDataBlock0Pointer != pufDataBlockSizeInWords * WORD_SIZE)
     {
-        Logger::log("Reading PUF Data block 0 pointer", Debug);
-        status = getPufDataBlockPointer(configDataAddress, pufDataBlock0PointerOffset, pufDataBlock0Pointer);
-
-        if (status)
-        {
-            Logger::log("Reading PUF Data block 1 pointer", Debug);
-            status = getPufDataBlockPointer(configDataAddress, pufDataBlock1PointerOffset, pufDataBlock1Pointer);
-            if (status && (pufDataBlock1Pointer - pufDataBlock0Pointer != pufDataBlockSizeInWords * WORD_SIZE))
-            {
-                Logger::log("pufDataBlock0Pointer: " + std::to_string(pufDataBlock0Pointer), Fatal);
-                Logger::log("pufDataBlock1Pointer: " + std::to_string(pufDataBlock1Pointer), Fatal);
-                Logger::log("Invalid PUF Data Block pointers", Fatal);
-                status = false;
-            }
-        }
+        Logger::log("pufDataBlock0Pointer: " + std::to_string(pufDataBlock0Pointer), Fatal);
+        Logger::log("pufDataBlock1Pointer: " + std::to_string(pufDataBlock1Pointer), Fatal);
+        throw std::runtime_error("Invalid PUF Data Block pointers");
     }
+    Logger::log("QSPI read from Pointer 0", Debug);
+    Qspi::qspiReadMultiple(pufDataBlock0Pointer, pufDataBlockSizeInWords, pufData);
+    Logger::log("Updating PUF Data section", Debug);
+    updatePufDataSection(pufData, std::move(newSection), sectionOffset);
 
-    if (status)
-    {
-        Logger::log("QSPI read from Pointer 0", Debug);
-        status = Qspi::qspiReadMultiple(pufDataBlock0Pointer, pufDataBlockSizeInWords, pufData);
-        if (status)
-        {
-            Logger::log("Updating PUF Data section", Debug);
-            updatePufDataSection(pufData, std::move(newSection), sectionOffset);
-        }
-    }
+    Logger::log("QSPI erase on Pointer 0", Debug);
 
-    if (status)
-    {
-        Logger::log("QSPI erase on Pointer 0", Debug);
-        status = Qspi::qspiErase(pufDataBlock0Pointer, pufDataBlockSizeInWords);
-    }
-
-    if (status)
-    {
-        Logger::log("QSPI write updated PUF Data to pointer 0", Debug);
-        status = Qspi::qspiWriteMultiple(pufDataBlock0Pointer, pufDataBlockSizeInWords, pufData);
-    }
-
-    if (status)
-    {
-        Logger::log("QSPI erase on Pointer 1", Debug);
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
-        status = Qspi::qspiErase(pufDataBlock1Pointer, pufDataBlockSizeInWords);
-    }
-
-    if (status)
-    {
-        Logger::log("QSPI write updated PUF Data to pointer 1", Debug);
-        status = Qspi::qspiWriteMultiple(pufDataBlock1Pointer, pufDataBlockSizeInWords, pufData);
-        Logger::log("Finished updating PUF Data", Debug);
-    }
-
-    return status;
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    Qspi::qspiErase(pufDataBlock0Pointer, pufDataBlockSizeInWords);
+    Logger::log("QSPI write updated PUF Data to pointer 0", Debug);
+    Qspi::qspiWriteMultiple(pufDataBlock0Pointer, pufDataBlockSizeInWords, pufData);
+    Logger::log("QSPI erase on Pointer 1", Debug);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    Qspi::qspiErase(pufDataBlock1Pointer, pufDataBlockSizeInWords);
+    Logger::log("QSPI write updated PUF Data to pointer 1", Debug);
+    Qspi::qspiWriteMultiple(pufDataBlock1Pointer, pufDataBlockSizeInWords, pufData);
+    Logger::log("Finished updating PUF Data", Debug);
 }
 
-bool PufHandler::writeWkeyToFlash(std::vector<BYTE> wkeyData, PufType_t pufType)
+void PufHandler::writeWkeyToFlash(std::vector<BYTE> wkeyData, PufType_t pufType)
 {
-    bool status = Qspi::qspiOpen();
-    if (status)
+    Qspi::qspiOpen();
+    try
     {
-        try
+        Qspi::qspiSetCs(0x0, false, false);
+        switch (pufType)
         {
-            status = Qspi::qspiSetCs(0x0, false, false);
-            if (status)
-            {
-                switch (pufType)
-                {
-                    case USER_IID:
-                        status = updatePufData(std::move(wkeyData), PufDataBlockSectionOffset::UserIidPufWrappedAesKey);
-                        break;
-                    case UDS_IID:
-                        status = updatePufData(std::move(wkeyData), PufDataBlockSectionOffset::UdsIidPufWrappedAesKey);
-                        break;
-                    default:
-                        Logger::log("writeWkeyToFlash: PUF type is invalid", Fatal);
-                        status = false;
-                        break;
-                }
-            }
-            Qspi::qspiClose();
+            case USER_IID:
+                updatePufData(std::move(wkeyData), PufDataBlockSectionOffset::UserIidPufWrappedAesKey);
+                break;
+            case UDS_IID:
+                updatePufData(std::move(wkeyData), PufDataBlockSectionOffset::UdsIidPufWrappedAesKey);
+                break;
+            default:
+                throw std::invalid_argument("writeWkeyToFlash: PUF type is invalid");
         }
-        catch(const std::exception &ex)
-        {
-            Qspi::qspiClose();
-            status = false;
-        }
+        Qspi::qspiClose();
+    }
+    catch(const std::exception &ex)
+    {
+        Qspi::qspiClose();
+        throw;
     }
 
-    return status;
 }
 
-bool PufHandler::writePufHelpDataToFlash(std::vector<BYTE> pufHelpData, PufType_t pufType)
+void PufHandler::writePufHelpDataToFlash(std::vector<BYTE> pufHelpData, PufType_t pufType)
 {
-    bool status = Qspi::qspiOpen();
-    if (status)
+    Qspi::qspiOpen();
+    try
     {
-        try
+        Qspi::qspiSetCs(0x0, false, false);
+        switch (pufType)
         {
-            status = Qspi::qspiSetCs(0x0, false, false);
-            if (status)
-            {
-                switch (pufType)
-                {
-                    case UDS_IID:
-                        status = updatePufData(std::move(pufHelpData), PufDataBlockSectionOffset::UdsIidPufHelpData);
-                        break;
-                    case UDS_INTEL:
-                        status = PufHandlerSdm1_5::updateBosPartition(std::move(pufHelpData), PufHandlerSdm1_5::BOS_PARTITION_DATA_BLOCK_SECTIONS::UDS_INTEL_PUF);
-                        break;
-                    default:
-                        Logger::log("writePufHelpDataToFlash: PUF type is invalid", Fatal);
-                        status = false;
-                        break;
-                }
-            }
-            Qspi::qspiClose();
+            case UDS_IID:
+                updatePufData(std::move(pufHelpData), PufDataBlockSectionOffset::UdsIidPufHelpData);
+                break;
+            case UDS_INTEL:
+                PufHandlerSdm1_5::updateBosPartition(std::move(pufHelpData), PufHandlerSdm1_5::BOS_PARTITION_DATA_BLOCK_SECTIONS::UDS_INTEL_PUF);
+                break;
+            default:
+                throw std::invalid_argument("writePufHelpDataToFlash: PUF type is invalid");
         }
-        catch(const std::exception &ex)
-        {
-            Qspi::qspiClose();
-            status = false;
-        }
+        Qspi::qspiClose();
     }
-
-    return status;
+    catch(const std::exception &ex)
+    {
+        Qspi::qspiClose();
+        throw;
+    }
 }

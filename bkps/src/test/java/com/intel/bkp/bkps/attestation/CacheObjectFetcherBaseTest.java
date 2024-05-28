@@ -45,7 +45,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -56,7 +55,6 @@ import static org.mockito.Mockito.when;
 class CacheObjectFetcherBaseTest {
 
     private static final Integer VALID_OBJ = 3;
-    private static final Integer VALID_OBJ_2 = 100;
     private static final Integer INVALID_OBJ = -7;
     private static final byte[] OBJ_BYTES = {0x01, 0x02};
     private static final String PATH = "path";
@@ -136,25 +134,6 @@ class CacheObjectFetcherBaseTest {
         assertEquals(expected, result);
         verifyNoInteractions(dpConnector);
         verify(prefetchRepositoryService, never()).save(any(), any());
-    }
-
-    @Test
-    void fetchSkipCache_AlwaysDownloads() {
-        // given
-        final Optional<Integer> existing = Optional.of(VALID_OBJ);
-        when(prefetchRepositoryService.find(PATH)).thenReturn(existing);
-
-        when(dpConnector.tryGetBytes(PATH)).thenReturn(Optional.of(OBJ_BYTES));
-        final Optional<Integer> expected = Optional.of(VALID_OBJ_2);
-        when(mapper.parse(OBJ_BYTES)).thenReturn(expected);
-
-        // when
-        final var result = sut.fetchSkipCache(PATH);
-
-        // then
-        assertEquals(expected, result);
-        assertNotEquals(existing, result);
-        verify(prefetchRepositoryService).save(PATH, VALID_OBJ_2);
     }
 
 }

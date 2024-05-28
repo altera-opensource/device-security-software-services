@@ -42,8 +42,6 @@ public interface SpdmProtocol extends AutoCloseable {
 
     void initSpdmConnection() throws SpdmCommandFailedException;
 
-    void initSpdmConnection(MctpEncapsulationTypeCallback callback) throws SpdmCommandFailedException;
-
     String retrieveSpdmVersion();
 
     boolean checkSpdmResponderCapability(int capability);

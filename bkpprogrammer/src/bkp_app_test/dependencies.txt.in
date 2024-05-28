@@ -1,0 +1,2 @@
+gtest_@GTEST_VERSION@,cpp/@DEPENDENCIES_ARTIFACTORY_FOLDER@/gtest/@GTEST_VERSION@/gtest-@GTEST_VERSION@-%platform%-%arch%%platform-ext%
+boost_@BOOST_VERSION@,cpp/@DEPENDENCIES_ARTIFACTORY_FOLDER@/boost/@BOOST_VERSION@/boost-@BOOST_VERSION@-%platform%-%arch%%platform-ext%

@@ -205,13 +205,13 @@ public class TestHelper {
         signingKeyRepository.save(entity);
     }
 
-    public static int toInt(byte[] anInt) {
+    static int toInt(byte[] anInt) {
         final ByteBufferSafe wrap = ByteBufferSafe.wrap(anInt);
         wrap.rewind();
         return wrap.getInt();
     }
 
-    public static byte[] toArray(int anInt) {
+    static byte[] toArray(int anInt) {
         return ByteBuffer.allocate(Integer.BYTES).putInt(anInt).array();
     }
 

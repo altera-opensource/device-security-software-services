@@ -38,6 +38,7 @@ import com.intel.bkp.bkps.domain.AesKey;
 import com.intel.bkp.bkps.domain.ConfidentialData;
 import com.intel.bkp.bkps.domain.ServiceConfiguration;
 import com.intel.bkp.bkps.domain.enumeration.ImportMode;
+import com.intel.bkp.bkps.exception.DetectedAesKeyTestProgramException;
 import com.intel.bkp.bkps.exception.ServiceConfigurationNotFound;
 import com.intel.bkp.bkps.repository.ServiceConfigurationRepository;
 import com.intel.bkp.bkps.rest.configuration.model.dto.ServiceConfigurationDTO;
@@ -74,14 +75,13 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static com.intel.bkp.test.AssertionUtils.verifyExpectedErrorCode;
+import static com.intel.bkp.test.AssertionUtils.verifyExpectedErrorCodeOnly;
 import static com.intel.bkp.utils.HexConverter.toHex;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -225,57 +225,38 @@ public class ServiceConfigurationServiceTest {
     }
 
     @Test
-    void save_WithTestProgramWithEfuses_NoThrow() {
+    void save_WithExistingTestProgramDifferent_Throws() throws IOException {
         // given
+        final byte[] aesContent = loadExampleAesKey("signed_efuse_wrapped_aes_sdm15.ccert");
+        when(aesKey.getValue()).thenReturn(toHex(aesContent));
+        IPsgAesKeyBuilder<?> builder = new PsgAesKeyBuilderSDM15();
+        Mockito.doReturn(builder).when(psgAesKeyBuilderFactory).getPsgAesKeyBuilder(any());
+
         when(aesKey.getStorage()).thenReturn(StorageType.EFUSES);
-        when(aesKey.getTestProgram()).thenReturn(true);
+        when(aesKey.getTestProgram()).thenReturn(false);
 
         // when-then
-        assertDoesNotThrow(() -> sut.save(serviceConfigurationDTO));
+        final DetectedAesKeyTestProgramException exception = assertThrows(DetectedAesKeyTestProgramException.class,
+            () -> sut.save(serviceConfigurationDTO)
+        );
 
         // then
-        verify(aesKey, never()).setTestProgram(false);
-    }
-
-    @Test
-    void save_WithExistingTestProgram() {
-        // given
-        final byte[] aesContent = assertDoesNotThrow(()->loadExampleAesKey("signed_efuse_wrapped_aes_sdm15.ccert"));
-        when(aesKey.getValue()).thenReturn(toHex(aesContent));
-        IPsgAesKeyBuilder<?> builder = new PsgAesKeyBuilderSDM15();
-        Mockito.doReturn(builder).when(psgAesKeyBuilderFactory).getPsgAesKeyBuilder(any());
-        when(aesKey.getStorage()).thenReturn(StorageType.EFUSES);
-        when(aesKey.getTestProgram()).thenReturn(true);
-
-        // then
-        assertDoesNotThrow(() -> sut.save(serviceConfigurationDTO));
-        verify(aesKey, times(1)).setTestProgram(false);
-    }
-
-    @Test
-    void save_WithoutTestProgram() {
-        // given
-        final byte[] aesContent = assertDoesNotThrow(()->loadExampleAesKey("signed_efuse_wrapped_aes_sdm15.ccert"));
-        when(aesKey.getValue()).thenReturn(toHex(aesContent));
-        IPsgAesKeyBuilder<?> builder = new PsgAesKeyBuilderSDM15();
-        Mockito.doReturn(builder).when(psgAesKeyBuilderFactory).getPsgAesKeyBuilder(any());
-        when(aesKey.getStorage()).thenReturn(StorageType.EFUSES);
-        when(aesKey.getTestProgram()).thenReturn(null);
-
-        // then
-        assertDoesNotThrow(() -> sut.save(serviceConfigurationDTO));
-        verify(aesKey, times(1)).setTestProgram(false);
+        verifyExpectedErrorCodeOnly(exception, ErrorCodeMap.DIFFERENT_AES_KEY_VALUE);
+        assertEquals(ErrorCodeMap.DIFFERENT_AES_KEY_VALUE.getExternalMessage().formatted("Test Flag from " +
+                "Configuration (false) doesn't match Test Flag from certificate (true). Please check your certificate"),
+            exception.getErrorCode().getExternalMessage());
     }
 
     @Test
     void save_WithBBram_DoesNotCheckTestProgram() {
         // given
         when(aesKey.getStorage()).thenReturn(StorageType.BBRAM);
-        when(aesKey.getTestProgram()).thenReturn(null);
+
+        // when
+        sut.save(serviceConfigurationDTO);
 
         // then
-        assertDoesNotThrow(() -> sut.save(serviceConfigurationDTO));
-        verify(aesKey, times(1)).setTestProgram(false);
+        verify(aesKey, never()).getTestProgram();
     }
 
     @Test
@@ -283,11 +264,12 @@ public class ServiceConfigurationServiceTest {
         // given
         when(aesKey.getStorage()).thenReturn(StorageType.PUFSS);
         when(serviceConfiguration.getPufType()).thenReturn(PufType.IID);
-        when(aesKey.getTestProgram()).thenReturn(null);
+
+        // when
+        sut.save(serviceConfigurationDTO);
 
         // then
-        assertDoesNotThrow(() -> sut.save(serviceConfigurationDTO));
-        verify(aesKey, times(1)).setTestProgram(false);
+        verify(aesKey, never()).getTestProgram();
     }
 
     @Test
