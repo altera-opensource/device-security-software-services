@@ -73,7 +73,8 @@ public class EcKeyLoader {
     private static byte[] decodeKey(String pubKey) {
         pubKey = pubKey
             .replaceAll("([\\-]+)([A-Z\\s]+)([\\-]+)", "")
-            .replaceAll(System.lineSeparator(), "");
+            .replaceAll("\r", "")
+            .replaceAll("\n", "");
         return Base64.getDecoder().decode(pubKey);
     }
 

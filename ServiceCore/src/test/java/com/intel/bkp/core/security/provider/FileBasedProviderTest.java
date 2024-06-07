@@ -34,6 +34,7 @@ package com.intel.bkp.core.security.provider;
 
 import com.intel.bkp.core.exceptions.JceSecurityProviderException;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
@@ -43,15 +44,14 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(MockitoExtension.class)
 class FileBasedProviderTest {
-
-    @TempDir
-    File tempDir;
 
     private static final String KEYSTORE_PASSWORD = "keyPass";
     private static final String KEYSTORE_TYPE = "PKCS12";
@@ -66,6 +66,11 @@ class FileBasedProviderTest {
         keystoreFile = initKeystore();
         keystore = KeyStore.getInstance(KEYSTORE_TYPE);
     }
+
+	@AfterEach
+	void cleanUp() {
+		keystoreFile.delete();
+	}
 
     @Test
     void load_withEmptyKeystoreInputPath_ThrowsInitializeSecurityException() {
@@ -112,7 +117,7 @@ class FileBasedProviderTest {
         final KeyStore instance = KeyStore.getInstance(KEYSTORE_TYPE);
         char[] password = KEYSTORE_PASSWORD.toCharArray();
         instance.load(null, password);
-        final File keystoreFile = new File(tempDir, "tmpKeystore2.p12");
+		keystoreFile = Files.createDirectories(Paths.get("temp")).resolve("tmpKeystore2.p12").toFile();
 
         try (FileOutputStream out = new FileOutputStream(keystoreFile)) {
             instance.store(out, password);

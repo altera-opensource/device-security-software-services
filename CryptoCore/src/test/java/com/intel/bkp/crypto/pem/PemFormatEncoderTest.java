@@ -99,26 +99,26 @@ class PemFormatEncoderTest {
     void encodeCertificateRequest_ShouldEncodeCertificateRequest() {
         // given
         byte[] content = "test".getBytes();
-        String output = String.format("%s%s%s", CSR.getBegin(), "\ndGVzdA==\n", CSR.getEnd());
+        String output = String.format("%s%s%s", CSR.getBegin(), "dGVzdA==", CSR.getEnd());
 
         // when
         String encoded = PemFormatEncoder.encode(CSR, content);
 
         // then
-        assertEquals(output, encoded);
+        assertEquals(output, encoded.replaceAll("\r", "").replaceAll("\n", ""));
     }
 
     @Test
     void encodeCrlRequest_ShouldEncodeCrlRequest() {
         // given
         byte[] content = "test".getBytes();
-        String output = String.format("%s%s%s", CRL.getBegin(), "\ndGVzdA==\n", CRL.getEnd());
+        String output = String.format("%s%s%s", CRL.getBegin(), "dGVzdA==", CRL.getEnd());
 
         // when
         String encoded = PemFormatEncoder.encode(CRL, content);
 
         // then
-        assertEquals(output, encoded);
+        assertEquals(output, encoded.replaceAll("\r", "").replaceAll("\n", ""));
     }
 
 

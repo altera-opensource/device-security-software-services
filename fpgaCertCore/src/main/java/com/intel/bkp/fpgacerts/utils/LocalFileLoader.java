@@ -43,7 +43,7 @@ import java.util.Optional;
 public class LocalFileLoader {
 
     public static Optional<byte[]> load(URI uri) {
-        final File file = new File(uri);
+        final File file = new File((uri.getAuthority() == null ? "" : uri.getAuthority()) + uri.getPath());
         if (!file.exists() || file.isDirectory()) {
             log.error("Failed to read local file: {}. File does not exist or is directory.", uri);
             return Optional.empty();
