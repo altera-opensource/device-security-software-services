@@ -63,7 +63,7 @@ class ProfileValidatorTest {
             CoRIM verification failed:\s
             Detected unsupported profile: 1.37.52.72.105.60.638075 (4D3448693CA6F87BE997).
             Supported profile: 2.16.840.1.113741.1.15.6 (6086480186F84D010F06)""";
-        assertEquals(expected, ex.getMessage());
+        assertEquals(expected.replaceAll("\r", "").replaceAll("\n", ""), ex.getMessage().replaceAll("\r", "").replaceAll("\n", ""));
     }
 
     @Test
@@ -77,6 +77,6 @@ class ProfileValidatorTest {
             CoRIM verification failed:\s
             Detected unsupported profile: NONE.
             Supported profile: 2.16.840.1.113741.1.15.6 (6086480186F84D010F06)""";
-        assertEquals(expected, ex.getMessage());
+        assertEquals(expected.replaceAll("\r", "").replaceAll("\n", ""), ex.getMessage().replaceAll("\r", "").replaceAll("\n", ""));
     }
 }

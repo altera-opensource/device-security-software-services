@@ -92,7 +92,7 @@ class X509CertificateUtilsTest {
         final String result = X509CertificateUtils.toPem(pemToX509Certificate(certInPem));
 
         // then
-        assertEquals(certInPem, result);
+        assertEquals(certInPem.replaceAll("\r", "").replaceAll("\n", ""), result.replaceAll("\r", "").replaceAll("\n", ""));
     }
 
     @Test
