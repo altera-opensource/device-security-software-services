@@ -68,7 +68,8 @@ public class KeyLoadUtils {
     private static byte[] getBytesFromPemString(String pem) {
         String tagPattern = "-----\\b(BEGIN|END)\\b .*?-----";
         String content = pem
-            .replaceAll(System.lineSeparator(), "")
+            .replaceAll("\r", "")
+            .replaceAll("\n", "")
             .replaceAll(tagPattern, "");
 
         return Base64.getDecoder().decode(content);

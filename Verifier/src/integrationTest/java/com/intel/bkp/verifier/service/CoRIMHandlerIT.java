@@ -67,12 +67,12 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.nio.file.Path;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
@@ -134,9 +134,6 @@ public class CoRIMHandlerIT {
     private static final String FAMILY_AGILEX = Family.AGILEX.getFamilyName();
 
     private final TcbInfoMeasurementsAggregator tcbInfoAggregator = new TcbInfoMeasurementsAggregator();
-
-    @TempDir
-    Path tempDir;
 
     private static X509Certificate rootCertificate;
 
@@ -216,7 +213,7 @@ public class CoRIMHandlerIT {
     void verify_Agilex_CoRim_NestedLocator_ReachMaximumDepth_Success() throws Exception {
         // given
         final LoggerTestUtil loggerTestUtil = LoggerTestUtil.instance(CoRimHandler.class);
-        final var nestedLocatorToItselfPath = tempDir + "/nestedCorim.corim";
+        String nestedLocatorToItselfPath = Paths.get("").toAbsolutePath().resolve("nestedCorim.corim").toString().replace("\\", "/");
         final KeyPair keyPair = KeyGenUtils.genEc384();
         final var data = new DesignRimWithNestedLocatorToItself(nestedLocatorToItselfPath);
         final TestDataDTO testData = data.prepare(keyPair);

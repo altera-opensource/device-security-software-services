@@ -108,6 +108,6 @@ class X509CrlUtilsTest {
         final String result = X509CrlUtils.toPem(crl);
 
         // then
-        assertEquals(crlInPem, result);
+        assertEquals(crlInPem.replaceAll("\r", "").replaceAll("\n", ""), result.replaceAll("\r", "").replaceAll("\n", ""));
     }
 }
