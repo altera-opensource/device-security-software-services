@@ -30,6 +30,12 @@ To package your application as a war in order to deploy it to an application ser
 
     ./gradlew -Pprod -Pwar clean bootWar
 
+### Build SQL scheme file using Liquibase
+
+To build SQL scheme file using Liquibase for production and AWS, run:
+
+    ./gradlew -Pprod -Paws liquibaseGenerateSql -Pversion=${version} -Dversion=${version}
+
 ## Testing
 
 To launch your application's tests, run:
