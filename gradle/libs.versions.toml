@@ -1,28 +1,17 @@
 [versions]
-<<<<<<< HEAD
 apache-commons-cli = "1.8.0"
 apache-commons-codec = "1.17.0"
 apache-commons-csv = "1.11.0"
-=======
-apache-commons-cli = "1.7.0"
-apache-commons-codec = "1.17.0"
-apache-commons-csv = "1.10.0"
->>>>>>> 7654632 (Revert "Release/24.1-11")
 apache-commons-dbutils = "1.8.1"
 apache-commons-io = "2.16.1"
 apache-commons-lang = "3.14.0"
 apache-commons-text = "1.11.0"
 apache-httpclient5 = "5.3.1"
 asciidoctor = "3.3.2"
-<<<<<<< HEAD
 awssdk = "2.26.3"
-=======
-awssdk = "2.25.40"
->>>>>>> 7654632 (Revert "Release/24.1-11")
 bouncycastle = "1.77"
 cbor = "4.5.4"
 failsafe = "3.3.2"
-<<<<<<< HEAD
 google-jib = "3.4.3"
 gradle-versions = "0.51.0"
 hamcrest-library = "2.2"
@@ -30,15 +19,6 @@ hazelcast = "5.4.0"
 hibernate = "6.5.2.Final"
 jackson = "2.17.1"
 jakarta-validation-api = "3.1.0"
-=======
-google-jib = "3.4.2"
-gradle-versions = "0.51.0"
-hamcrest-library = "2.2"
-hazelcast = "5.4.0"
-hibernate = "6.5.0.Final"
-jackson = "2.17.0"
-jakarta-validation-api = "3.0.2"
->>>>>>> 7654632 (Revert "Release/24.1-11")
 jazzer = "0.22.1"
 jna = "5.14.0"
 junit = "5.10.2"
@@ -47,11 +27,7 @@ logstash-logback-encoder = "7.4"
 lombok-plugin = "8.6"
 lombok-mapstruct-binding = "0.2.0"
 mapstruct = "1.5.5.Final"
-<<<<<<< HEAD
 mockito = "5.12.0"
-=======
-mockito = "5.11.0"
->>>>>>> 7654632 (Revert "Release/24.1-11")
 modernizer = "1.9.2"
 openapi-generator-plugin = "5.4.0"
 pitest = "1.15.0"
@@ -60,24 +36,14 @@ shedlock = "5.13.0"
 slf4j-api = "2.0.13"
 slf4j-test = "2.9.0"
 sonar-plugin = "3.3"
-<<<<<<< HEAD
 spring-boot = "3.3.0"
 spring-dependency-management = "1.1.5"
-=======
-spring-boot = "3.2.5"
-spring-dependency-management = "1.1.4"
->>>>>>> 7654632 (Revert "Release/24.1-11")
 spring-restdocs = "3.0.1"
 springdoc-openapi = "2.5.0"
 sqlite-plugin = "0.2"
 sqlite-jdbc = "3.45.3.0"
-<<<<<<< HEAD
 swagger-annotations = "2.2.22"
 testcontainers = "1.19.8"
-=======
-swagger-annotations = "2.2.21"
-testcontainers = "1.19.7"
->>>>>>> 7654632 (Revert "Release/24.1-11")
 webjars-bootstrap = "5.3.3"
 webjars-client = "1.5.1"
 webjars-jquery = "3.7.1"
