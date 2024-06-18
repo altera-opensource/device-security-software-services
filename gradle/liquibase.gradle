@@ -1,0 +1,43 @@
+import org.gradle.internal.os.OperatingSystem
+
+configurations {
+    liquibase
+}
+
+dependencies {
+    liquibase "org.liquibase.ext:liquibase-hibernate5:4.9.0"
+}
+
+tasks.register('initPaths') {
+    dependsOn compileJava
+    group = "liquibase"
+}
+
+ext {
+    postgre_version = "14.5"
+}
+
+def liquibaseCommand(command) {
+    javaexec {
+        standardOutput = new FileOutputStream(new File("$projectDir/${project.name.toLowerCase()}-${jar.getArchiveVersion().getOrElse("")}.sql"), true)
+        classpath sourceSets.main.runtimeClasspath
+        classpath configurations.liquibase
+        main = "liquibase.integration.commandline.Main"
+
+        args "--changeLogFile=src/main/resources/config/liquibase/master.yaml"
+        args "--referenceUrl=hibernate:spring:com.intel.bkp.domain?dialect=org.hibernate.dialect.PostgreSQLDialect&hibernate.implicit_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy"
+        args "--username=${project.name}"
+        args "--password="
+        args "--contexts=aws"
+        args "--url=offline:postgresql?version=${postgre_version}&changeLogFile=changelog-${project.name.toLowerCase()}-${jar.getArchiveVersion().getOrElse("")}.csv"
+        args "--driver=org.postgresql.Driver"
+        args command
+    }
+}
+
+tasks.register('liquibaseGenerateSql') {
+    dependsOn initPaths
+    doLast {
+        liquibaseCommand("updateSQL")
+    }
+}
