@@ -73,4 +73,12 @@ public interface IPsgAesKeyBuilder<T extends StructureBuilder<T, ? extends IStru
     StorageType getStorageType();
 
     KeyWrappingType getKeyWrappingType();
+
+    default byte[] getMacTag() {
+        return null;
+    }
+
+    default byte[] getMacData() {
+        return null;
+    }
 }

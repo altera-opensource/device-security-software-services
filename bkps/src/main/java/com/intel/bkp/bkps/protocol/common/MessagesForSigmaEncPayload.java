@@ -33,22 +33,32 @@
 package com.intel.bkp.bkps.protocol.common;
 
 import com.intel.bkp.bkps.command.CommandLayerService;
+import com.intel.bkp.bkps.crypto.aesctr.AesCtrEncryptionKeyProviderImpl;
 import com.intel.bkp.bkps.crypto.aesgcm.AesGcmSealingKeyProviderImpl;
 import com.intel.bkp.bkps.crypto.sealingkey.SealingKeyManager;
 import com.intel.bkp.bkps.domain.AesKey;
+import com.intel.bkp.bkps.domain.Qek;
 import com.intel.bkp.bkps.domain.ServiceConfiguration;
 import com.intel.bkp.bkps.exception.ProvisioningGenericException;
 import com.intel.bkp.command.logger.CommandLogger;
 import com.intel.bkp.command.messages.common.CertificateBuilder;
 import com.intel.bkp.command.model.CommandIdentifier;
 import com.intel.bkp.core.endianness.EndiannessActor;
+import com.intel.bkp.core.endianness.StructureBuilder;
 import com.intel.bkp.core.exceptions.ParseStructureException;
+import com.intel.bkp.core.interfaces.IStructure;
+import com.intel.bkp.core.psgcertificate.IPsgAesKeyBuilder;
 import com.intel.bkp.core.psgcertificate.PsgAesKeyBuilderFactory;
+import com.intel.bkp.core.psgcertificate.PsgQekBuilderHSM;
+import com.intel.bkp.core.psgcertificate.model.PsgAesKeyType;
+import com.intel.bkp.crypto.aesctr.AesCtrQekIvProvider;
 import com.intel.bkp.crypto.exceptions.EncryptionProviderException;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 import static com.intel.bkp.command.logger.CommandLoggerValues.CERTIFICATE_MESSAGE;
 import static com.intel.bkp.utils.HexConverter.fromHex;
@@ -59,31 +69,44 @@ import static com.intel.bkp.utils.HexConverter.fromHex;
 public class MessagesForSigmaEncPayload {
 
     private final AesGcmSealingKeyProviderImpl aesGcmSealingKeyProvider;
+    private final AesCtrEncryptionKeyProviderImpl aesCtrEncryptionKeyProvider;
     private final SealingKeyManager sealingKeyManager;
     private final CommandLayerService commandLayer;
     private final PsgAesKeyBuilderFactory psgAesKeyBuilderFactory = new PsgAesKeyBuilderFactory();
+    private IPsgAesKeyBuilder<? extends StructureBuilder<?, ? extends IStructure>> aesKeyBuilder;
 
     public byte[] prepareFrom(ServiceConfiguration configuration) {
         final var confidentialData = configuration.getConfidentialData();
         final var aesKey = confidentialData.getAesKey();
-        final var aesKeyBytes = decryptConfidentialData(aesKey);
+        var aesKeyBytes = decryptConfidentialData(aesKey);
         verifyAesKeyCanBeParsed(aesKeyBytes);
+        CommandIdentifier cmd = CommandIdentifier.CERTIFICATE;
+        if (PsgAesKeyType.SDM_1_5.equals(aesKeyBuilder.getAesKeyType())) {
+            cmd = CommandIdentifier.USER_AES_ROOT_KEY_PROVISION;
+            aesKeyBytes = parseQekAppendCcert(confidentialData.getQek(), aesKeyBytes);
+        }
 
         final var certificate = new CertificateBuilder(aesKeyBytes)
             .testProgram(aesKey.getTestProgram())
             .build();
-
-        final byte[] certificateBytes = commandLayer.create(certificate, CommandIdentifier.CERTIFICATE);
+        final byte[] certificateBytes = commandLayer.create(certificate, cmd);
         CommandLogger.log(certificate, CERTIFICATE_MESSAGE, this.getClass());
 
         return certificateBytes;
     }
 
-    private byte[] decryptConfidentialData(AesKey aesKey) {
+    public byte[] decryptConfidentialData(AesKey aesKey) {
+        return decryptConfidentialData(fromHex(aesKey.getValue()));
+    }
+
+    public byte[] decryptConfidentialData(Qek qek) {
+        return decryptConfidentialData(fromHex(qek.getValue()));
+    }
+
+    private byte[] decryptConfidentialData(byte[] encryptedData) {
         aesGcmSealingKeyProvider.initialize(sealingKeyManager.getActiveKey());
-        final var customerAesKey = fromHex(aesKey.getValue());
         try {
-            return aesGcmSealingKeyProvider.decrypt(customerAesKey);
+            return aesGcmSealingKeyProvider.decrypt(encryptedData);
         } catch (EncryptionProviderException e) {
             throw new ProvisioningGenericException("Failed to decrypt sensitive data with sealing key.", e);
         }
@@ -91,13 +114,34 @@ public class MessagesForSigmaEncPayload {
 
     private void verifyAesKeyCanBeParsed(byte[] aesKeyBytes) {
         try {
-            psgAesKeyBuilderFactory
-                .withActor(EndiannessActor.FIRMWARE)
-                .getPsgAesKeyBuilder(aesKeyBytes)
+            aesKeyBuilder = psgAesKeyBuilderFactory
+                            .withActor(EndiannessActor.FIRMWARE)
+                            .getPsgAesKeyBuilder(aesKeyBytes);
+            aesKeyBuilder
                 .withActor(EndiannessActor.FIRMWARE)
                 .parse(aesKeyBytes);
         } catch (ParseStructureException e) {
             throw new ProvisioningGenericException("Failed to get AES Key SDM version or parse Customer AES Key.", e);
+        }
+    }
+
+    private byte[] parseQekAppendCcert(Qek qek, byte[] aesKey) {
+        try {
+            // Parse QEK content
+            PsgQekBuilderHSM qekBuilder = new PsgQekBuilderHSM();
+            final byte[] decryptedData = decryptConfidentialData(qek);
+            qekBuilder.withActor(EndiannessActor.FIRMWARE).parse(decryptedData);
+            // Append AES ccert with AES root key
+            aesCtrEncryptionKeyProvider.initialize(new AesCtrQekIvProvider(qekBuilder.getIvData()), qek.getKeyName());
+            final byte[] aesRootKey = aesCtrEncryptionKeyProvider.decrypt(qekBuilder.getEncryptedAESKey());
+            ByteBuffer buffer = ByteBuffer.allocate(aesKey.length + aesRootKey.length);
+            buffer.order(ByteOrder.LITTLE_ENDIAN).put(aesKey);
+            buffer.put(aesRootKey);
+            return buffer.array();
+        } catch (EncryptionProviderException e) {
+            throw new ProvisioningGenericException("Failed to decrypt encrypted AES root key from QEK content.", e);
+        } catch (ParseStructureException e) {
+            throw new ProvisioningGenericException("Failed to get encrypted AES root key from QEK content or parse QEK content.", e);
         }
     }
 }

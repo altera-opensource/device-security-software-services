@@ -38,6 +38,7 @@ import com.intel.bkp.core.security.SecurityProviderParamsValidator;
 import com.intel.bkp.core.security.params.KeyTypesProperties;
 import com.intel.bkp.core.security.params.ProviderProperties;
 import com.intel.bkp.core.security.params.SecurityProperties;
+import com.intel.bkp.core.security.params.crypto.AesCtrProperties;
 import com.intel.bkp.core.security.params.crypto.AesProperties;
 import com.intel.bkp.core.security.params.crypto.EcProperties;
 import com.intel.bkp.core.security.params.crypto.RsaProperties;
@@ -86,8 +87,9 @@ public class SecurityProviderParamsValidatorTest {
         //given
         RsaProperties rsaProperties = setRsa();
         AesProperties aesProperties = setAes();
+        AesCtrProperties aesCtrProperties = setAesCtr();
         EcProperties ecProperties = null;
-        KeyTypesProperties keyTypesProperties = setKeyTypes(rsaProperties, aesProperties, ecProperties);
+        KeyTypesProperties keyTypesProperties = setKeyTypes(rsaProperties, aesProperties, aesCtrProperties, ecProperties);
 
         securityProviderParams.setKeyTypes(keyTypesProperties);
         SecurityProviderParamsValidator sut = new SecurityProviderParamsValidator(securityProviderParams);
@@ -103,8 +105,9 @@ public class SecurityProviderParamsValidatorTest {
         //given
         RsaProperties rsaProperties = null;
         AesProperties aesProperties = setAes();
+        AesCtrProperties aesCtrProperties = setAesCtr();
         EcProperties ecProperties = setEc();
-        KeyTypesProperties keyTypesProperties = setKeyTypes(rsaProperties, aesProperties, ecProperties);
+        KeyTypesProperties keyTypesProperties = setKeyTypes(rsaProperties, aesProperties, aesCtrProperties, ecProperties);
 
         securityProviderParams.setKeyTypes(keyTypesProperties);
         SecurityProviderParamsValidator sut = new SecurityProviderParamsValidator(securityProviderParams);
@@ -120,8 +123,9 @@ public class SecurityProviderParamsValidatorTest {
         //given
         RsaProperties rsaProperties = setRsa();
         AesProperties aesProperties = null;
+        AesCtrProperties aesCtrProperties = setAesCtr();
         EcProperties ecProperties = setEc();
-        KeyTypesProperties keyTypesProperties = setKeyTypes(rsaProperties, aesProperties, ecProperties);
+        KeyTypesProperties keyTypesProperties = setKeyTypes(rsaProperties, aesProperties, aesCtrProperties, ecProperties);
 
         securityProviderParams.setKeyTypes(keyTypesProperties);
         SecurityProviderParamsValidator sut = new SecurityProviderParamsValidator(securityProviderParams);
@@ -130,6 +134,24 @@ public class SecurityProviderParamsValidatorTest {
         Exception ex = assertThrows(JceSecurityProviderException.class, sut::validateParams);
 
         assertEquals(INVALID_VALUE + " " + "keyTypes.aes " + NOT_NULL, ex.getMessage());
+    }
+
+    @Test
+    void securityProviderParams_nullAESCtr_throwException() {
+        //given
+        RsaProperties rsaProperties = setRsa();
+        AesProperties aesProperties = setAes();
+        AesCtrProperties aesCtrProperties = null;
+        EcProperties ecProperties = setEc();
+        KeyTypesProperties keyTypesProperties = setKeyTypes(rsaProperties, aesProperties, aesCtrProperties, ecProperties);
+
+        securityProviderParams.setKeyTypes(keyTypesProperties);
+        SecurityProviderParamsValidator sut = new SecurityProviderParamsValidator(securityProviderParams);
+
+        //when-then
+        Exception ex = assertThrows(JceSecurityProviderException.class, sut::validateParams);
+
+        assertEquals(INVALID_VALUE + " " + "keyTypes.aesCtr " + NOT_NULL, ex.getMessage());
     }
 
     private void prepareSecurityProviderParams() {
@@ -145,8 +167,9 @@ public class SecurityProviderParamsValidatorTest {
 
         RsaProperties rsaProperties = setRsa();
         AesProperties aesProperties = setAes();
+        AesCtrProperties aesCtrProperties = setAesCtr();
         EcProperties ecProperties = setEc();
-        KeyTypesProperties keyTypesProperties = setKeyTypes(rsaProperties, aesProperties, ecProperties);
+        KeyTypesProperties keyTypesProperties = setKeyTypes(rsaProperties, aesProperties, aesCtrProperties, ecProperties);
 
         securityProviderParams.setProvider(providerProperties);
         securityProviderParams.setSecurity(securityProperties);
@@ -182,11 +205,21 @@ public class SecurityProviderParamsValidatorTest {
         return aesProperties;
     }
 
+    private AesCtrProperties setAesCtr() {
+        AesCtrProperties aesCtrProperties = new AesCtrProperties();
+        aesCtrProperties.setKeyName(generateUuidString());
+        aesCtrProperties.setKeySize(1);
+        aesCtrProperties.setCipherType(generateUuidString());
+
+        return aesCtrProperties;
+    }
+
     private KeyTypesProperties setKeyTypes(RsaProperties rsaProperties, AesProperties aesProperties,
-                                          EcProperties ecProperties) {
+                                           AesCtrProperties aesCtrProperties, EcProperties ecProperties) {
         KeyTypesProperties keyTypesProperties = new KeyTypesProperties();
         keyTypesProperties.setRsa(rsaProperties);
         keyTypesProperties.setAes(aesProperties);
+        keyTypesProperties.setAesCtr(aesCtrProperties);
         keyTypesProperties.setEc(ecProperties);
 
         return keyTypesProperties;

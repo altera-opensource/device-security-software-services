@@ -30,37 +30,53 @@
  * **************************************************************************
  */
 
-package com.intel.bkp.core.security.params;
+package com.intel.bkp.bkps.crypto.aesctr;
 
-import com.intel.bkp.core.security.params.crypto.AesProperties;
-import com.intel.bkp.core.security.params.crypto.AesCtrProperties;
-import com.intel.bkp.core.security.params.crypto.EcProperties;
-import com.intel.bkp.core.security.params.crypto.RsaProperties;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import com.intel.bkp.core.security.ISecurityProvider;
+import javax.crypto.SecretKey;
+import java.security.Provider;
+import com.intel.bkp.crypto.aesctr.AesCounterModeProvider;
+import com.intel.bkp.crypto.aesctr.IIvProvider;
+import com.intel.bkp.crypto.exceptions.EncryptionProviderException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
-@Getter
-@Setter
-@ToString
-public class KeyTypesProperties {
+@Service
+@Slf4j
+@RequiredArgsConstructor
+public class AesCtrEncryptionKeyProviderImpl extends AesCounterModeProvider {
 
-    @Valid
-    @NotNull
-    private RsaProperties rsa;
+    private final ISecurityProvider securityService;
+    private IIvProvider aesCtrIvProvider;
+    private SecretKey encryptionKey;
 
-    @Valid
-    @NotNull
-    private AesProperties aes;
+    public void initialize(IIvProvider ivProvider, String aliasName) throws EncryptionProviderException {
+        aesCtrIvProvider = ivProvider;
+        if (securityService.existsSecurityObject(aliasName)) {
+            encryptionKey = securityService.getKeyFromSecurityObject(aliasName);
+        } else {
+            throw new EncryptionProviderException("QEK encryption key with key alias name (%s) does not exist in BKPS HSM".formatted(aliasName));
+        }
+    }
 
-    @Valid
-    @NotNull
-    private AesCtrProperties aesCtr;
+    @Override
+    public SecretKey getSecretKey() {
+        return encryptionKey;
+    }
 
-    @Valid
-    @NotNull
-    private EcProperties ec;
+    @Override
+    public Provider getProvider() {
+        return securityService.getProvider();
+    }
 
+    @Override
+    public String getCipherType() {
+        return securityService.getAesCtrCipherType();
+    }
+
+    @Override
+    public IIvProvider getIvProvider() {
+        return aesCtrIvProvider;
+    }
 }

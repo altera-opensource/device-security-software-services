@@ -58,6 +58,7 @@ public class CryptoConstants {
     public static final int EC_CURVE_SPEC_256_SIZE = 256;
 
     public static final String AES_CIPHER_TYPE = "GCM";
+    public static final String AES_CTR_CIPHER_TYPE = "AES/CTR/NoPadding";
     public static final String RSA_CIPHER_TYPE = "RSA/None/OAEPWithSHA384AndMGF1Padding";
 
     public static final int AES_KEY_SIZE = 256;

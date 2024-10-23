@@ -46,6 +46,7 @@ import com.intel.bkp.utils.ByteBufferSafe;
 import com.intel.bkp.utils.exceptions.ByteBufferSafeException;
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigInteger;
 import java.util.BitSet;
@@ -58,15 +59,16 @@ import static com.intel.bkp.core.endianness.StructureField.PSG_AES_KEY_MAGIC;
 import static com.intel.bkp.core.endianness.StructureField.PSG_AES_KEY_USER_AES_CERT_MAGIC;
 
 @Getter
+@Setter
 public class PsgAesKeyBuilderSDM15 extends StructureBuilder<PsgAesKeyBuilderSDM15, PsgAesKeySDM15>
     implements IPsgAesKeyBuilder<PsgAesKeyBuilderSDM15> {
 
     public static final int TEST_FLAG_BIT_INDEX = 31;
     public static final int FIPS_MODE_BIT_INDEX_START = 29;
-
-    private static final int RESERVED_WITH_FLAGS_LEN = 4;
-    private static final int RESERVED_SECOND_LEN = 14;
-    private static final int RESERVED_THIRD_LEN = 48;
+    public static final int RESERVED_WITH_FLAGS_LEN = 4;
+    public static final int RESERVED_SECOND_LEN = 14;
+    public static final int MAC_TAG_LEN = 48;
+    public static final int MAC_DATA_LEN = 32;
 
     private byte[] magic = new byte[Integer.BYTES];
     private byte[] certDataLength = new byte[Integer.BYTES];
@@ -78,8 +80,8 @@ public class PsgAesKeyBuilderSDM15 extends StructureBuilder<PsgAesKeyBuilderSDM1
     private KeyWrappingType keyWrappingType;
     private final byte[] reservedSecond = new byte[RESERVED_SECOND_LEN];
     private final byte[] userInputIV = new byte[USER_INPUT_IV_LEN];
-    private final byte[] userAesRootKey = new byte[USER_AES_ROOT_KEY_LEN];
-    private final byte[] reservedThird = new byte[RESERVED_THIRD_LEN];
+    private final byte[] macTag = new byte[MAC_TAG_LEN];
+    private final byte[] macData = new byte[MAC_DATA_LEN];
     private byte[] certSigningKeyChain = new byte[0];
 
     private FIPSMode fipsMode;
@@ -110,8 +112,8 @@ public class PsgAesKeyBuilderSDM15 extends StructureBuilder<PsgAesKeyBuilderSDM1
         entry.setKeyWrappingType(keyWrappingType.getType().byteValue());
         entry.setReservedSecond(reservedSecond);
         entry.setUserInputIV(userInputIV);
-        entry.setUserAesRootKey(userAesRootKey);
-        entry.setReservedThird(reservedThird);
+        entry.setMacTag(macTag);
+        entry.setMacData(macData);
         entry.setCertSigningKeyChain(certSigningKeyChain);
 
         return entry;
@@ -134,7 +136,7 @@ public class PsgAesKeyBuilderSDM15 extends StructureBuilder<PsgAesKeyBuilderSDM1
             buffer.get(magic);
             magic = convert(magic, PSG_AES_KEY_MAGIC);
             if (MAGIC != new BigInteger(magic).intValue()) {
-                throw new ParseStructureException("Invalid entry magic");
+                throw new ParseStructureException("Invalid entry magic 0x%x, expected 0x%x".formatted(new BigInteger(magic).intValue(), MAGIC));
             }
 
             buffer.get(certDataLength);
@@ -149,7 +151,7 @@ public class PsgAesKeyBuilderSDM15 extends StructureBuilder<PsgAesKeyBuilderSDM1
             buffer.get(userAesCertMagic);
             userAesCertMagic = convert(userAesCertMagic, PSG_AES_KEY_USER_AES_CERT_MAGIC);
             if (USER_AES_CERT_MAGIC != new BigInteger(userAesCertMagic).intValue()) {
-                throw new ParseStructureException("Invalid user aes entry magic");
+                throw new ParseStructureException("Invalid user aes entry magic 0x%x, expected 0x%x".formatted(new BigInteger(userAesCertMagic).intValue(), USER_AES_CERT_MAGIC));
             }
 
             buffer.get(reservedWithFlags);
@@ -158,13 +160,12 @@ public class PsgAesKeyBuilderSDM15 extends StructureBuilder<PsgAesKeyBuilderSDM1
             keyWrappingType = KeyWrappingType.fromValue(buffer.getByte());
             buffer.get(reservedSecond);
             buffer.get(userInputIV);
-            buffer.get(userAesRootKey);
-            buffer.get(reservedThird);
+            buffer.get(macTag);
+            buffer.get(macData);
             certSigningKeyChain = buffer.arrayFromRemaining();
             buffer.get(certSigningKeyChain);
 
             checkIfArrayFilledWithZeros(reservedSecond);
-            checkIfArrayFilledWithZeros(reservedThird);
 
             return this;
         } catch (ByteBufferSafeException e) {

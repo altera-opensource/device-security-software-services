@@ -30,37 +30,20 @@
  * **************************************************************************
  */
 
-package com.intel.bkp.core.security.params;
+package com.intel.bkp.crypto.aesctr;
 
-import com.intel.bkp.core.security.params.crypto.AesProperties;
-import com.intel.bkp.core.security.params.crypto.AesCtrProperties;
-import com.intel.bkp.core.security.params.crypto.EcProperties;
-import com.intel.bkp.core.security.params.crypto.RsaProperties;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.ArrayUtils;
+import java.util.Arrays;
 
-@Getter
-@Setter
-@ToString
-public class KeyTypesProperties {
+@RequiredArgsConstructor
+public class AesCtrQekIvProvider implements IIvProvider {
 
-    @Valid
-    @NotNull
-    private RsaProperties rsa;
+    public final byte[] ivData;
 
-    @Valid
-    @NotNull
-    private AesProperties aes;
-
-    @Valid
-    @NotNull
-    private AesCtrProperties aesCtr;
-
-    @Valid
-    @NotNull
-    private EcProperties ec;
-
+    public byte[] generate() {
+        byte[] tempIV = Arrays.copyOfRange(this.ivData, 0, this.ivData.length);
+        ArrayUtils.reverse(tempIV);
+        return tempIV;
+    }
 }

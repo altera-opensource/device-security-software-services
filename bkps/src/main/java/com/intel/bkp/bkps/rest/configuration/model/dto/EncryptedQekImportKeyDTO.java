@@ -30,37 +30,33 @@
  * **************************************************************************
  */
 
-package com.intel.bkp.core.security.params;
+package com.intel.bkp.bkps.rest.configuration.model.dto;
 
-import com.intel.bkp.core.security.params.crypto.AesProperties;
-import com.intel.bkp.core.security.params.crypto.AesCtrProperties;
-import com.intel.bkp.core.security.params.crypto.EcProperties;
-import com.intel.bkp.core.security.params.crypto.RsaProperties;
-import jakarta.validation.Valid;
+import com.intel.bkp.bkps.rest.validator.HexStringRequired;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.io.Serializable;
+
+import static com.intel.bkp.core.utils.ApplicationConstants.REQUEST_BODY_STRING_MAX_SIZE;
+
+/**
+ * A DTO for the EncryptedQekImportKey.
+ */
 @Getter
 @Setter
 @ToString
-public class KeyTypesProperties {
+@NoArgsConstructor
+@AllArgsConstructor
+public class EncryptedQekImportKeyDTO implements Serializable {
 
-    @Valid
     @NotNull
-    private RsaProperties rsa;
-
-    @Valid
-    @NotNull
-    private AesProperties aes;
-
-    @Valid
-    @NotNull
-    private AesCtrProperties aesCtr;
-
-    @Valid
-    @NotNull
-    private EcProperties ec;
-
+    @HexStringRequired
+    @Size(max = REQUEST_BODY_STRING_MAX_SIZE)
+    private String value;
 }

@@ -116,7 +116,7 @@ class PsgAesKeyBuilderSDM12Test {
     @Test
     void parse_WithSDM15Certificate_Throws() {
         // given
-        final byte[] aesContent = FileUtils.loadBinary(ResourceDir.ROOT, ("signed_efuse_wrapped_aes_sdm15.ccert"));
+        final byte[] aesContent = FileUtils.loadBinary(ResourceDir.ROOT, ("signed_UDS_intelpuf_wrapped_aes_testmode1.ccert"));
 
         // when - then
         final var exception = assertThrows(ParseStructureException.class, () -> new PsgAesKeyBuilderSDM12()
@@ -125,7 +125,7 @@ class PsgAesKeyBuilderSDM12Test {
 
         // then
         assertEquals("Mismatch between certificate SDM version and Builder version. "
-            + "Certificate SDM version: 1. Builder/parser version: 0", exception.getMessage());
+            + "Certificate SDM version: 2. Builder/parser version: 0", exception.getMessage());
     }
 
     private void commonAssert(byte[] content, PsgAesKeyBuilderSDM12 builder, StorageType storage, KeyWrappingType keyType) {

@@ -35,6 +35,7 @@ package com.intel.bkp.bkps.rest.configuration.controller;
 import com.intel.bkp.bkps.BkpsApp;
 import com.intel.bkp.bkps.crypto.aesgcm.AesGcmSealingKeyProviderImpl;
 import com.intel.bkp.bkps.domain.AesKey;
+import com.intel.bkp.bkps.domain.Qek;
 import com.intel.bkp.bkps.domain.SealingKey;
 import com.intel.bkp.bkps.domain.ServiceConfiguration;
 import com.intel.bkp.bkps.domain.enumeration.ImportMode;
@@ -52,6 +53,7 @@ import com.intel.bkp.core.psgcertificate.enumerations.KeyWrappingType;
 import com.intel.bkp.core.psgcertificate.enumerations.StorageType;
 import com.intel.bkp.core.security.ISecurityProvider;
 import com.intel.bkp.crypto.exceptions.EncryptionProviderException;
+import com.intel.bkp.test.enumeration.ResourceDir;
 import jakarta.persistence.EntityManager;
 import org.bouncycastle.util.encoders.Hex;
 import org.junit.jupiter.api.BeforeEach;
@@ -76,6 +78,8 @@ import static com.intel.bkp.bkps.rest.RestUtil.createFormattingConversionService
 import static com.intel.bkp.bkps.rest.configuration.ConfigurationResource.CONFIGURATION;
 import static com.intel.bkp.bkps.rest.configuration.ConfigurationResource.CONFIGURATION_DETAIL;
 import static com.intel.bkp.bkps.rest.configuration.ConfigurationResource.CONFIG_NODE;
+import static com.intel.bkp.test.FileUtils.loadBinary;
+import static com.intel.bkp.utils.HexConverter.toHex;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -150,7 +154,7 @@ public class ServiceConfigurationControllerTestIT {
             .setMessageConverters(jacksonMessageConverter).build();
 
         serviceConfiguration = TestHelper.createServiceConfigurationEntity(
-            DEFAULT_OVERBUILD_MAX, STORAGE_TYPE, PUF_TYPE, KEY_WRAPPING_TYPE);
+            DEFAULT_OVERBUILD_MAX, STORAGE_TYPE, null, true, PUF_TYPE, KEY_WRAPPING_TYPE, null, null);
     }
 
     @Test
@@ -238,6 +242,65 @@ public class ServiceConfigurationControllerTestIT {
 
         List<ServiceConfiguration> serviceConfigurationList = serviceConfigurationRepository.findAll();
         assertEquals(databaseSizeBeforeTest, serviceConfigurationList.size());
+    }
+
+    @Test
+    @Transactional
+    public void checkQEKIsRequired() throws Exception {
+        prepareSealingKey();
+        int databaseSizeBeforeTest = serviceConfigurationRepository.findAll().size();
+        // set the field null
+        serviceConfiguration.getConfidentialData().setQek(null);
+
+        // Create the ServiceConfiguration
+        ServiceConfigurationDTO serviceConfigurationDTO = serviceConfigurationMapper.toDto(serviceConfiguration);
+
+        restMockMvc.perform(post(CONFIG_NODE + CONFIGURATION)
+                .contentType(RestUtil.APPLICATION_JSON_UTF8)
+                .content(RestUtil.convertObjectToJsonBytes(serviceConfigurationDTO)))
+            .andExpect(status().isCreated());
+
+        // Validate the ServiceConfiguration in the database
+        List<ServiceConfiguration> serviceConfigurationList = serviceConfigurationRepository.findAll();
+        assertEquals(databaseSizeBeforeTest + 1, serviceConfigurationList.size());
+        ServiceConfiguration testServiceConfiguration = serviceConfigurationList.get(
+            serviceConfigurationList.size() - 1);
+        assertNull(testServiceConfiguration.getConfidentialData().getQek());
+    }
+
+    @Test
+    @Transactional
+    public void checkQEKInfoIsRequiredSdm1_5() throws Exception {
+        prepareSealingKey();
+        // Cache QEK info
+        Qek qek = new Qek();
+        String qekData = toHex(loadBinary(ResourceDir.ROOT, "aes_testmode1.qek"));
+        qek.setValue(qekData);
+        qek.setKeyName(TestHelper.DEFAULT_KEY_NAME);
+        serviceConfiguration.getConfidentialData().setQek(qek);
+
+        // set the value null
+        serviceConfiguration.getConfidentialData().getQek().setValue(null);
+
+        // Create the ServiceConfiguration, which fails.
+        ServiceConfigurationDTO serviceConfigurationDTO = serviceConfigurationMapper.toDto(serviceConfiguration);
+
+        restMockMvc.perform(post(CONFIG_NODE + CONFIGURATION)
+                .contentType(RestUtil.APPLICATION_JSON_UTF8)
+                .content(RestUtil.convertObjectToJsonBytes(serviceConfigurationDTO)))
+            .andExpect(status().isBadRequest());
+
+        // set the keyName null
+        serviceConfiguration.getConfidentialData().getQek().setValue(qekData);
+        serviceConfiguration.getConfidentialData().getQek().setKeyName(null);
+
+        // Create the ServiceConfiguration, which fails.
+        serviceConfigurationDTO = serviceConfigurationMapper.toDto(serviceConfiguration);
+
+        restMockMvc.perform(post(CONFIG_NODE + CONFIGURATION)
+                .contentType(RestUtil.APPLICATION_JSON_UTF8)
+                .content(RestUtil.convertObjectToJsonBytes(serviceConfigurationDTO)))
+            .andExpect(status().isBadRequest());
     }
 
     @Test

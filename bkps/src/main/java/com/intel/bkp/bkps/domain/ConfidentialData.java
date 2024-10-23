@@ -76,6 +76,13 @@ public class ConfidentialData implements Serializable {
     @Transient
     private EncryptedAesImportKey encryptedAesKey;
 
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(unique = true)
+    private Qek qek;
+
+    @Transient
+    private EncryptedQekImportKey encryptedQek;
+
     @OneToOne(mappedBy = "confidentialData")
     @ToString.Exclude
     private ServiceConfiguration serviceConfiguration;

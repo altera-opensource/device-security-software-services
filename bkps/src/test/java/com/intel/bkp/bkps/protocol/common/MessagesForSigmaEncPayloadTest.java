@@ -33,12 +33,14 @@
 package com.intel.bkp.bkps.protocol.common;
 
 import com.intel.bkp.bkps.command.CommandLayerService;
+import com.intel.bkp.bkps.crypto.aesctr.AesCtrEncryptionKeyProviderImpl;
 import com.intel.bkp.bkps.crypto.aesgcm.AesGcmSealingKeyProviderImpl;
 import com.intel.bkp.bkps.crypto.sealingkey.SealingKeyManager;
 import com.intel.bkp.bkps.domain.AesKey;
 import com.intel.bkp.bkps.domain.AttestationConfiguration;
 import com.intel.bkp.bkps.domain.ConfidentialData;
 import com.intel.bkp.bkps.domain.EfusesPublic;
+import com.intel.bkp.bkps.domain.Qek;
 import com.intel.bkp.bkps.domain.ServiceConfiguration;
 import com.intel.bkp.bkps.domain.enumeration.ImportMode;
 import com.intel.bkp.bkps.exception.ProvisioningGenericException;
@@ -47,9 +49,11 @@ import com.intel.bkp.command.model.CommandIdentifier;
 import com.intel.bkp.core.endianness.EndiannessActor;
 import com.intel.bkp.core.manufacturing.model.PufType;
 import com.intel.bkp.core.psgcertificate.PsgAesKeyBuilderSDM12;
+import com.intel.bkp.core.psgcertificate.PsgQekBuilderHSM;
 import com.intel.bkp.core.psgcertificate.enumerations.StorageType;
 import com.intel.bkp.crypto.exceptions.EncryptionProviderException;
 import com.intel.bkp.test.FileUtils;
+import com.intel.bkp.test.enumeration.ResourceDir;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -59,7 +63,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.crypto.SecretKey;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
+import static com.intel.bkp.test.FileUtils.loadBinary;
+import static com.intel.bkp.utils.HexConverter.fromHex;
 import static com.intel.bkp.utils.HexConverter.toHex;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -71,22 +78,23 @@ import static org.mockito.Mockito.when;
 public class MessagesForSigmaEncPayloadTest {
 
     private static final String DEFAULT_NAME = "AAAAAAAAAA";
-
     private static final PufType DEFAULT_PUF_TYPE = PufType.EFUSE;
-
     private static final Integer DEFAULT_OVERBUILD_MAX = 1;
     private static final String DEFAULT_EFUSES_PUB_MASK =
         toHex(ByteBuffer.allocate(256).putLong(151).putInt(8).array());
     private static final String DEFAULT_EFUSES_PUB_VALUE =
         toHex(ByteBuffer.allocate(256).putLong(132).putInt(8).array());
-
     private static final String AES_CERT_FOLDER = "testdata/";
+    private static final String ENCRYPTION_KEY = "ABCDEF1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF1234567890";
 
     private byte[] aesKeyBytes;
     private PsgAesKeyBuilderSDM12 aesKeyBuilder;
 
     @Mock
     private AesGcmSealingKeyProviderImpl aesGcmSealingKeyProvider;
+
+    @Mock
+    private AesCtrEncryptionKeyProviderImpl aesCtrEncryptionKeyProvider;
 
     @Mock
     private SealingKeyManager sealingKeyManager;
@@ -106,6 +114,36 @@ public class MessagesForSigmaEncPayloadTest {
         this.aesKeyBuilder = new PsgAesKeyBuilderSDM12()
             .withActor(EndiannessActor.FIRMWARE)
             .parse(this.aesKeyBytes);
+    }
+
+    @Test
+    void prepareFrom_WithPufStorageTypeSdm15_Success() throws Exception {
+        // given
+        Qek qek = new Qek();
+        qek.setKeyName("Key123");
+        final byte[] encryptionKey = fromHex(ENCRYPTION_KEY);
+        final byte[] qekContent = loadBinary(ResourceDir.ROOT, "aes_testmode1.qek");
+        qek.setValue(toHex(qekContent));
+        aesKeyBytes = loadBinary(ResourceDir.ROOT, "signed_UDS_intelpuf_wrapped_aes_testmode1.ccert");
+        ServiceConfiguration serviceConfiguration = prepareServiceConfiguration(StorageType.PUFSS, false, qek);
+
+        // when
+        when(sut.decryptConfidentialData(serviceConfiguration.getConfidentialData().getAesKey())).thenReturn(aesKeyBytes); // Return unencrypted AES ccert
+        when(sut.decryptConfidentialData(serviceConfiguration.getConfidentialData().getQek())).thenReturn(qekContent); // Return unencrypted QEK
+        PsgQekBuilderHSM qekBuilderHSM = new PsgQekBuilderHSM();
+        qekBuilderHSM.withActor(EndiannessActor.FIRMWARE).parse(qekContent);
+        when(aesCtrEncryptionKeyProvider.decrypt(qekBuilderHSM.getEncryptedAESKey())).thenReturn(encryptionKey); // Return unencrypted QEK encryption key
+        when(commandLayer.create(any(Certificate.class), eq(CommandIdentifier.USER_AES_ROOT_KEY_PROVISION))).thenAnswer(invocation -> {
+            Certificate certificate = invocation.getArgument(0);
+            return certificate.array();
+        });
+
+        // then
+        final byte[] baseMessage = sut.prepareFrom(serviceConfiguration);
+        ByteBuffer buffer = ByteBuffer.allocate(aesKeyBytes.length + encryptionKey.length);
+        buffer.put(aesKeyBytes);
+        buffer.put(encryptionKey);
+        assertTrue(toHex(baseMessage).contains(toHex(buffer.array())));
     }
 
     @Test
@@ -181,14 +219,14 @@ public class MessagesForSigmaEncPayloadTest {
     }
 
     private ServiceConfiguration prepareServiceConfigurationWithTestProgram(StorageType aesKeyStorage) {
-        return prepareServiceConfiguration(aesKeyStorage, true);
+        return prepareServiceConfiguration(aesKeyStorage, true, null);
     }
 
     private ServiceConfiguration prepareServiceConfigurationProduction(StorageType aesKeyStorage) {
-        return prepareServiceConfiguration(aesKeyStorage, false);
+        return prepareServiceConfiguration(aesKeyStorage, false, null);
     }
 
-    private ServiceConfiguration prepareServiceConfiguration(StorageType aesKeyStorage, boolean testProgram) {
+    private ServiceConfiguration prepareServiceConfiguration(StorageType aesKeyStorage, boolean testProgram, Qek qek) {
         AesKey aesKey = new AesKey();
         aesKey.setStorage(aesKeyStorage);
         aesKey.setValue(toHex(aesKeyBytes));
@@ -197,6 +235,9 @@ public class MessagesForSigmaEncPayloadTest {
         ConfidentialData confidentialData = new ConfidentialData();
         confidentialData.setImportMode(ImportMode.PLAINTEXT);
         confidentialData.setAesKey(aesKey);
+        if (qek != null) {
+            confidentialData.setQek(qek);
+        }
 
         EfusesPublic efusesPub = new EfusesPublic();
         efusesPub.setMask(DEFAULT_EFUSES_PUB_MASK);

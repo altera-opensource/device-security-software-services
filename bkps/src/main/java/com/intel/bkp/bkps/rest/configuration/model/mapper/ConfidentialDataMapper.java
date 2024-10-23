@@ -41,7 +41,7 @@ import org.mapstruct.Mapping;
 /**
  * Mapper for the entity ConfidentialData and its DTO ConfidentialDataDTO.
  */
-@Mapper(componentModel = "spring", uses = {AesKeyMapper.class, EncryptedAesImportKeyMapper.class})
+@Mapper(componentModel = "spring", uses = {AesKeyMapper.class, EncryptedAesImportKeyMapper.class, QekMapper.class, EncryptedQekImportKeyMapper.class})
 public interface ConfidentialDataMapper extends EntityMapper<ConfidentialDataDTO, ConfidentialData> {
 
     ConfidentialDataDTO toDto(ConfidentialData confidentialData);

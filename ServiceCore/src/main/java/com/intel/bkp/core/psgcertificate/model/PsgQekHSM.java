@@ -33,7 +33,6 @@
 package com.intel.bkp.core.psgcertificate.model;
 
 import com.intel.bkp.core.interfaces.IStructure;
-import com.intel.bkp.core.psgcertificate.PsgCertificateCommon;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -41,46 +40,50 @@ import java.nio.ByteBuffer;
 
 @Getter
 @Setter
-public class PsgAesKeySDM15 implements IStructure, PsgCertificateCommon {
+public class PsgQekHSM implements IStructure {
 
     private byte[] magic = new byte[0];
-    private byte[] certDataLength = new byte[0];
-    private byte[] certVersion = new byte[0];
-    private byte[] certType = new byte[0];
-    private byte[] userAesCertMagic = new byte[0];
-    private byte[] reservedWithFlags = new byte[0];
-    private byte keyStorageType = 0x00;
-    private byte keyWrappingType = 0x00;
-    private byte[] reservedSecond = new byte[0];
-    private byte[] userInputIV = new byte[0];
-    private byte[] macTag = new byte[0];
-    private byte[] macData = new byte[0];
-    private byte[] certSigningKeyChain = new byte[0];
-
-    private FIPSMode mode;
-    private boolean testFlag;
+    private byte[] qekDataLength = new byte[0];
+    private byte[] infoLength = new byte[0];
+    private byte[] keyLength = new byte[0];
+    private byte[] shaLength = new byte[0];
+    private byte[] reserved = new byte[0];
+    private byte[] keyTypeMagic = new byte[0];
+    private byte[] maxKeyUses = new byte[0];
+    private byte[] interKeyNum = new byte[0];
+    private byte[] step = new byte[0];
+    private byte[] totalKeyUses = new byte[0];
+    private byte[] reservedNoSalt = new byte[0];
+    private byte[] ivData = new byte[0];
+    private byte[] encryptedAESKey = new byte[0];
+    private byte[] encryptedKDK = new byte[0];
+    private byte[] encryptedSHA384 = new byte[0];
 
     @Override
     public byte[] array() {
-        final int capacity = magic.length + certDataLength.length + certVersion.length + certType.length
-            + userAesCertMagic.length + reservedWithFlags.length + (2 * Byte.BYTES) + reservedSecond.length
-            + userInputIV.length + macTag.length + macData.length + certSigningKeyChain.length;
+        final int capacity = magic.length + qekDataLength.length + infoLength.length + keyLength.length
+            + shaLength.length + reserved.length + keyTypeMagic.length + maxKeyUses.length + interKeyNum.length
+            + step.length + totalKeyUses.length + reservedNoSalt.length + ivData.length
+            + encryptedAESKey.length + encryptedKDK.length + encryptedSHA384.length;
 
         return ByteBuffer.allocate(
                 capacity)
             .put(magic)
-            .put(certDataLength)
-            .put(certVersion)
-            .put(certType)
-            .put(userAesCertMagic)
-            .put(reservedWithFlags)
-            .put(keyStorageType)
-            .put(keyWrappingType)
-            .put(reservedSecond)
-            .put(userInputIV)
-            .put(macTag)
-            .put(macData)
-            .put(certSigningKeyChain)
+            .put(qekDataLength)
+            .put(infoLength)
+            .put(keyLength)
+            .put(shaLength)
+            .put(reserved)
+            .put(keyTypeMagic)
+            .put(maxKeyUses)
+            .put(interKeyNum)
+            .put(step)
+            .put(totalKeyUses)
+            .put(reservedNoSalt)
+            .put(ivData)
+            .put(encryptedAESKey)
+            .put(encryptedKDK)
+            .put(encryptedSHA384)
             .array();
     }
 }

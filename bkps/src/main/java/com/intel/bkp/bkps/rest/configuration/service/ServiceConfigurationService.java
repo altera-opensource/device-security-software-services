@@ -32,9 +32,11 @@
 
 package com.intel.bkp.bkps.rest.configuration.service;
 
+import com.intel.bkp.bkps.crypto.aesctr.AesCtrEncryptionKeyProviderImpl;
 import com.intel.bkp.bkps.crypto.aesgcm.AesGcmSealingKeyProviderImpl;
 import com.intel.bkp.bkps.crypto.sealingkey.SealingKeyManager;
 import com.intel.bkp.bkps.domain.AesKey;
+import com.intel.bkp.bkps.domain.Qek;
 import com.intel.bkp.bkps.domain.ConfidentialData;
 import com.intel.bkp.bkps.domain.enumeration.ImportMode;
 import com.intel.bkp.bkps.exception.ProvisioningGenericException;
@@ -54,9 +56,14 @@ import com.intel.bkp.core.exceptions.ParseStructureException;
 import com.intel.bkp.core.interfaces.IStructure;
 import com.intel.bkp.core.psgcertificate.IPsgAesKeyBuilder;
 import com.intel.bkp.core.psgcertificate.PsgAesKeyBuilderFactory;
+import com.intel.bkp.core.psgcertificate.PsgQekBuilderHSM;
 import com.intel.bkp.core.psgcertificate.enumerations.StorageType;
 import com.intel.bkp.core.psgcertificate.model.PsgAesKeyType;
+import com.intel.bkp.crypto.aesctr.AesCtrQekIvProvider;
 import com.intel.bkp.crypto.exceptions.EncryptionProviderException;
+import com.intel.bkp.crypto.exceptions.HMacProviderException;
+import com.intel.bkp.crypto.hmac.HMacKdfProviderImpl;
+import org.apache.commons.codec.digest.DigestUtils;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -65,6 +72,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -87,11 +98,13 @@ public class ServiceConfigurationService {
     private final ServiceConfigurationDetailsMapper serviceConfigurationDetailsMapper;
     private final ServiceConfigurationMapper serviceConfigurationMapper;
     private final AesGcmSealingKeyProviderImpl aesGcmSealingKeyProvider;
+    private final AesCtrEncryptionKeyProviderImpl aesCtrEncryptionKeyProvider;
     private final SealingKeyManager sealingKeyManager;
     private final ServiceConfigurationImportManager serviceConfigurationImportManager;
 
     @Setter(AccessLevel.PACKAGE)
     private PsgAesKeyBuilderFactory psgAesKeyBuilderFactory = new PsgAesKeyBuilderFactory();
+    private IPsgAesKeyBuilder<? extends StructureBuilder<?, ? extends IStructure>> aesKeyBuilder;
 
     /**
      * Save a serviceConfiguration.
@@ -112,6 +125,10 @@ public class ServiceConfigurationService {
 
         final AesKey aesKey = config.getConfidentialData().getAesKey();
         setAesKeyDetails(aesKey);
+        final Qek qek = config.getConfidentialData().getQek();
+        if (PsgAesKeyType.SDM_1_5.equals(aesKeyBuilder.getAesKeyType())) {
+            validateAESAndQek(qek);
+        }
 
         encryptConfidentialData(config.getConfidentialData());
 
@@ -120,16 +137,65 @@ public class ServiceConfigurationService {
         return serviceConfigurationMapper.toDto(savedConfig);
     }
 
+    private void validateAESAndQek(Qek qek) {
+        try {
+            if (qek == null) {
+                throw new IOException("QEK information is missing from the configuration JSON string");
+            }
+
+            // Parse & Validate AES ccert data and QEK data
+            PsgQekBuilderHSM qekBuilderHSM = new PsgQekBuilderHSM();
+            qekBuilderHSM.withActor(EndiannessActor.FIRMWARE).parse(fromHex(qek.getValue()));
+
+            // Decrypt and extract actual AES root key from QEK data
+            aesCtrEncryptionKeyProvider.initialize(new AesCtrQekIvProvider(qekBuilderHSM.getIvData()), qek.getKeyName());
+            byte[] aesRootKey = aesCtrEncryptionKeyProvider.decrypt(qekBuilderHSM.getEncryptedAESKey());
+
+            // Verify hash of QEK
+            byte[] kdkKey = aesCtrEncryptionKeyProvider.decrypt(qekBuilderHSM.getEncryptedKDK());
+            ByteBuffer bufferCheckHash = ByteBuffer.allocate(0x60);
+            bufferCheckHash.order(ByteOrder.LITTLE_ENDIAN);
+            bufferCheckHash.put(qekBuilderHSM.getReservedNoSalt());
+            bufferCheckHash.put(qekBuilderHSM.getIvData());
+            bufferCheckHash.put(aesRootKey);
+            bufferCheckHash.put(kdkKey);
+            byte[] sha384Hash = DigestUtils.sha384(bufferCheckHash.array());
+            byte[] expectedSHA384Hash = aesCtrEncryptionKeyProvider.decrypt(qekBuilderHSM.getEncryptedSHA384());
+            if (!Arrays.equals(sha384Hash, expectedSHA384Hash)) {
+                throw new IOException("Failed to decrypt QEK data. QEK data is either corrupted or QEK encryption key that associated with the key name is mismatch.");
+            }
+
+            // Compute KI-MAC tag of AES Root Key
+            final byte[] knownBytes = new byte[32];
+            Arrays.fill(knownBytes, (byte) 0);
+            ByteBuffer kiMacData = ByteBuffer.allocate(64);
+            // Concatenate 256-bits zero of known message and KI-MAC data
+            kiMacData.put(knownBytes);
+            kiMacData.put(aesKeyBuilder.getMacData());
+            final byte[] macTag = new HMacKdfProviderImpl(aesRootKey).getHash(kiMacData.array());
+
+            // Verify KI-HMAC tag of AES Root Key using AES ccert data
+            if (!Arrays.equals(macTag, aesKeyBuilder.getMacTag())) {
+                throw new IOException("The AES key is mismatch with QEK. The AES key must be generated using the same input QEK.");
+            }
+
+        } catch (EncryptionProviderException e) {
+            throw new BKPInternalServerException(ErrorCodeMap.FAILED_TO_DECRYPT_UPLOADED_SENSITIVE_DATA, e);
+        } catch (ParseStructureException | IOException | HMacProviderException e) {
+            throw new BKPBadRequestException(ErrorCodeMap.CORRUPTED_QEK, e);
+        }
+    }
+
     private void setAesKeyDetails(AesKey aesKey) {
         try {
             final var aesKeyBytes = fromHex(aesKey.getValue());
-            final var builder = getPsgAesKeySDMType(aesKeyBytes);
+            aesKeyBuilder = getPsgAesKeySDMType(aesKeyBytes);
 
-            parseKey(aesKeyBytes, builder);
-            aesKey.setStorage(builder.getStorageType());
-            aesKey.setKeyWrappingType(builder.getKeyWrappingType());
-            verifyEfusesStorageTypeRequiredField(aesKey, builder.getAesKeyType());
-            handleTestFlag(aesKey, builder.getAesKeyType());
+            parseKey(aesKeyBytes, aesKeyBuilder);
+            aesKey.setStorage(aesKeyBuilder.getStorageType());
+            aesKey.setKeyWrappingType(aesKeyBuilder.getKeyWrappingType());
+            verifyEfusesStorageTypeRequiredField(aesKey, aesKeyBuilder.getAesKeyType());
+            handleTestFlag(aesKey, aesKeyBuilder.getAesKeyType());
         } catch (ParseStructureException e) {
             throw new BKPBadRequestException(ErrorCodeMap.CORRUPTED_AES_KEY, e);
         }
@@ -228,6 +294,12 @@ public class ServiceConfigurationService {
         byte[] customerAesKey = fromHex(confidentialData.getAesKey().getValue());
 
         confidentialData.getAesKey().setValue(encryptInternal(customerAesKey));
+
+        if (confidentialData.getQek() != null) {
+            byte[] customerQek = fromHex(confidentialData.getQek().getValue());
+
+            confidentialData.getQek().setValue(encryptInternal(customerQek));
+        }
     }
 
     private void throwIfNoActiveSealingKey() {

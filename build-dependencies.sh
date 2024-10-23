@@ -133,6 +133,17 @@ function check_error_code() {
     fi
 }
 
+function clean_environment_var() {
+    unset CROSS_COMPILE
+    unset AR
+    unset AS
+    unset LD
+    unset RANLIB
+    unset CC
+    unset NM
+    unset LDFLAGS
+}
+
 function downloadFromLibrarySource() {
     local library_name=$1
     local workdir=$2
@@ -275,6 +286,8 @@ function build_openssl() {
     local arch=$3
 
     cd "${library_path}" || exit 1
+    clean_environment_var
+
     if [ $arch = "aarch64" ]; then
         ./Configure linux-aarch64 --cross-compile-prefix=aarch64-linux-gnu- shared -L-fPIC -L-O0 -fPIC -O0
     else
@@ -301,6 +314,7 @@ function build_boost() {
     local build_output_dir=build_result
 
     cd "${library_path}" || exit 1
+    clean_environment_var
 
     ./bootstrap.sh --with-libraries=program_options --prefix=./${build_output_dir}
     if [ $arch = "aarch64" ]; then
@@ -321,6 +335,7 @@ function build_libcurl() {
     local arch=$3
 
     cd "${library_path}" || exit 1
+    clean_environment_var
 
     local output_folder_name="${library_name}"
     export OPENSSL_ROOT_DIR=${OUTPUT_DIR}/openssl
@@ -363,6 +378,7 @@ function build_libspdm() {
     local library_path=$2
 
     cd "${library_path}" || exit 1
+    clean_environment_var
 
     build_libspdm_internal "Release" "${library_name}"
 
@@ -383,6 +399,7 @@ function build_libspdm_internal() {
     local sources_dir=$(pwd)
     local build_dir="build/${cmake_build_type}"
     mkdir -p "${build_dir}" && cd "${build_dir}" || exit 1
+    clean_environment_var
 
     cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DARCH=x64 -DTOOLCHAIN=GCC -DTARGET="${cmake_build_type}" -DDISABLE_TESTS=1 -DCRYPTO=openssl -DENABLE_BINARY_BUILD=1 -DCMAKE_C_FLAGS="${custom_defines} ${algorithms_enabled} ${algorithms_disabled} -I${openssl_root_dir}/include" -DCOMPILED_LIBCRYPTO_PATH=${openssl_root_dir}/lib/libcrypto.a -DCOMPILED_LIBSSL_PATH=${openssl_root_dir}/lib/libssl.a ${sources_dir}
     check_error_code
@@ -408,6 +425,7 @@ function build_gtest() {
     local library_path=$2
 
     cd "${library_path}" || exit 1
+    clean_environment_var
 
     mkdir -p build && cd build || exit 1
     cmake -DBUILD_GMOCK=ON ../
@@ -429,6 +447,7 @@ function build_mbedtls() {
     local library_path=$2
 
     cd "${library_path}" || exit 1
+    clean_environment_var
 
     mkdir -p build && cd build || exit 1
     cmake -DENABLE_TESTING=OFF ../

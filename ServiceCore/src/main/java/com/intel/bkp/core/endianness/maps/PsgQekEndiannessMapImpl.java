@@ -30,43 +30,40 @@
  * **************************************************************************
  */
 
-package com.intel.bkp.core.psgcertificate.model;
+package com.intel.bkp.core.endianness.maps;
 
-import com.intel.bkp.core.endianness.StructureBuilder;
-import com.intel.bkp.core.exceptions.ParseStructureException;
-import com.intel.bkp.core.interfaces.IStructure;
-import com.intel.bkp.core.psgcertificate.IPsgAesKeyBuilder;
-import com.intel.bkp.core.psgcertificate.PsgAesKeyBuilderSDM12;
-import com.intel.bkp.core.psgcertificate.PsgAesKeyBuilderSDM15;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import com.intel.bkp.core.endianness.EndiannessActor;
 
-import java.util.function.Supplier;
-import java.util.stream.Stream;
+import static com.intel.bkp.core.endianness.StructureField.PSG_QEK_DATA_LENGTH;
+import static com.intel.bkp.core.endianness.StructureField.PSG_QEK_INFO_LENGTH;
+import static com.intel.bkp.core.endianness.StructureField.PSG_QEK_INTER_KEY_NUM;
+import static com.intel.bkp.core.endianness.StructureField.PSG_QEK_KEY_LENGTH;
+import static com.intel.bkp.core.endianness.StructureField.PSG_QEK_KEY_TYPE_MAGIC;
+import static com.intel.bkp.core.endianness.StructureField.PSG_QEK_MAGIC;
+import static com.intel.bkp.core.endianness.StructureField.PSG_QEK_MAX_KEY_USES;
+import static com.intel.bkp.core.endianness.StructureField.PSG_QEK_SHA_LENGTH;
+import static com.intel.bkp.core.endianness.StructureField.PSG_QEK_STEP;
+import static com.intel.bkp.core.endianness.StructureField.PSG_QEK_TOTAL_KEY_USES;
+import static com.intel.bkp.utils.ByteSwapOrder.CONVERT;
 
-@AllArgsConstructor
-public enum PsgAesKeyType {
-    SDM_1_2(0, true, PsgAesKeyBuilderSDM12::new),
-    SDM_1_5(2, false, PsgAesKeyBuilderSDM15::new);
+public final class PsgQekEndiannessMapImpl extends BaseEndiannessMapImpl {
 
-    @Getter
-    private final int version;
-    @Getter
-    private final Boolean testprogramSupported;
-    private final Supplier<IPsgAesKeyBuilder<? extends StructureBuilder<?, ? extends IStructure>>> builderSupplier;
-
-    public IPsgAesKeyBuilder<? extends StructureBuilder<?, ? extends IStructure>> getBuilder() {
-        return builderSupplier.get();
+    public PsgQekEndiannessMapImpl(EndiannessActor actor) {
+        super(actor);
     }
 
-    public static PsgAesKeyType fromValue(Integer value) {
-        if (value == null) {
-            throw new ParseStructureException("No certificate version specified");
-        }
-        return Stream.of(values())
-            .filter(type -> value.equals(type.getVersion()))
-            .findAny()
-            .orElseThrow(
-                () -> new ParseStructureException("Unknown certificate version specified: %s".formatted(value)));
+    @Override
+    protected void populateFirmwareMap() {
+        put(PSG_QEK_MAGIC, CONVERT);
+        put(PSG_QEK_DATA_LENGTH, CONVERT);
+        put(PSG_QEK_INFO_LENGTH, CONVERT);
+        put(PSG_QEK_KEY_LENGTH, CONVERT);
+        put(PSG_QEK_SHA_LENGTH, CONVERT);
+        put(PSG_QEK_KEY_TYPE_MAGIC, CONVERT);
+        put(PSG_QEK_MAX_KEY_USES, CONVERT);
+        put(PSG_QEK_INTER_KEY_NUM, CONVERT);
+        put(PSG_QEK_STEP, CONVERT);
+        put(PSG_QEK_TOTAL_KEY_USES, CONVERT);
     }
+
 }

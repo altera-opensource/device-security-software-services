@@ -35,6 +35,7 @@ package com.intel.bkp.core.security;
 import com.intel.bkp.core.security.params.KeyTypesProperties;
 import com.intel.bkp.core.security.params.ProviderProperties;
 import com.intel.bkp.core.security.params.SecurityProperties;
+import com.intel.bkp.core.security.params.crypto.AesCtrProperties;
 import com.intel.bkp.core.security.params.crypto.AesProperties;
 import com.intel.bkp.core.security.params.crypto.EcProperties;
 import com.intel.bkp.core.security.params.crypto.RsaProperties;
@@ -73,6 +74,11 @@ public class SecurityProviderParamsSetter {
         aesProperties.setKeySize(CryptoConstants.AES_KEY_SIZE);
         aesProperties.setCipherType(CryptoConstants.AES_CIPHER_TYPE);
 
+        AesCtrProperties aesCtrProperties = new AesCtrProperties();
+        aesCtrProperties.setKeyName(CryptoConstants.AES_KEY);
+        aesCtrProperties.setKeySize(CryptoConstants.AES_KEY_SIZE);
+        aesCtrProperties.setCipherType(CryptoConstants.AES_CTR_CIPHER_TYPE);
+
         EcProperties ecProperties = new EcProperties();
         ecProperties.setKeyName(CryptoConstants.EC_KEY);
         ecProperties.setCurveSpec384(CryptoConstants.EC_CURVE_SPEC_384);
@@ -82,6 +88,7 @@ public class SecurityProviderParamsSetter {
         KeyTypesProperties keyTypesProperties = new KeyTypesProperties();
         keyTypesProperties.setRsa(rsaProperties);
         keyTypesProperties.setAes(aesProperties);
+        keyTypesProperties.setAesCtr(aesCtrProperties);
         keyTypesProperties.setEc(ecProperties);
 
         SecurityProviderParams securityProviderParams = new SecurityProviderParams();

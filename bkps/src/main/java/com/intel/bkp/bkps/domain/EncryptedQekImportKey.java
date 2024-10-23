@@ -30,37 +30,22 @@
  * **************************************************************************
  */
 
-package com.intel.bkp.core.security.params;
+package com.intel.bkp.bkps.domain;
 
-import com.intel.bkp.core.security.params.crypto.AesProperties;
-import com.intel.bkp.core.security.params.crypto.AesCtrProperties;
-import com.intel.bkp.core.security.params.crypto.EcProperties;
-import com.intel.bkp.core.security.params.crypto.RsaProperties;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.io.Serializable;
+
 @Getter
 @Setter
+@EqualsAndHashCode
 @ToString
-public class KeyTypesProperties {
+public class EncryptedQekImportKey implements Serializable {
 
-    @Valid
     @NotNull
-    private RsaProperties rsa;
-
-    @Valid
-    @NotNull
-    private AesProperties aes;
-
-    @Valid
-    @NotNull
-    private AesCtrProperties aesCtr;
-
-    @Valid
-    @NotNull
-    private EcProperties ec;
-
+    private String value;
 }

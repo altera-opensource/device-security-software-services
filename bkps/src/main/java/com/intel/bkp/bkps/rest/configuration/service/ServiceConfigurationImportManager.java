@@ -36,6 +36,7 @@ import com.intel.bkp.bkps.crypto.aesgcm.AesGcmImportConfigurationProviderImpl;
 import com.intel.bkp.bkps.crypto.importkey.ImportKeyManager;
 import com.intel.bkp.bkps.domain.ConfidentialData;
 import com.intel.bkp.bkps.domain.EncryptedAesImportKey;
+import com.intel.bkp.bkps.domain.EncryptedQekImportKey;
 import com.intel.bkp.bkps.exception.ServiceImportKeyNotExistException;
 import com.intel.bkp.bkps.rest.errors.enums.ErrorCodeMap;
 import com.intel.bkp.core.exceptions.BKPBadRequestException;
@@ -71,8 +72,16 @@ public class ServiceConfigurationImportManager {
 
     public void decrypt(ConfidentialData confidentialData) {
         throwIfImportKeyDoesNotExist();
-        initializeDecryptionProvider(confidentialData);
+        byte[] decryptionAesKey = decryptEncryptionKey(Optional.ofNullable(confidentialData.getEncryptedAesKey())
+            .orElseThrow(() -> new BKPBadRequestException(ErrorCodeMap.MISSING_ENCRYPTED_AES_KEY)));
+        decryptionProvider.initialize(decryptionAesKey);
         confidentialData.getAesKey().setValue(decryptInternal(confidentialData.getAesKey().getValue()));
+        if (confidentialData.getQek() != null) {
+            byte[] decryptionQekKey = decryptEncryptionKey(Optional.ofNullable(confidentialData.getEncryptedQek())
+                .orElseThrow(() -> new BKPBadRequestException(ErrorCodeMap.MISSING_ENCRYPTED_QEK)));
+            decryptionProvider.initialize(decryptionQekKey);
+            confidentialData.getQek().setValue(decryptInternal(confidentialData.getQek().getValue()));
+        }
     }
 
     private void throwIfImportKeyDoesNotExist() {
@@ -81,10 +90,10 @@ public class ServiceConfigurationImportManager {
         }
     }
 
-    private void initializeDecryptionProvider(ConfidentialData confidentialData) {
-        byte[] decryptionAesKey = decryptEncryptionKey(Optional.ofNullable(confidentialData.getEncryptedAesKey())
-            .orElseThrow(() -> new BKPBadRequestException(ErrorCodeMap.MISSING_ENCRYPTED_AES_KEY)));
-        decryptionProvider.initialize(decryptionAesKey);
+    private byte[] decryptEncryptionKey(EncryptedQekImportKey encryptedQekImportKey) {
+        return securityService.decryptRSA(importKeyManager.getImportKeyAlias(),
+            fromHex(encryptedQekImportKey.getValue())
+        );
     }
 
     private byte[] decryptEncryptionKey(EncryptedAesImportKey encryptedAesImportKey) {

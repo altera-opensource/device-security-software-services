@@ -92,5 +92,18 @@ public enum StructureField implements IStructureField {
     /* =========== Rom Extension Structure =========== */
     ROM_EXT_MAGIC,
     ROM_EXT_LENGTH,
-    ROM_EXT_EDI_ID
+    ROM_EXT_EDI_ID,
+
+    /* =========== PSG QEK =========== */
+    PSG_QEK_MAGIC,
+    PSG_QEK_DATA_LENGTH,
+    PSG_QEK_INFO_LENGTH,
+    PSG_QEK_KEY_LENGTH,
+    PSG_QEK_SHA_LENGTH,
+    PSG_QEK_KEY_TYPE_MAGIC,
+    PSG_QEK_MAX_KEY_USES,
+    PSG_QEK_INTER_KEY_NUM,
+    PSG_QEK_STEP,
+    PSG_QEK_TOTAL_KEY_USES
+
 }

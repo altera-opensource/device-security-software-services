@@ -62,4 +62,10 @@ public class ConfidentialDataDTO implements Serializable {
 
     @Valid
     private EncryptedAesImportKeyDTO encryptedAesKey;
+
+    @Valid
+    private QekDTO qek;
+
+    @Valid
+    private EncryptedQekImportKeyDTO encryptedQek;
 }

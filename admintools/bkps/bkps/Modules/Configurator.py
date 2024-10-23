@@ -48,12 +48,14 @@ class ConfigurationDTO:
     corim_url = None
     e_fuses_public_value = None  # hex encoded value
     aes_key_value = None  # hex encoded value
+    qek_value = None  # hex encoded value
     e_fuses_public_mask = None  # hex encoded value
     overbuild_max = None
     sdm_svns = None
     sdm_build_id_strings = None
     rom_versions = None
     test_program = None  # boolean
+    key_name = None
 
     def __init__(self):
         pass
@@ -76,6 +78,9 @@ class ConfigurationDTO:
             self.test_mode_secrets = parsed['testModeSecrets']
         if 'corimUrl' in parsed:
             self.corim_url = parsed['corimUrl']
+        if 'qek' in parsed['confidentialData']:
+            self.qek_value = parsed['confidentialData']['qek']['value']
+            self.key_name = parsed['confidentialData']['qek']['keyName']
         self.aes_key_value = parsed['confidentialData']['aesKey']['value']
         self.e_fuses_public_value = parsed['attestationConfig']['efusesPublic']['value']
         self.e_fuses_public_mask = parsed['attestationConfig']['efusesPublic']['mask']
@@ -95,6 +100,9 @@ class ConfigurationDTO:
         self.test_program = self.input_test_program()
 
         self.aes_key_value = self.input_aes_key_value()
+        self.qek_value = self.input_qek_value()
+        if (self.qek_value):
+            self.key_name = self.input_key_name()
         self.e_fuses_public_value = self.input_efuses_pub_value()
         self.e_fuses_public_mask = self.input_efuses_pub_mask()
 
@@ -170,6 +178,21 @@ class ConfigurationDTO:
                 return usr_input
 
     @staticmethod
+    def input_qek_value():
+        value = input('Enter Quartus Encryption Key (QEK) hex encoded: ')
+        usr_input = verify_hex_input(value)
+        return usr_input
+
+    @staticmethod
+    def input_key_name():
+        while True:
+            usr_input = input('Enter key name for QEK encryption key to be loaded from BKPS HSM: ')
+            if usr_input and len(usr_input) > 0:
+                return usr_input
+            else:
+                print('Parameter cannot be empty.')
+
+    @staticmethod
     def input_efuses_pub_value():
         while True:
             value = input('Enter E-FUSES public value hex encoded: ')
@@ -237,6 +260,7 @@ class Configurator:
     dto = None
 
     aes_key_dto = {}
+    qek_dto = {}
     overbuild_dto = {}
     confidentialData = {}
     rom_versions = []
@@ -276,10 +300,18 @@ class Configurator:
             encryptor = Encryptor(bkps_import_pub_key_pem)
             self.aes_key_dto['value'] = encryptor.encrypt(self.dto.aes_key_value)
             self.confidentialData['encryptedAesKey'] = encryptor.get_encrypted_key()
+            if (self.dto.qek_value and len(self.dto.qek_value) > 0):
+                self.qek_dto['value'] = encryptor.encrypt(self.dto.qek_value)
+                self.confidentialData['encryptedQek'] = encryptor.get_encrypted_key()
         else:
             self.aes_key_dto['value'] = self.dto.aes_key_value
+            if (self.dto.qek_value and len(self.dto.qek_value) > 0):
+                self.qek_dto['value'] = self.dto.qek_value
 
         self.confidentialData['aesKey'] = self.aes_key_dto
+        if (len(self.qek_dto) > 0 and self.qek_dto.get('value')):
+            self.qek_dto['keyName'] = self.dto.key_name
+            self.confidentialData['qek'] = self.qek_dto
         self.confidentialData['importMode'] = self.dto.import_mode
         self.aes_key_dto['testProgram'] = self.dto.test_program
 

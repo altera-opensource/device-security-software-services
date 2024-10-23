@@ -30,37 +30,48 @@
  * **************************************************************************
  */
 
-package com.intel.bkp.core.security.params;
+package com.intel.bkp.bkps.domain;
 
-import com.intel.bkp.core.security.params.crypto.AesProperties;
-import com.intel.bkp.core.security.params.crypto.AesCtrProperties;
-import com.intel.bkp.core.security.params.crypto.EcProperties;
-import com.intel.bkp.core.security.params.crypto.RsaProperties;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.io.Serializable;
+
+/**
+ * A Qek.
+ */
+@Entity
+@Table(name = "qek")
 @Getter
 @Setter
 @ToString
-public class KeyTypesProperties {
+public class Qek implements Serializable {
 
-    @Valid
-    @NotNull
-    private RsaProperties rsa;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @Valid
-    @NotNull
-    private AesProperties aes;
+    @Size(max = 5000)
+    @Column(name = "jhi_value", nullable = false, length = 5000)
+    @ToString.Exclude
+    private String value;
 
-    @Valid
-    @NotNull
-    private AesCtrProperties aesCtr;
+    @Size(max = 255)
+    @Column(name = "key_name", nullable = false)
+    private String keyName;
 
-    @Valid
-    @NotNull
-    private EcProperties ec;
-
+    @OneToOne(mappedBy = "qek")
+    @JsonIgnore
+    @ToString.Exclude
+    private ConfidentialData confidentialData;
 }

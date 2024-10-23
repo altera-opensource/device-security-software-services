@@ -33,5 +33,5 @@
 package com.intel.bkp.crypto.constants;
 
 public enum SecurityKeyType {
-    EC, RSA, AES
+    EC, RSA, AES, AES_CTR
 }

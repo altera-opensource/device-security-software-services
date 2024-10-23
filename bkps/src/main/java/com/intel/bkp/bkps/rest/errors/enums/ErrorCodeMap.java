@@ -145,9 +145,11 @@ public enum ErrorCodeMap implements IErrorCode {
     FAILED_TO_DECRYPT_UPLOADED_SENSITIVE_DATA(2403,
         "Failed to decrypt uploaded sensitive data in Configuration."),
     MISSING_ENCRYPTED_AES_KEY(2404, "Field 'encryptedAesKey' is required for ENCRYPTED import mode."),
-    CORRUPTED_AES_KEY(2405, "Failed to parse User AES Root Key Certificate."),
+    CORRUPTED_AES_KEY(2405, "Failed to parse confidentialData.aesKey.value."),
     UNSUPPORTED_PROVISIONING_OPERATION_FOR_PUFSS(2406, "Off-chip provisioning not supported."),
     DIFFERENT_AES_KEY_VALUE(2407, "Detected different AES Key test flag value: %s."),
+    CORRUPTED_QEK(2408, "Failed to parse confidentialData.qek.value."),
+    MISSING_ENCRYPTED_QEK(2409, "Field 'encryptedQek' is required for ENCRYPTED import mode."),
 
     /* =========== Provisioning Init Group =========== */
     OTHER_TRANSACTION_IN_PROGRESS(2500, "Provisioning failed - another transaction in progress."),

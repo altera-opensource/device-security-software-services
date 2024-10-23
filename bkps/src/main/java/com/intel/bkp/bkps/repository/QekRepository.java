@@ -30,37 +30,18 @@
  * **************************************************************************
  */
 
-package com.intel.bkp.core.security.params;
+package com.intel.bkp.bkps.repository;
 
-import com.intel.bkp.core.security.params.crypto.AesProperties;
-import com.intel.bkp.core.security.params.crypto.AesCtrProperties;
-import com.intel.bkp.core.security.params.crypto.EcProperties;
-import com.intel.bkp.core.security.params.crypto.RsaProperties;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import com.intel.bkp.bkps.domain.Qek;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-@Getter
-@Setter
-@ToString
-public class KeyTypesProperties {
 
-    @Valid
-    @NotNull
-    private RsaProperties rsa;
-
-    @Valid
-    @NotNull
-    private AesProperties aes;
-
-    @Valid
-    @NotNull
-    private AesCtrProperties aesCtr;
-
-    @Valid
-    @NotNull
-    private EcProperties ec;
+/**
+ * Spring Data repository for the Qek entity.
+ */
+@SuppressWarnings("unused")
+@Repository
+public interface QekRepository extends JpaRepository<Qek, Long> {
 
 }

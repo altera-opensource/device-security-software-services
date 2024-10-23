@@ -41,12 +41,13 @@ import org.mapstruct.Mapping;
 /**
  * Mapper for the entity ConfidentialData and its DTO ConfidentialDataDTO.
  */
-@Mapper(componentModel = "spring", uses = {AesKeyResponseMapper.class})
+@Mapper(componentModel = "spring", uses = {AesKeyResponseMapper.class, QekResponseMapper.class})
 public interface ConfidentialDataResponseMapper extends EntityMapper<ConfidentialDataDTO, ConfidentialData> {
 
     @Mapping(target = "serviceConfiguration", ignore = true)
     ConfidentialData toEntity(ConfidentialDataDTO confidentialDataDTO);
 
     @Mapping(target = "encryptedAesKey", ignore = true)
+    @Mapping(target = "encryptedQek", ignore = true)
     ConfidentialDataDTO toDto(ConfidentialData confidentialData);
 }

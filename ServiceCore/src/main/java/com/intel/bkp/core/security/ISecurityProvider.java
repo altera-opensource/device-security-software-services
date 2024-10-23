@@ -61,4 +61,6 @@ public interface ISecurityProvider extends ISecurityProviderCommon {
     PrivateKey getPrivateKeyFromSecurityObject(String name);
 
     String getAesCipherType();
+
+    String getAesCtrCipherType();
 }

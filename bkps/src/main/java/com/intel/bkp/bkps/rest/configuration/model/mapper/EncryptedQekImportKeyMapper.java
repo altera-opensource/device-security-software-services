@@ -30,37 +30,16 @@
  * **************************************************************************
  */
 
-package com.intel.bkp.core.security.params;
+package com.intel.bkp.bkps.rest.configuration.model.mapper;
 
-import com.intel.bkp.core.security.params.crypto.AesProperties;
-import com.intel.bkp.core.security.params.crypto.AesCtrProperties;
-import com.intel.bkp.core.security.params.crypto.EcProperties;
-import com.intel.bkp.core.security.params.crypto.RsaProperties;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import com.intel.bkp.bkps.domain.EncryptedQekImportKey;
+import com.intel.bkp.bkps.rest.configuration.model.dto.EncryptedQekImportKeyDTO;
+import com.intel.bkp.bkps.utils.EntityMapper;
+import org.mapstruct.Mapper;
 
-@Getter
-@Setter
-@ToString
-public class KeyTypesProperties {
-
-    @Valid
-    @NotNull
-    private RsaProperties rsa;
-
-    @Valid
-    @NotNull
-    private AesProperties aes;
-
-    @Valid
-    @NotNull
-    private AesCtrProperties aesCtr;
-
-    @Valid
-    @NotNull
-    private EcProperties ec;
-
+/**
+ * Mapper for the entity EncryptedAesImportKey and its DTO EncryptedAesImportKeyDTO.
+ */
+@Mapper(componentModel = "spring")
+public interface EncryptedQekImportKeyMapper extends EntityMapper<EncryptedQekImportKeyDTO, EncryptedQekImportKey> {
 }

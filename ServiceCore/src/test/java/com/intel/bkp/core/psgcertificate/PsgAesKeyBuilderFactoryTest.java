@@ -32,27 +32,16 @@
 
 package com.intel.bkp.core.psgcertificate;
 
-import ch.qos.logback.classic.Level;
 import com.intel.bkp.core.endianness.EndiannessActor;
 import com.intel.bkp.core.exceptions.ParseStructureException;
-import com.intel.bkp.core.psgcertificate.model.EfuseTestFlag;
 import com.intel.bkp.test.FileUtils;
-import com.intel.bkp.test.LoggerTestUtil;
 import com.intel.bkp.test.enumeration.ResourceDir;
 import com.intel.bkp.utils.exceptions.ByteBufferSafeException;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import static com.intel.bkp.core.psgcertificate.model.PsgAesKeyType.SDM_1_5;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.when;
-
 @ExtendWith(MockitoExtension.class)
 class PsgAesKeyBuilderFactoryTest {
 
@@ -98,7 +87,7 @@ class PsgAesKeyBuilderFactoryTest {
     void getPsgAesKeyBuilder_SDM15CertificateWithWrongVersion_Throws() {
         // given
         final byte[] aesContent = FileUtils.loadBinary(ResourceDir.ROOT,
-            ("signed_efuse_sdm15_with_wrong_version_sdm12.ccert"));
+            ("signed_UDS_intelpuf_sdm15_with_wrong_version_sdm12.ccert"));
 
         // when - then
         final var builder = sut.withActor(EndiannessActor.FIRMWARE).getPsgAesKeyBuilder(aesContent);

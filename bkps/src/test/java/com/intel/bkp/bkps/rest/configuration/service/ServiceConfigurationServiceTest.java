@@ -238,36 +238,6 @@ public class ServiceConfigurationServiceTest {
     }
 
     @Test
-    void save_WithExistingTestProgram() {
-        // given
-        final byte[] aesContent = assertDoesNotThrow(()->loadExampleAesKey("signed_efuse_wrapped_aes_sdm15.ccert"));
-        when(aesKey.getValue()).thenReturn(toHex(aesContent));
-        IPsgAesKeyBuilder<?> builder = new PsgAesKeyBuilderSDM15();
-        Mockito.doReturn(builder).when(psgAesKeyBuilderFactory).getPsgAesKeyBuilder(any());
-        when(aesKey.getStorage()).thenReturn(StorageType.EFUSES);
-        when(aesKey.getTestProgram()).thenReturn(true);
-
-        // then
-        assertDoesNotThrow(() -> sut.save(serviceConfigurationDTO));
-        verify(aesKey, times(1)).setTestProgram(false);
-    }
-
-    @Test
-    void save_WithoutTestProgram() {
-        // given
-        final byte[] aesContent = assertDoesNotThrow(()->loadExampleAesKey("signed_efuse_wrapped_aes_sdm15.ccert"));
-        when(aesKey.getValue()).thenReturn(toHex(aesContent));
-        IPsgAesKeyBuilder<?> builder = new PsgAesKeyBuilderSDM15();
-        Mockito.doReturn(builder).when(psgAesKeyBuilderFactory).getPsgAesKeyBuilder(any());
-        when(aesKey.getStorage()).thenReturn(StorageType.EFUSES);
-        when(aesKey.getTestProgram()).thenReturn(null);
-
-        // then
-        assertDoesNotThrow(() -> sut.save(serviceConfigurationDTO));
-        verify(aesKey, times(1)).setTestProgram(false);
-    }
-
-    @Test
     void save_WithBBram_DoesNotCheckTestProgram() {
         // given
         when(aesKey.getStorage()).thenReturn(StorageType.BBRAM);

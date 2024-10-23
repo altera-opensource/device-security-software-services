@@ -38,6 +38,7 @@ import com.intel.bkp.core.endianness.maps.PsgCancellableBlock0EntryEndiannessMap
 import com.intel.bkp.core.endianness.maps.PsgCertificateEntryEndiannessMapImpl;
 import com.intel.bkp.core.endianness.maps.PsgCertificateRootEntryEndiannessMapImpl;
 import com.intel.bkp.core.endianness.maps.PsgPublicKeyEndiannessMapImpl;
+import com.intel.bkp.core.endianness.maps.PsgQekEndiannessMapImpl;
 import com.intel.bkp.core.endianness.maps.PsgSignatureEndiannessMapImpl;
 import com.intel.bkp.core.endianness.maps.RomExtensionStructureEndiannessMapImpl;
 import com.intel.bkp.core.interfaces.IEndiannessMap;
@@ -54,7 +55,8 @@ public enum StructureType implements IStructureType {
     PSG_CERT_ROOT_ENTRY(PsgCertificateRootEntryEndiannessMapImpl::new),
     PSG_CERT_ENTRY(PsgCertificateEntryEndiannessMapImpl::new),
     PSG_AES_KEY_ENTRY(PsgAesKeyEndiannessMapImpl::new),
-    ROM_EXT(RomExtensionStructureEndiannessMapImpl::new);
+    ROM_EXT(RomExtensionStructureEndiannessMapImpl::new),
+    PSG_QEK_ENTRY(PsgQekEndiannessMapImpl::new);
 
     private final Function<EndiannessActor, IEndiannessMap> getEndiannessMap;
 

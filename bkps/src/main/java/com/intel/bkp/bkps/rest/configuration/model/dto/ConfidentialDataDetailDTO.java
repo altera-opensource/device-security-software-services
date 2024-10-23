@@ -32,6 +32,7 @@
 
 package com.intel.bkp.bkps.rest.configuration.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.intel.bkp.bkps.domain.enumeration.ImportMode;
 import lombok.Getter;
 import lombok.Setter;
@@ -43,4 +44,6 @@ import lombok.ToString;
 public class ConfidentialDataDetailDTO {
     private ImportMode importMode;
     private AesKeyDetailDTO aesKey;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private QekDetailDTO qek;
 }

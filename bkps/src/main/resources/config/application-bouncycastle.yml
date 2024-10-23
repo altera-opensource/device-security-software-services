@@ -20,6 +20,10 @@ application:
                 key-name: AES
                 key-size: 256
                 cipher-type: GCM
+            aes-ctr:
+                key-name: AES
+                key-size: 256
+                cipher-type: AES/CTR/NoPadding
             ec:
                 key-name: EC
                 curve-spec-384: secp384r1

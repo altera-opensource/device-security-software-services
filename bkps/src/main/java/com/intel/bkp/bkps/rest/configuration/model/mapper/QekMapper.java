@@ -30,37 +30,20 @@
  * **************************************************************************
  */
 
-package com.intel.bkp.core.security.params;
+package com.intel.bkp.bkps.rest.configuration.model.mapper;
 
-import com.intel.bkp.core.security.params.crypto.AesProperties;
-import com.intel.bkp.core.security.params.crypto.AesCtrProperties;
-import com.intel.bkp.core.security.params.crypto.EcProperties;
-import com.intel.bkp.core.security.params.crypto.RsaProperties;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import com.intel.bkp.bkps.domain.Qek;
+import com.intel.bkp.bkps.rest.configuration.model.dto.QekDTO;
+import com.intel.bkp.bkps.utils.EntityMapper;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
-@Getter
-@Setter
-@ToString
-public class KeyTypesProperties {
+/**
+ * Mapper for the entity Qek and its DTO Qek DTO.
+ */
+@Mapper(componentModel = "spring")
+public interface QekMapper extends EntityMapper<QekDTO, Qek> {
 
-    @Valid
-    @NotNull
-    private RsaProperties rsa;
-
-    @Valid
-    @NotNull
-    private AesProperties aes;
-
-    @Valid
-    @NotNull
-    private AesCtrProperties aesCtr;
-
-    @Valid
-    @NotNull
-    private EcProperties ec;
-
+    @Mapping(target = "confidentialData", ignore = true)
+    Qek toEntity(QekDTO qekDTO);
 }

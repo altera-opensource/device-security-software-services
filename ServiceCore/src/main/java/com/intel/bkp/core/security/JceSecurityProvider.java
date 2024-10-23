@@ -37,6 +37,7 @@ import com.intel.bkp.core.security.params.KeyTypesProperties;
 import com.intel.bkp.core.security.params.ProviderProperties;
 import com.intel.bkp.core.security.params.SecurityProperties;
 import com.intel.bkp.core.security.params.crypto.AesProperties;
+import com.intel.bkp.core.security.params.crypto.AesCtrProperties;
 import com.intel.bkp.core.security.params.crypto.EcProperties;
 import com.intel.bkp.core.security.params.crypto.RsaProperties;
 import com.intel.bkp.crypto.KeystoreUtils;
@@ -106,6 +107,7 @@ public class JceSecurityProvider implements ISecurityProvider {
 
     private final RsaProperties rsaProperties;
     private final AesProperties aesProperties;
+    private final AesCtrProperties aesCtrProperties;
     private final EcProperties ecProperties;
 
     private String providerName;
@@ -139,6 +141,7 @@ public class JceSecurityProvider implements ISecurityProvider {
         this.keyTypesProperties = securityProviderParams.getKeyTypes();
         rsaProperties = keyTypesProperties.getRsa();
         aesProperties = keyTypesProperties.getAes();
+        aesCtrProperties = keyTypesProperties.getAesCtr();
         ecProperties = keyTypesProperties.getEc();
         init();
     }
@@ -222,6 +225,11 @@ public class JceSecurityProvider implements ISecurityProvider {
                 return kp;
             } else if (SecurityKeyType.AES == keyType) {
                 SecretKey secretKey = AesUtils.genAES(provider, aesProperties.getKeyName(), aesProperties.getKeySize());
+                KeystoreUtils.storeSecretKey(keyStore, secretKey, name);
+                saveSecureEnclave();
+                return secretKey;
+            } else if (SecurityKeyType.AES_CTR == keyType) {
+                SecretKey secretKey = AesUtils.genAES(provider, aesCtrProperties.getKeyName(), aesCtrProperties.getKeySize());
                 KeystoreUtils.storeSecretKey(keyStore, secretKey, name);
                 saveSecureEnclave();
                 return secretKey;
@@ -377,6 +385,11 @@ public class JceSecurityProvider implements ISecurityProvider {
     @Override
     public String getAesCipherType() {
         return aesProperties.getCipherType();
+    }
+
+    @Override
+    public String getAesCtrCipherType() {
+        return aesCtrProperties.getCipherType();
     }
 
     private void reloadKeystore() {

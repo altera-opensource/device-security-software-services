@@ -30,13 +30,9 @@
  * **************************************************************************
  */
 
-package com.intel.bkp.core.security.params;
+package com.intel.bkp.core.security.params.crypto;
 
-import com.intel.bkp.core.security.params.crypto.AesProperties;
-import com.intel.bkp.core.security.params.crypto.AesCtrProperties;
-import com.intel.bkp.core.security.params.crypto.EcProperties;
-import com.intel.bkp.core.security.params.crypto.RsaProperties;
-import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
@@ -45,22 +41,15 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class KeyTypesProperties {
+public class AesCtrProperties {
 
-    @Valid
-    @NotNull
-    private RsaProperties rsa;
+    @NotBlank
+    private String cipherType;
 
-    @Valid
-    @NotNull
-    private AesProperties aes;
+    @NotBlank
+    private String keyName;
 
-    @Valid
     @NotNull
-    private AesCtrProperties aesCtr;
-
-    @Valid
-    @NotNull
-    private EcProperties ec;
+    private Integer keySize;
 
 }

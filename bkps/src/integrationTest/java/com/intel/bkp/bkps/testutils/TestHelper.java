@@ -35,6 +35,7 @@ package com.intel.bkp.bkps.testutils;
 import com.intel.bkp.bkps.crypto.contextkey.ContextKeyManager;
 import com.intel.bkp.bkps.crypto.sealingkey.SealingKeyManager;
 import com.intel.bkp.bkps.domain.AesKey;
+import com.intel.bkp.bkps.domain.Qek;
 import com.intel.bkp.bkps.domain.AttestationConfiguration;
 import com.intel.bkp.bkps.domain.BlackList;
 import com.intel.bkp.bkps.domain.ConfidentialData;
@@ -74,13 +75,12 @@ import static org.mockito.Mockito.when;
 public class TestHelper {
 
     public static final String DEFAULT_NAME = "AAAAAAAAAA";
-    private static final PufType DEFAULT_PUF_TYPE = PufType.EFUSE;
-    private static final KeyWrappingType DEFAULT_KEY_WRAPPING_TYPE = KeyWrappingType.INTERNAL;
     public static final String DEFAULT_EFUSES_PUB_MASK =
         Hex.toHexString(ByteBuffer.allocate(256).putLong(151).putInt(8).array());
     public static final String DEFAULT_EFUSES_PUB_VALUE =
         Hex.toHexString(ByteBuffer.allocate(256).putLong(132).putInt(8).array());
-
+    public static final String IV_DATA = "1234567890ABCDEF1234567890ABCDEF";
+    public static final String AES_ROOT_KEY = "1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF";
     private static final String SIGNING_KEY_ROOT_SINGLE =
         "3690258998000000800000000000000000000000010000009b8b0b400000000060067058300000003000000048663254ffffffff"
             + "ffffffffdf512b36e90dee4237eef44d0ba104584c91274bd653a7525a6f2d41b7fdb4c7a3237a9d7bed8d794a6fbbe52a"
@@ -104,24 +104,15 @@ public class TestHelper {
         + "0000002088543006ebd2e752a92a0e9aafccd87bc5c439166979fbcf2768b3bde7fe6fe34c7a42807e1fde3c35b174d64da79c"
         + "ef2b5efd4f431d2c19ba5e230e804c0c4bc53443ee5ad3049a903cd413368a64bf5c6de42822e1631d5c6fcbc14fa1c17fab46fb";
 
-    public static ServiceConfiguration createServiceConfigurationEntity(Integer overbuildMax, StorageType storageType,
-                                                                        PufType pufType,
-                                                                        KeyWrappingType keyWrappingType) {
-        return createServiceConfigurationEntity(overbuildMax, storageType, null, true, pufType, keyWrappingType);
-    }
-
-    public static ServiceConfiguration createServiceConfigurationEntity(Integer overbuildMax, StorageType storageType,
-                                                                        SealingKeyManager sealingKeyManager,
-                                                                        boolean requireIidUds) {
-        return createServiceConfigurationEntity(overbuildMax, storageType,
-            sealingKeyManager, requireIidUds, DEFAULT_PUF_TYPE, DEFAULT_KEY_WRAPPING_TYPE);
-    }
+    public static final String DEFAULT_KEY_NAME = "Key123";
 
     public static ServiceConfiguration createServiceConfigurationEntity(Integer overbuildMax, StorageType storageType,
                                                                         SealingKeyManager sealingKeyManager,
                                                                         boolean requireIidUds,
                                                                         PufType pufType,
-                                                                        KeyWrappingType keyWrappingType) {
+                                                                        KeyWrappingType keyWrappingType,
+                                                                        Qek qek,
+                                                                        byte[] aesCcertData) {
 
         ConfidentialData confidentialData = new ConfidentialData();
         confidentialData.setImportMode(ImportMode.PLAINTEXT);
@@ -130,14 +121,22 @@ public class TestHelper {
         aesKey.setStorage(storageType);
         aesKey.setTestProgram(false);
         aesKey.setKeyWrappingType(keyWrappingType);
-        final byte[] aesContent = loadBinary(ResourceDir.ROOT, "signed_iid_aes.ccert");
 
+        if (aesCcertData == null) {
+            aesCcertData = loadBinary(ResourceDir.ROOT, "signed_iid_aes.ccert");
+        }
+        final byte[] aesContent = aesCcertData;
         Optional.ofNullable(sealingKeyManager)
             .ifPresentOrElse(skm -> aesKey.setValue(getEncryptedAesKey(skm, aesContent)),
                 () -> aesKey.setValue(toHex(aesContent))
             );
 
         confidentialData.setAesKey(aesKey);
+
+        if (qek != null) {
+            confidentialData.setQek(qek);
+        }
+
         AttestationConfiguration attestationConfig = new AttestationConfiguration();
         EfusesPublic efusesPub = new EfusesPublic();
         efusesPub.setMask(DEFAULT_EFUSES_PUB_MASK);
