@@ -1,0 +1,15 @@
+[Unit]
+Description=fcsServer
+After=network.target
+StartLimitBurst=5
+StartLimitIntervalSec=2
+
+[Service]
+Type=simple
+NotifyAccess=all
+User=root
+ExecStart=/usr/sbin/fcsServer 50001 Info
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

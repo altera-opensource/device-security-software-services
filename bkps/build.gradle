@@ -1,0 +1,234 @@
+/*
+ * This project is licensed as below.
+ *
+ * **************************************************************************
+ *
+ * Copyright 2020-2024 Intel Corporation. All Rights Reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER
+ * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * **************************************************************************
+ */
+
+buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        gradlePluginPortal()
+        maven { url "https://repo.spring.io/plugins-release" }
+    }
+}
+
+plugins {
+    alias(libs.plugins.spring.boot)
+    alias(libs.plugins.spring.dependency.management)
+    alias(libs.plugins.lombok)
+    alias(libs.plugins.gradle.versions)
+    alias(libs.plugins.modernizer)
+    id 'java'
+    id 'idea'
+}
+
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
+
+ext['commons-lang3.version'] = "${libs.versions.apache.commons.lang.get()}"
+
+dependencyManagement {
+    imports {
+        mavenBom "org.junit:junit-bom:${libs.versions.junit.get()}"
+    }
+}
+
+sourceSets {
+    integrationTest {
+        java {
+            compileClasspath += main.output + test.output
+            runtimeClasspath += main.output + test.output
+            srcDir file('src/integrationTest/java')
+        }
+        resources.srcDir file('src/integrationTest/resources')
+    }
+    sealingTest {
+        java {
+            compileClasspath += main.output + test.output
+            runtimeClasspath += main.output + test.output
+            srcDir file('src/sealingTest/java')
+        }
+        resources.srcDir file('src/sealingTest/resources')
+    }
+}
+
+configurations {
+    integrationTestImplementation.extendsFrom testImplementation
+    integrationTestRuntime.extendsFrom testRuntimeOnly
+    sealingTestImplementation.extendsFrom testImplementation
+    sealingTestRuntime.extendsFrom testRuntimeOnly
+}
+
+tasks.register('integrationTest', Test) {
+    useJUnitPlatform()
+    setTestClassesDirs(sourceSets.integrationTest.output.getClassesDirs())
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    outputs.upToDateWhen { false }
+}
+
+check.dependsOn integrationTest
+integrationTest.mustRunAfter test
+
+tasks.register('sealingTest', Test) {
+    useJUnitPlatform()
+    setTestClassesDirs(sourceSets.sealingTest.output.getClassesDirs())
+    classpath = sourceSets.sealingTest.runtimeClasspath
+    outputs.upToDateWhen { false }
+}
+
+tasks.withType(Copy).configureEach {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+
+check.dependsOn sealingTest
+sealingTest.mustRunAfter integrationTest
+
+defaultTasks 'bootRun'
+
+apply from: rootProject.file('gradle/common.gradle')
+
+def buildVersion = ext.getBuildVersion()
+
+group = 'com.intel.bkp.bkps'
+version = buildVersion
+description = ''
+
+test {
+    useJUnitPlatform()
+    reports.html.required = false
+}
+
+tasks.register('testReport', TestReport) {
+    destinationDir = file("$buildDir/reports/tests")
+    reportOn test
+}
+
+if (project.hasProperty('prod')) {
+    println 'Applying prod configuration'
+    apply from: rootProject.file('gradle/profile_prod.gradle')
+    apply from: rootProject.file('gradle/liquibase.gradle')
+} else if (project.hasProperty('aws')) {
+    println 'Applying aws configuration'
+    apply from: rootProject.file('gradle/liquibase.gradle')
+} else {
+    apply from: rootProject.file('gradle/profile_dev.gradle')
+}
+
+
+configurations {
+    providedRuntime
+    implementation.exclude module: "spring-boot-starter-tomcat"
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(":Utils")
+    implementation project(":CryptoCore")
+    implementation project(":ServiceCore")
+    implementation project(":fpgaCertCore")
+    implementation project(":CommandCore")
+    implementation project(":ProtocolCore")
+
+    implementation libs.jna
+    implementation libs.logstash.logback.encoder
+    implementation libs.liquibase.core
+    implementation libs.apache.commons.text
+    implementation libs.apache.httpclient5
+    implementation libs.hibernate.core
+    implementation libs.hibernate.validator
+    implementation libs.hikari
+    implementation libs.spring.boot.loader.tools
+    implementation libs.spring.boot.starter.logging
+    implementation libs.spring.boot.starter.json
+    implementation libs.spring.boot.starter.aop
+    implementation libs.spring.boot.starter.data.jpa
+    implementation libs.spring.boot.starter.security
+    implementation(libs.spring.boot.starter.web) {
+        exclude module: "spring-boot-starter-tomcat"
+    }
+    implementation libs.spring.boot.starter.undertow
+    implementation libs.spring.retry
+    implementation libs.spring.security.config
+    implementation libs.spring.security.data
+    implementation libs.spring.security.web
+    implementation libs.postgresql
+    implementation libs.mapstruct
+    implementation libs.bundles.shedlock
+
+    compileOnly fileTree(dir: "libs", include: ["*.jar"])
+
+    annotationProcessor libs.mapstruct.processor
+    annotationProcessor libs.lombok.mapstruct.binding
+    annotationProcessor libs.hibernate.jpamodelgen
+    annotationProcessor(libs.spring.boot.configuration.processor) {
+        exclude group: "com.vaadin.external.google", module: "android-json"
+    }
+
+    testImplementation libs.json.path
+    testImplementation(libs.spring.boot.starter.test) {
+        exclude group: "com.vaadin.external.google", module: "android-json"
+        exclude group: "org.junit.vintage", module: "junit-vintage-engine"
+        exclude group: "junit", module: "junit"
+    }
+    testImplementation project(":TestLibrary")
+    testImplementation libs.spring.security.test
+    testImplementation libs.spring.boot.test
+    testImplementation libs.junit.jupiter
+    testImplementation libs.bundles.mockito
+    testImplementation libs.bundles.spring.restdocs
+
+    integrationTestImplementation libs.springdoc.openapi.starter.webmvc.ui
+}
+
+tasks.register('cleanResources', Delete) {
+    delete 'build/resources'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs << '-Xlint:deprecation'
+    options.deprecation = true
+}
+
+tasks.register('copyConfigurationMetadata', Copy) {
+    from(compileJava) {
+        include 'META-INF/spring-configuration-metadata.json'
+        /* include 'META-INF/build-info.properties'*/
+    }
+    into "out/production/classes"
+}
+
+compileJava.finalizedBy copyConfigurationMetadata
+compileJava.dependsOn processResources
+processResources.dependsOn cleanResources, bootBuildInfo
+bootBuildInfo.mustRunAfter cleanResources

@@ -1,0 +1,32 @@
+databaseChangeLog:
+    -   property:
+            name: now
+            value: now()
+            dbms: h2
+    -   property:
+            name: now
+            value: current_timestamp
+            dbms: postgresql
+    -   property:
+            name: floatTyp
+            value: float4
+            dbms: "postgresql, h2"
+    -   property:
+            name: floatTyp
+            value: float
+            dbms: "mysql, oracle, mssql, mariadb"
+    -   property:
+            name: clobType
+            lue=": ngvarchar
+            dbms: "h2"
+    -   property:
+            name: clobType
+            lue=": ob
+            dbms: "mysql, oracle, mssql, mariadb, postgresql"
+    -   property:
+            name: uuidType
+            lue=": id
+            dbms: "h2, postgresql"
+
+    -   includeAll:
+            path: config/liquibase/changelog
