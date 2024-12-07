@@ -1,7 +1,7 @@
 
 # WORKLOAD dependency list
 ## Dependency License Report
-_2024-12-07 15:14:59 UTC_
+_2024-12-07 15:26:48 UTC_
 ## Apache License 2.0
 
 **1** **Group:** `io.swagger.core.v3` **Name:** `swagger-annotations` **Version:** `2.2.25` 
