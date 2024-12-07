@@ -36,7 +36,6 @@ import com.intel.bkp.bkps.exception.ProvisioningConverterException;
 import com.intel.bkp.bkps.protocol.common.model.FlowStage;
 import com.intel.bkp.bkps.protocol.common.model.ProvContextWithFlow;
 import com.intel.bkp.bkps.rest.RestUtil;
-import com.intel.bkp.command.messages.sigma.SigmaEncMessageBuilder;
 import com.intel.bkp.crypto.aesgcm.AesGcmProvider;
 import com.intel.bkp.test.RandomUtils;
 import org.junit.jupiter.api.Test;
@@ -95,7 +94,7 @@ public class ProvisioningProgrammerMessageDTOReaderTest {
     @Test
     void init_ThrowsException() throws Exception {
         // given
-        byte[] data = RandomUtils.generateRandomBytes(SigmaEncMessageBuilder.MAC_LEN);
+        byte[] data = RandomUtils.generateRandomBytes(32);
         when(encryptionProvider.decrypt(ArgumentMatchers.any())).thenReturn(data);
 
         // when-then

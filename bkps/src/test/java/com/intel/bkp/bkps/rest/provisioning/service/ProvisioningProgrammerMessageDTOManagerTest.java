@@ -39,7 +39,6 @@ import com.intel.bkp.bkps.protocol.common.model.ProvContextWithFlow;
 import com.intel.bkp.bkps.rest.RestUtil;
 import com.intel.bkp.bkps.rest.provisioning.model.dto.ProvisioningRequestDTO;
 import com.intel.bkp.bkps.rest.provisioning.model.dto.ProvisioningRequestDTOReader;
-import com.intel.bkp.command.messages.sigma.SigmaEncMessageBuilder;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -83,7 +82,7 @@ public class ProvisioningProgrammerMessageDTOManagerTest {
     @Test
     void getReader_ThrowsException() throws Exception {
         // given
-        byte[] data = new byte[SigmaEncMessageBuilder.MAC_LEN];
+        byte[] data = new byte[32];
         ThreadLocalRandom.current().nextBytes(data);
         when(contextEncryptionProvider.decrypt(any())).thenReturn(data);
 

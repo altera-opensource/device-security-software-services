@@ -33,44 +33,57 @@
 package com.intel.bkp.verifier.service;
 
 import com.intel.bkp.core.manufacturing.model.PufType;
-import com.intel.bkp.verifier.exceptions.VerifierKeyNotInitializedException;
+import com.intel.bkp.protocol.spdm.exceptions.SpdmNotSupportedException;
+import com.intel.bkp.protocol.spdm.exceptions.UnsupportedSpdmVersionException;
+import com.intel.bkp.protocol.spdm.jna.model.SpdmProtocol;
+import com.intel.bkp.protocol.spdm.service.SpdmGetVersionMessageSender;
+import com.intel.bkp.protocol.spdm.service.SpdmVersionVerifier;
+import com.intel.bkp.verifier.exceptions.VerifierRuntimeException;
 import com.intel.bkp.verifier.interfaces.VerifierExchange;
-import com.intel.bkp.verifier.model.VerifierExchangeResponse;
 import com.intel.bkp.verifier.model.dto.VerifierExchangeResponseDTO;
+import com.intel.bkp.verifier.protocol.spdm.jna.SpdmProtocol12Impl;
 import com.intel.bkp.verifier.service.certificate.AppContext;
 import com.intel.bkp.verifier.transport.model.TransportLayer;
-import com.intel.bkp.verifier.validators.ParameterValidator;
 import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 
-import static com.intel.bkp.utils.HexConverter.toHex;
+import static com.intel.bkp.verifier.service.GetDeviceAttestationComponentSpdm.SPDM_SUPPORTED_VERSION;
 import static com.intel.bkp.verifier.model.VerifierExchangeResponse.ERROR;
-import static com.intel.bkp.verifier.model.VerifierExchangeResponse.OK;
+import static com.intel.bkp.verifier.service.VerifierExchangeProtocol.logAttestationResult;
 
 @Slf4j
-@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
+@AllArgsConstructor(access = AccessLevel.PACKAGE)
 public class VerifierExchangeImpl implements VerifierExchange {
 
-    private static final byte[] GET_CHIPID = new byte[]{0x12, 0x00, 0x00, 0x00};
-
-    private final ParameterValidator parameterValidator = new ParameterValidator();
-
-    private final InitSessionComponent initSessionComponent;
-    private final CreateDeviceAttestationSubKeyComponent createSubKeyComponent;
-    private final GetDeviceAttestationComponent getAttestationComponent;
+    private final SpdmProtocol spdmProtocol = new SpdmProtocol12Impl();
+    private final SpdmVersionVerifier spdmVersionVerifier = new SpdmVersionVerifier(SPDM_SUPPORTED_VERSION);
+    private final VerifierExchangeProtocolSpdm verifierExchangeProtocolSpdm;
+    private final VerifierExchangeProtocolSigma verifierExchangeProtocolSigma;
+    private final SpdmGetVersionMessageSender spdmGetVersionMessageSender;
 
     public VerifierExchangeImpl() {
-        this(new InitSessionComponent(), new CreateDeviceAttestationSubKeyComponent(),
-            new GetDeviceAttestationComponent());
+        this.verifierExchangeProtocolSpdm = new VerifierExchangeProtocolSpdm();
+        this.verifierExchangeProtocolSigma = new VerifierExchangeProtocolSigma();
+        this.spdmGetVersionMessageSender = new SpdmGetVersionMessageSender(spdmProtocol);
     }
 
     @Override
     public int createDeviceAttestationSubKey(String transportId, String context, String pufType) {
         try (AppContext appContext = AppContext.instance()) {
             appContext.init();
-            return createSubKeyInternal(appContext, transportId, context, PufType.valueOf(pufType));
+            final TransportLayer transportLayer = appContext.getTransportLayer();
+
+            try {
+                transportLayer.initialize(transportId);
+                return getProtocol().createSubKeyInternal(context, PufType.valueOf(pufType));
+            } catch (Exception e) {
+                log.error("Create attestation subkey failed: {}", e.getMessage());
+                log.debug("Stacktrace: ", e);
+                return ERROR.getCode();
+            } finally {
+                transportLayer.disconnect();
+            }
         } catch (Exception e) {
             log.error("Create attestation subkey failed: {}", e.getMessage());
             log.debug("Stacktrace: ", e);
@@ -84,7 +97,17 @@ public class VerifierExchangeImpl implements VerifierExchange {
 
         try (AppContext appContext = AppContext.instance()) {
             appContext.init();
-            attestationResult = getAttestationInternal(appContext, transportId, refMeasurementHex);
+            final TransportLayer transportLayer = appContext.getTransportLayer();
+
+            try {
+                transportLayer.initialize(transportId);
+                attestationResult = getProtocol().getAttestationInternal(refMeasurementHex);
+            } catch (Exception e) {
+                log.error("Device attestation failed: {}", e.getMessage());
+                log.debug("Stacktrace: ", e);
+            } finally {
+                transportLayer.disconnect();
+            }
         } catch (Exception e) {
             log.error("Device attestation failed: {}", e.getMessage());
             log.debug("Stacktrace: ", e);
@@ -99,10 +122,18 @@ public class VerifierExchangeImpl implements VerifierExchange {
     public int healthCheck(String transportId) {
         try (AppContext appContext = AppContext.instance()) {
             appContext.init();
-            return healthCheckInternal(appContext, transportId);
-        } catch (VerifierKeyNotInitializedException e) {
-            log.info(e.getMessage());
-            return ERROR.getCode();
+            final TransportLayer transportLayer = appContext.getTransportLayer();
+
+            try {
+                transportLayer.initialize(transportId);
+                return getProtocol().healthCheckInternal(transportLayer);
+            } catch (Exception e) {
+                log.error("Health check failed: {}", e.getMessage());
+                log.debug("Stacktrace: ", e);
+                return ERROR.getCode();
+            } finally {
+                transportLayer.disconnect();
+            }
         } catch (Exception e) {
             log.error("Health check failed: {}", e.getMessage());
             log.debug("Stacktrace: ", e);
@@ -110,73 +141,32 @@ public class VerifierExchangeImpl implements VerifierExchange {
         }
     }
 
-    int createSubKeyInternal(AppContext appContext, String transportId, String context, PufType pufType) {
-        // this check is required to prevent SQL Injection
-        if (!parameterValidator.validateContext(context)) {
-            return ERROR.getCode();
-        }
+    public VerifierExchangeProtocol getProtocol() {
+        final VerifierExchangeProtocol protocol;
 
-        final TransportLayer transportLayer = appContext.getTransportLayer();
-        try {
-            transportLayer.initialize(transportId);
-            final byte[] deviceId = initSessionComponent.initializeSessionForDeviceId();
-            log.info("Creating attestation subkey will be performed for device of id: {}", toHex(deviceId));
-
-            return createSubKeyComponent.perform(context, pufType, deviceId).getCode();
-        } catch (Exception e) {
-            log.error("Failed to perform creating of attestation subkey: {}", e.getMessage());
-            log.debug("Stacktrace: ", e);
-            return ERROR.getCode();
-        } finally {
-            transportLayer.disconnect();
+        if (spdmSupported()) {
+            protocol = this.verifierExchangeProtocolSpdm;
+        } else {
+            protocol = this.verifierExchangeProtocolSigma;
         }
+        return protocol;
     }
 
-    VerifierExchangeResponseDTO getAttestationInternal(
-        AppContext appContext, String transportId, String refMeasurementHex) {
-        final VerifierExchangeResponseDTO response = new VerifierExchangeResponseDTO();
-
-        final TransportLayer transportLayer = appContext.getTransportLayer();
+    public boolean spdmSupported() {
         try {
-            transportLayer.initialize(transportId);
-            final byte[] deviceId = initSessionComponent.initializeSessionForDeviceId();
-            response.setDeviceId(toHex(deviceId));
-            log.info("Platform attestation will be performed for device of id: {}", toHex(deviceId));
-
-            response.setStatus(getAttestationComponent.perform(refMeasurementHex, deviceId).getCode());
+            final String responderVersion = spdmGetVersionMessageSender.send();
+            log.debug("SPDM Responder version: {}", responderVersion);
+            spdmVersionVerifier.ensureVersionIsSupported(responderVersion);
+            return true;
+        } catch (SpdmNotSupportedException e) {
+            log.debug("SPDM is not supported: ", e);
+            return false;
+        } catch (UnsupportedSpdmVersionException e) {
+            throw new VerifierRuntimeException("SPDM is in unsupported version: %s".formatted(e.getMessage()), e);
+        } catch (VerifierRuntimeException e) {
+            throw e;
         } catch (Exception e) {
-            log.error("Failed to perform platform attestation: {}", e.getMessage());
-            log.debug("Stacktrace: ", e);
-            response.setStatus(ERROR.getCode());
-        } finally {
-            transportLayer.disconnect();
-        }
-        return response;
-    }
-
-    int healthCheckInternal(AppContext appContext, String transportId) {
-        final TransportLayer transportLayer = appContext.getTransportLayer();
-        try {
-            transportLayer.initialize(transportId);
-            final String result = toHex(transportLayer.sendCommand(GET_CHIPID));
-            log.info("Health check response: {}", result);
-            return StringUtils.isBlank(result)
-                   ? ERROR.getCode()
-                   : OK.getCode();
-        } catch (Exception e) {
-            log.error("Failed to perform health check using GET_CHIPID command: {}", e.getMessage());
-            log.debug("Stacktrace: ", e);
-            return ERROR.getCode();
-        } finally {
-            transportLayer.disconnect();
-        }
-    }
-
-    private static void logAttestationResult(VerifierExchangeResponseDTO attestationResult) {
-        switch (VerifierExchangeResponse.from(attestationResult.getStatus())) {
-            case OK -> log.info("*** ATTESTATION PASSED ***");
-            case FAIL -> log.error("*** ATTESTATION FAILED ***");
-            case ERROR -> log.error("*** ATTESTATION ERROR ***");
+            throw new VerifierRuntimeException("Failed to verify if SPDM is supported.", e);
         }
     }
 }

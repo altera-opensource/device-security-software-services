@@ -5,10 +5,11 @@ This library will expose an interface to enable communication between Quartus Pr
 
 ## Build in docker
 
-To build BKPProgramer on docker, from docker folder run:
-    ```bash
+To build BKP Programer on docker, from docker folder run:
+    
+```bash
     ./build-ext.sh OPENSSL_AARCH64_VERSION="<openssl_version>" BOOST_AARCH64_VERSION="<boost_version>" LIBCURL_AARCH64_VERSION="<libcurl_version>"
-    ```
+```
 
 ## Development
 

@@ -11,6 +11,8 @@ BUILD_GTEST=false
 BUILD_MBEDTLS=false
 BUILD_LIBSPDM=false
 
+export no_proxy="altera.com,.altera.com,${no_proxy}"
+
 for arg in "$@"; do
     if [[ $arg == OUTPUT_FOLDER=* ]]; then
         OUTPUT_FOLDER="${arg#*=}"

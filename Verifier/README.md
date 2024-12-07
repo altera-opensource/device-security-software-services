@@ -1,16 +1,11 @@
 ## Verifier
 
 Verifier is a Java library responsible for performing FPGA attestation.
-It is able to retrieve measurements (evidence) from the FPGA device and compare it with reference integrity manifest
-(RIM).
+It is able to retrieve measurements (evidence) from the FPGA device and compare it with Concise Reference Integrity Manifests (.corim).
 It also retrieves and validates signature and chain of certificates to confirm authenticity and integrity of the
 measurements.
 
-Reference Integrity Manifest can be:
-- generated using Quartus and stored in Glenpass JSON RIM (.rim) format
-- generated and signed by FW build system in CoRIM (.corim) format
-
-CoRIM can be published on Intel Distribution Point, so Verifier could get it as an input parameter to the verifier for comparison with measurements received from the device.
+Concise Reference Integrity Manifest can be generated using Quartus and stored in Concise Reference Integrity Manifests (.corim) format.
 
 Workload is a sample application that triggers Verifier's interface.
 
@@ -21,32 +16,11 @@ After FCS Server is up and running, note down the #HOST# (hostname or ip address
 
 ## Supported platforms and protocols
 
-Verifier supports Intel® Stratix10®, Intel® Agilex™ and Intel® eASIC™ N5X devices.
+Verifier supports Altera Agilex and eASIC N5X devices.
 
-Verifier support PSG-SIGMA protocol for Intel® Stratix10® devices and
-[TCG DICE](https://trustedcomputinggroup.org/work-groups/dice-architectures/)
-with [DMTF SPDM](https://www.dmtf.org/standards/SPDM) protocol for Intel® Agilex™ and Intel® eASIC™ N5X devices
+Verifier support [TCG DICE](https://trustedcomputinggroup.org/work-groups/dice-architectures/)
+with [DMTF SPDM](https://www.dmtf.org/standards/SPDM) protocol for Altera Agilex and eASIC N5X devices
 using [libspdm](https://github.com/DMTF/libspdm) library.
-
-## Related documentation reference
-
-#### HPS
-
-[Stratix10](https://www.intel.com/content/www/us/en/programmable/documentation/fnt1471308293130.html)
-
-[Agilex 7](https://www.intel.com/content/www/us/en/programmable/documentation/bmm1553539841763.html)
-
-[Agilex 5](https://www.intel.com/content/www/us/en/docs/programmable/762191/current/hard-processor-system-in-socs.html)
-
-
-#### Quartus Prime
-
-[Stratix10](https://www.intel.com/content/www/us/en/programmable/documentation/ndq1483601370898.html)
-
-[Agilex 7](https://www.intel.com/content/www/us/en/programmable/documentation/jix1627616846940.html)
-
-[Agilex 5](https://www.intel.com/content/www/us/en/docs/programmable/762191/current/device-security-for-fpgas-and-socs.html)
-
 
 ## Prerequisites
 
@@ -59,10 +33,7 @@ using [libspdm](https://github.com/DMTF/libspdm) library.
    Server
 
 4. Prepare Product Owner Root Signing Key (`root_private.pem`), chain (`root.qky`) and `quartus_sign` tool must be
-   available
-   to be used during initialization step. Below links to official Quartus Prime user guide:
-    1. [Stratix10](https://www.intel.com/content/www/us/en/programmable/documentation/ndq1483601370898.html#qzz1616549507856)
-    2. [Agilex 7](https://www.intel.com/content/www/us/en/programmable/documentation/jix1627616846940.html#qzz1616549507856)
+   available to be used during initialization step.
 
 5. (Recommended) Set up Java Cryptography
    Extension ([JCE](https://docs.oracle.com/en/java/javase/11/security/java-cryptography-architecture-jca-reference-guide.html))
@@ -70,9 +41,9 @@ using [libspdm](https://github.com/DMTF/libspdm) library.
    (Default) Alternatively, built-in BouncyCastle ([link](https://bouncycastle.org/)
    and [repository](https://github.com/bcgit/bc-java)) library can be used with no additional configuration
 
-6. Generate Reference Integrity Manifest (RIM) file for your board design using `quartus_pfg` tool
+6. Generate Concise Reference Integrity Manifests (.corim) file for your board design using `quartus_pfg` tool
 
-   `quartus_pfg -c "my_design.rbf" stratix10.rim`
+   `quartus_pfg -c <design.rbf> <output.corim>`
 
 ## Quick setup
 
@@ -81,7 +52,7 @@ To build spdm_wrapper, go to [spdm_wrapper/README.md](../spdm_wrapper/README.md)
 #### Building Verifier
 Build and deploy project using gradle:
 
-    ./gradlew clean build deploy
+    ../gradlew clean build deploy
 
 > **WARNING**
 > Task **_deploy_** will overwrite the content of **out/** directory.
@@ -130,33 +101,15 @@ e.g.,
 
     java -jar ./out/workload.jar -i "host:localhost; port:50001" -c HEALTH
 
-#### \[Stratix10 only\] Create Attestation SubKey
-
-Provide #PUF_TYPE# string identifier and #CONTEXT# (hex string up to 28 bytes)
-
-    java -jar ./out/workload.jar -i “host:#HOST#; port:#PORT#” -c CREATE --puf-type #PUF_TYPE# --context #CONTEXT#
-
-where:
-
-- PUF_TYPE is a string identifier of enum:
-
-  `IID, INTEL, EFUSE, IIDUSER, INTEL_USER`
-
-- CONTEXT is random hex value provided as seed to SDM FW and cached by Verifier, max 28 bytes length
-
-e.g.,
-
-    java -jar ./out/workload.jar -i “host:localhost; port:50001” -c CREATE --puf-type EFUSE --context 01020304050607080A0B0C0D0E0F0F112233445566778899AABBCC
-
 #### Get device attestation
 
-Provide #PATH# to generated .rim file:
+Provide #PATH# to generated .corim file:
 
     java -jar ./out/workload.jar -i “host:#HOST#; port:#PORT#” -c GET --ref-measurement #PATH#
 
 e.g.,
 
-    java -jar ./out/workload.jar -i “host:localhost; port:50001” -c GET --ref-measurement ./stratix10.rim
+    java -jar ./out/workload.jar -i “host:localhost; port:50001” -c GET --ref-measurement ./design.corim
 
 ### Security provider
 
@@ -214,20 +167,12 @@ Windows:
 
     java -cp "Verifier.jar;sample-app.jar" com.example.SampleApp ...
 
-## Comparison to RIM file (Reference Integrity Manifest)
+## Comparison to CoRIM file (Concise Reference Integrity Manifest)
 
-Verifier iterates over each block of RIM json file and checks whether
+Verifier iterates over each block of CoRIM file and checks whether
 all expected data is present in response from device, i.e.:
 
-- in measurement response for Stratix10,
-
 - in measurement response and certificate chain for Agilex.
-
-> **Note**
->
-> In case of Stratix10 device, layer 1 measurement (FW CMF descriptor
-> hash) cannot be trusted, therefore it is not parsed from response.
-> Including this measurement block in RIM for S10 will always cause attestation to fail.
 
 ## CoRIM local file support
 
@@ -267,7 +212,6 @@ Configuration file `config.properties` contains parameters that will be parsed b
 | **SQLite database**                                           |                  |                                                                                                                                                                                                                                                                                                                            |                           |                                                                                                                                    |
 | database-configuration.internal-database                      |        NO        | If set to true, in-memory sqlite cache database will be created. If false, sqlite database will be stored in file <strong>verifier_core.sqlite</strong> in current folder.                                                                                                                                                 |   true (default), false   |                                                                                                                                    |
 | **Verifier Signing Key**                                      |                  |                                                                                                                                                                                                                                                                                                                            |                           |                                                                                                                                    |
-| verifier-key-params.verifier-root-qky-chain.single-chain-path |        NO        | Absolute path to Verifier Signing Key single root certificate chain for **Stratix10** in *.qky file (PSG format) - leave empty during first run or if you need rotate Verifier Signing Key. Can be empty if multi-chain-path is set.                                                                                       |             -             | /path/to/verifier_chain_single.qky or C:\\\\path\\\\to\\\\verifier_chain_single.qky                                                |
 | verifier-key-params.verifier-root-qky-chain.multi-chain-path  |        NO        | Absolute path to Verifier Signing Key certificate chain for **Agilex** in *.qky file (PSG format) - leave empty during first run or if you need rotate Verifier Signing Key. Can be empty if single-chain-path is set.                                                                                                     |             -             | /path/to/verifier_chain_multi.qky or C:\\\\path\\\\to\\\\verifier_chain_multi.qky                                                  |
 | verifier-key-params.key-name                                  |        NO        | Verifier Signing Key alias used for identifying security object in Security Provider - leave empty during first run or if you need rotate Verifier Signing Key.                                                                                                                                                            |             -             | ced20836-8a55-49d5-862a-510296142a99                                                                                               |
 | **Certificate Distribution Point**                            |                  |                                                                                                                                                                                                                                                                                                                            |                           |                                                                                                                                    |
@@ -298,8 +242,7 @@ Workload application possible return codes:
 
 | Command |      Integer       |         Error code          | Description                                                                |
 |:--------|:------------------:|:---------------------------:|:---------------------------------------------------------------------------|
-| HEALTH  |     0 <br/> -1     |      PASS <br/> ERROR       | Health check success <br/> Health check failed                             |
-| CREATE  |     0 <br/> -1     |      PASS <br/> ERROR       | Operation successful <br/> Internal error occurred                         |
+| HEALTH  |     0 <br/> -1     |      PASS <br/> ERROR       | Health check success <br/> Health check failed                          |
 | GET     | 0 <br/> -1 <br/> 1 | PASS <br/> ERROR <br/> FAIL | Attestation passed  <br/> Internal error occurred <br/> Attestation failed |
 |         |                    |                             |                                                                            |
 
@@ -309,9 +252,8 @@ During first run or when Verifier Signing Key needs to be rotated, clear the `ve
 from `config.properties`.
 In next run, a new key will be created, follow the instruction in the log to complete the process.
 
-Additionally, you may clear the `verifier-key-params.verifier-root-qky-chain.single-chain-path`
-and `verifier-key-params.verifier-root-qky-chain.multi-chain-path`
-parameters. If not cleared, during next run the existing files in those locations will be backed up with a new name:
+Additionally, you may clear the `verifier-key-params.verifier-root-qky-chain.multi-chain-path`
+parameter. If not cleared, during next run the existing files in those locations will be backed up with a new name:
 
     existing_chain.qky.backup_<timestamp_millis>_<random_hex_value>
 

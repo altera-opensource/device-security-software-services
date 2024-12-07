@@ -57,6 +57,7 @@ import com.sun.jna.Memory;
 import com.sun.jna.ptr.ByteByReference;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -64,13 +65,14 @@ import java.util.List;
 
 import static com.intel.bkp.protocol.spdm.jna.SpdmUtils.getBytes;
 import static com.intel.bkp.protocol.spdm.jna.SpdmUtils.throwOnError;
+import static com.intel.bkp.protocol.spdm.jna.model.LibSpdmReturn.LIBSPDM_STATUS_SPDM_INTERNAL_EXCEPTION;
 import static com.intel.bkp.protocol.spdm.jna.model.LibSpdmReturn.LIBSPDM_STATUS_SUCCESS;
 import static com.intel.bkp.protocol.spdm.jna.model.SpdmConstants.LIBSPDM_SENDER_RECEIVE_BUFFER_SIZE;
 import static com.intel.bkp.protocol.spdm.jna.model.SpdmConstants.MAX_LOCAL_CERTIFICATE_CHAIN_SIZE;
 import static com.intel.bkp.protocol.spdm.jna.model.SpdmConstants.MAX_SPDM_BUFFER_SIZE;
 import static com.intel.bkp.protocol.spdm.jna.model.SpdmConstants.SPDM_GET_MEASUREMENTS_REQUEST_ATTRIBUTES_GENERATE_SIGNATURE;
 import static com.intel.bkp.protocol.spdm.jna.model.SpdmConstants.SPDM_GET_MEASUREMENTS_REQUEST_MEASUREMENT_OPERATION_ALL_MEASUREMENTS;
-import static com.intel.bkp.protocol.spdm.jna.model.SpdmConstants.SPDM_KEY_EXCHANGE_REQUEST_NO_MEASUREMENT_SUMMARY_HASH;
+import static com.intel.bkp.protocol.spdm.jna.model.SpdmConstants.SPDM_KEY_EXCHANGE_REQUEST_ALL_MEASUREMENTS_HASH;
 import static com.intel.bkp.utils.BitUtils.countSetBits;
 import static com.intel.bkp.utils.HexConverter.toFormattedHex;
 import static com.intel.bkp.utils.HexConverter.toHex;
@@ -98,6 +100,8 @@ public abstract class SpdmProtocol12 implements SpdmProtocol {
 
     @Getter
     private boolean secureSessionInitialized = false;
+
+    private String expectedMeasurementHash;
 
     protected LibSpdmLibraryWrapper jnaInterface;
 
@@ -395,6 +399,7 @@ public abstract class SpdmProtocol12 implements SpdmProtocol {
             final byte[] numberOfBlocksArray = getBytes(numberOfBlocks, Uint8.SIZE);
 
             final String measurements = toHex(measurementsArray);
+            expectedMeasurementHash = toHex(DigestUtils.sha384(measurementsArray));
             final int numberOfBlocksInt = ByteBufferSafe.wrap(numberOfBlocksArray).getByte();
             log.debug("MEASUREMENTS (blocks: {}): {}", numberOfBlocksInt, measurements);
 
@@ -429,11 +434,21 @@ public abstract class SpdmProtocol12 implements SpdmProtocol {
             measurementHash.clear(SHA384_LEN);
 
             final LibSpdmReturn status = jnaInterface.libspdm_start_session_w(spdmContext.getContext(), false, null,
-                new Uint16(0), new Uint8(SPDM_KEY_EXCHANGE_REQUEST_NO_MEASUREMENT_SUMMARY_HASH),
+                new Uint16(0), new Uint8(SPDM_KEY_EXCHANGE_REQUEST_ALL_MEASUREMENTS_HASH),
                 new Uint8(measurementSlotId), new Uint8(0), sessionId, heartbeatPeriod, measurementHash);
 
             log.debug("KEY_EXCHANGE status: {}", toFormattedHex(status.asLong()));
             final byte[] sessionIdBytes = getBytes(sessionId, Uint32.SIZE);
+            final byte[] measurementHashBytes = getBytes(measurementHash, SHA384_LEN);
+            if (!expectedMeasurementHash.isEmpty()) {
+                if (!toHex(measurementHashBytes).equals(expectedMeasurementHash)) {
+                    log.error("Measurement hash mismatch.");
+                    throwOnError(LIBSPDM_STATUS_SPDM_INTERNAL_EXCEPTION);
+                }
+            } else {
+                log.error("Expected measurement hash is empty.");
+                throwOnError(LIBSPDM_STATUS_SPDM_INTERNAL_EXCEPTION);
+            }
 
             throwOnError(status);
 

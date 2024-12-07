@@ -64,7 +64,6 @@ import java.util.Arrays;
 
 import static com.intel.bkp.protocol.spdm.jna.model.LibSpdmReturn.LIBSPDM_STATUS_SUCCESS;
 import static com.intel.bkp.protocol.spdm.jna.model.SpdmConstants.SPDM_GET_MEASUREMENTS_REQUEST_ATTRIBUTES_GENERATE_SIGNATURE;
-import static com.intel.bkp.protocol.spdm.jna.model.SpdmConstants.SPDM_GET_MEASUREMENTS_REQUEST_ATTRIBUTES_RAW_BIT_STREAM_REQUESTED;
 import static com.intel.bkp.utils.HexConverter.toHex;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -383,9 +382,9 @@ class SpdmProtocol12ImplTest {
             }
 
             // then
-            verify(wrapperMock).libspdm_get_measurement_w(any(), any(), any(), any(),
-                eq(new Uint8(SPDM_GET_MEASUREMENTS_REQUEST_ATTRIBUTES_RAW_BIT_STREAM_REQUESTED)), any(),
-                any(), any(), any());
+            verify(wrapperMock).libspdm_get_measurement_w(any(), any(),
+                eq(new Uint8(0)),
+                any(), any(), any(), any(), any(), any());
             verifyCallbacksAreRegistered();
         }
     }

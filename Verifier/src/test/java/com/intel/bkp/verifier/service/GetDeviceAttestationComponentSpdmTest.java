@@ -34,15 +34,12 @@ package com.intel.bkp.verifier.service;
 
 import com.intel.bkp.command.model.CommandLayer;
 import com.intel.bkp.fpgacerts.verification.VerificationResult;
-import com.intel.bkp.protocol.spdm.exceptions.SpdmNotSupportedException;
 import com.intel.bkp.protocol.spdm.exceptions.UnsupportedSpdmVersionException;
 import com.intel.bkp.protocol.spdm.service.SpdmGetVersionMessageSender;
 import com.intel.bkp.protocol.spdm.service.SpdmVcaMessageSender;
 import com.intel.bkp.protocol.spdm.service.SpdmVersionVerifier;
 import com.intel.bkp.verifier.exceptions.VerifierRuntimeException;
 import com.intel.bkp.verifier.model.VerifierExchangeResponse;
-import com.intel.bkp.verifier.protocol.sigma.service.GpS10AttestationComponent;
-import com.intel.bkp.verifier.protocol.sigma.service.TeardownMessageSender;
 import com.intel.bkp.verifier.protocol.spdm.service.SpdmDiceAttestationComponent;
 import com.intel.bkp.verifier.service.certificate.AppContext;
 import com.intel.bkp.verifier.transport.model.TransportLayer;
@@ -54,16 +51,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class GetDeviceAttestationComponentTest {
+class GetDeviceAttestationComponentSpdmTest {
 
     private static final String REF_MEASUREMENT = "abcd";
     private static final byte[] DEVICE_ID = new byte[8];
@@ -80,41 +75,19 @@ class GetDeviceAttestationComponentTest {
     private TransportLayer transportLayer;
 
     @Mock
-    private GpS10AttestationComponent gpS10AttestationComponent;
-
-    @Mock
     private SpdmGetVersionMessageSender spdmGetVersionMessageSender;
 
     @Mock
-    private TeardownMessageSender teardownMessageSender;
-    @Mock
     private SpdmDiceAttestationComponent spdmDiceAttestationComponent;
+
     @Mock
     private SpdmVcaMessageSender spdmVcaMessageSender;
+
     @Mock
     private SpdmVersionVerifier spdmVersionVerifier;
 
     @InjectMocks
-    private GetDeviceAttestationComponent sut;
-
-    @Test
-    void perform_SpdmAttestationNotSupported_CallsS10GpAttestation() throws Exception {
-        // given
-        mockAppContextForGpAttestation();
-        doThrow(new SpdmNotSupportedException()).when(spdmGetVersionMessageSender).send();
-        final var expectedResult = VerifierExchangeResponse.OK;
-        when(gpS10AttestationComponent.perform(REF_MEASUREMENT, DEVICE_ID))
-            .thenReturn(expectedResult);
-
-        // when
-        final var actualResult = sut.perform(appContext, REF_MEASUREMENT, DEVICE_ID);
-
-        // then
-        assertEquals(expectedResult, actualResult);
-        verifyNoInteractions(spdmDiceAttestationComponent);
-        verify(teardownMessageSender).send(transportLayer, commandLayer);
-        verify(gpS10AttestationComponent).perform(REF_MEASUREMENT, DEVICE_ID);
-    }
+    private GetDeviceAttestationComponentSpdm sutSpdm;
 
     @Test
     void perform_SpdmAttestationInsufficientVersion_Throws() throws Exception {
@@ -129,7 +102,7 @@ class GetDeviceAttestationComponentTest {
 
         // when
         final var ex = assertThrows(VerifierRuntimeException.class, () ->
-            sut.perform(appContext, REF_MEASUREMENT, DEVICE_ID));
+            sutSpdm.perform(appContext, REF_MEASUREMENT, DEVICE_ID));
 
         // then
         assertEquals(expectedExMessage, ex.getMessage());
@@ -145,12 +118,11 @@ class GetDeviceAttestationComponentTest {
         // when
         final VerifierRuntimeException ex =
             assertThrows(VerifierRuntimeException.class,
-                () -> sut.perform(appContext, REF_MEASUREMENT, DEVICE_ID));
+                () -> sutSpdm.perform(appContext, REF_MEASUREMENT, DEVICE_ID));
 
         // then
         assertEquals(expectedErrorMessage, ex.getMessage());
         verifyNoInteractions(spdmDiceAttestationComponent);
-        verify(gpS10AttestationComponent, never()).perform(any(), any());
     }
 
     @Test
@@ -163,12 +135,11 @@ class GetDeviceAttestationComponentTest {
         // when
         final VerifierRuntimeException ex =
             assertThrows(VerifierRuntimeException.class,
-                () -> sut.perform(appContext, REF_MEASUREMENT, DEVICE_ID));
+                () -> sutSpdm.perform(appContext, REF_MEASUREMENT, DEVICE_ID));
 
         // then
         assertEquals(expectedErrorMessage, ex.getMessage());
         verifyNoInteractions(spdmDiceAttestationComponent);
-        verify(gpS10AttestationComponent, never()).perform(any(), any());
     }
 
     @Test
@@ -180,17 +151,10 @@ class GetDeviceAttestationComponentTest {
         when(spdmDiceAttestationComponent.perform(REF_MEASUREMENT, DEVICE_ID)).thenReturn(attestationResult);
 
         // when
-        final var actualResult = sut.perform(appContext, REF_MEASUREMENT, DEVICE_ID);
+        final var actualResult = sutSpdm.perform(appContext, REF_MEASUREMENT, DEVICE_ID);
 
         // then
         assertEquals(expectedResult, actualResult);
         verify(spdmDiceAttestationComponent).perform(REF_MEASUREMENT, DEVICE_ID);
-        verify(gpS10AttestationComponent, never()).perform(any(), any());
-        verifyNoInteractions(teardownMessageSender);
-    }
-
-    private void mockAppContextForGpAttestation() {
-        when(appContext.getTransportLayer()).thenReturn(transportLayer);
-        when(appContext.getCommandLayer()).thenReturn(commandLayer);
     }
 }

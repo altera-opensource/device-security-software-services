@@ -61,7 +61,7 @@ import java.util.ListIterator;
 import java.util.Optional;
 import java.util.Set;
 
-import static com.intel.bkp.fpgacerts.verification.CrlVerifier.INVALID_NEXT_UPDATE_LOG_MSG;
+import static com.intel.bkp.fpgacerts.verification.CrlVerifier.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;

@@ -45,7 +45,7 @@ import com.intel.bkp.verifier.database.SQLiteHelper;
 import com.intel.bkp.verifier.exceptions.VerifierKeyNotInitializedException;
 import com.intel.bkp.verifier.model.LibConfig;
 import com.intel.bkp.verifier.model.VerifierKeyParams;
-import com.intel.bkp.verifier.protocol.sigma.service.VerifierKeyManager;
+import com.intel.bkp.verifier.protocol.common.service.VerifierKeyManager;
 import com.intel.bkp.verifier.security.X509TrustManagerManager;
 import com.intel.bkp.verifier.transport.model.TransportLayer;
 import com.intel.bkp.verifier.utils.LibConfigParser;
