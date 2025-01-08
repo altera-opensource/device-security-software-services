@@ -28,11 +28,11 @@ Refer to below table for more details on currently supported dependencies for bu
 | Name           | Supported Value | Download Source |
 |:------------------|:-----------|:------------------------------------------------------------------------------------------------------------------------------|
 | always_build              | 1 |
-| openssl.version              | <int> (openssl version number) | https://github.com/openssl/openssl.git
-| libspdm.version              | <int> (libspdm version number) | https://github.com/DMTF/libspdm.git
-| libcurl.version              | <int> (curl version number) | https://curl.se
-| boost.version              | <int> (boost version number) | https://github.com/boostorg/boost/releases
-| gtest.version              | <int> (googletest version number) | https://github.com/google/googletest.git
+| openssl.version              | 3.1.4 | https://github.com/openssl/openssl.git
+| libspdm.version              | 3.2.0 | https://github.com/DMTF/libspdm.git
+| libcurl.version              | 8.5.0 | https://curl.se
+| boost.version              | 1.84.0 | https://github.com/boostorg/boost/releases
+| gtest.version              | 1.14.0 | https://github.com/google/googletest.git
 
 Produced binaries can be found in ./out_windows folder.
 
