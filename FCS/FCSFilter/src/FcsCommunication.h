@@ -29,7 +29,6 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***************************************************************************
 */
-
 #ifndef FCS_COMMUNICATION_H
 #define FCS_COMMUNICATION_H
 
@@ -37,38 +36,23 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stddef.h>
 #include <vector>
 #include <string>
+#include <map>
+#include <iomanip>
+#include <sstream>
 
-#include "intel_fcs-ioctl.h"
-#include "intel_fcs_structs.h"
+#include "FcsException.h"
+#include "Logger.h"
+#include "VerifierProtocol.h"
+#include "utils.h"
 
 class FcsCommunication
 {
     public:
-        static bool getChipId(
-            std::vector<uint8_t> &outBuffer,
-            int32_t &fcsStatus);
-        static bool sigmaTeardown(uint32_t sessionId, int32_t &fcsStatus);
-        static bool createAttestationSubkey(
-            std::vector<uint8_t> &inBuffer,
-            std::vector<uint8_t> &outBuffer,
-            int32_t &fcsStatus);
-        static bool getMeasurement(
-            std::vector<uint8_t> &inBuffer,
-            std::vector<uint8_t> &outBuffer,
-            int32_t &fcsStatus);
-        static bool getAttestationCertificate(
-            uint8_t certificateRequest,
-            std::vector<uint8_t> &outBuffer,
-            int32_t &fcsStatus);
-        static bool mailboxGeneric(
-            uint32_t commandCode,
-            std::vector<uint8_t> &inBuffer,
-            std::vector<uint8_t> &outBuffer,
-            int32_t &fcsStatus);
-
-    private:
-        static bool sendIoctl(intel_fcs_dev_ioctl *data, unsigned long commandCode);
-        static std::string get_mailbox_name(uint32_t commandCode);
+        FcsCommunication() {}
+        virtual ~FcsCommunication() {}
+        virtual bool runCommandCode(VerifierProtocol verifierProtocol, std::vector<uint8_t>& responseBuffer, int32_t& statusReturnedFromFcs) = 0;
+        static FcsCommunication* getFcsCommunication();
+        std::string get_mailbox_name(uint32_t CommandCode);
 };
 
-#endif /* FCS_COMMUNICATION */
+#endif /* FCS_COMMUNICATION_H */

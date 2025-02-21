@@ -48,7 +48,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 const uint32_t IDCODE = 0x6341D0DD;
 
-int ioctl(int fileDescriptor, unsigned long int commandCode, intel_fcs_dev_ioctl *data) {
+int ioctl(int fileDescriptor, unsigned long int commandCode, altera_fcs_dev_ioctl *data) {
     Logger::log("ioctl() mock called", Debug);
     if (data == nullptr) {
         errno = EFAULT;
@@ -59,13 +59,13 @@ int ioctl(int fileDescriptor, unsigned long int commandCode, intel_fcs_dev_ioctl
         return -1;
     }
     switch (commandCode) {
-        case (INTEL_FCS_DEV_CHIP_ID_CMD): {
+        case (ALTERA_FCS_DEV_CHIP_ID_CMD): {
             data->com_paras.c_id.chip_id_high = CHIPID_HIGH;
             data->com_paras.c_id.chip_id_low = CHIPID_LOW;
             data->status = 0;
         }
         break;
-        case (INTEL_FCS_DEV_PSGSIGMA_TEARDOWN_CMD): {
+        case (ALTERA_FCS_DEV_PSGSIGMA_TEARDOWN_CMD): {
             if (data->com_paras.tdown.sid != FcsSimulator::expectedSessionId) {
                 data->status = -1;
             } else {
@@ -73,7 +73,7 @@ int ioctl(int fileDescriptor, unsigned long int commandCode, intel_fcs_dev_ioctl
             }
         }
         break;
-        case (INTEL_FCS_DEV_ATTESTATION_SUBKEY_CMD): {
+        case (ALTERA_FCS_DEV_ATTESTATION_SUBKEY_CMD): {
             if (data->com_paras.subkey.rsp_data_sz < ATTESTATION_SUBKEY_RSP_MAX_SZ) {
                 errno = EINVAL;
                 return -1;
@@ -88,7 +88,7 @@ int ioctl(int fileDescriptor, unsigned long int commandCode, intel_fcs_dev_ioctl
             }
         }
         break;
-        case (INTEL_FCS_DEV_ATTESTATION_MEASUREMENT_CMD): {
+        case (ALTERA_FCS_DEV_ATTESTATION_MEASUREMENT_CMD): {
             if (data->com_paras.measurement.rsp_data_sz < ATTESTATION_MEASUREMENT_RSP_MAX_SZ) {
                 errno = EINVAL;
                 return -1;
@@ -103,7 +103,7 @@ int ioctl(int fileDescriptor, unsigned long int commandCode, intel_fcs_dev_ioctl
         }
         break;
 #ifdef SPDM_SIM
-        case (INTEL_FCS_DEV_ATTESTATION_GET_CERTIFICATE): {
+        case (ALTERA_FCS_DEV_ATTESTATION_GET_CERTIFICATE): {
             std::vector<uint8_t> outputBuffer;
             int status = SpdmSimulator::sendGetAttestationCommand(data->com_paras.certificate.c_request, outputBuffer);
             Logger::logWithReturnCode("SpdmSimulator::sendGetAttestationCommand called", status, Debug);
@@ -112,7 +112,7 @@ int ioctl(int fileDescriptor, unsigned long int commandCode, intel_fcs_dev_ioctl
             data->status = 0;
         }
         break;
-        case (INTEL_FCS_DEV_MBOX_SEND): {
+        case (ALTERA_FCS_DEV_MBOX_SEND): {
             std::vector<uint8_t> inputBuffer;
             uint8_t* dataPtr = static_cast<uint8_t*>(data->com_paras.mbox_send_cmd.cmd_data);
             inputBuffer.assign(dataPtr, dataPtr + data->com_paras.mbox_send_cmd.cmd_data_sz);
@@ -139,7 +139,7 @@ int ioctl(int fileDescriptor, unsigned long int commandCode, intel_fcs_dev_ioctl
         }
         break;
 #else
-        case (INTEL_FCS_DEV_ATTESTATION_GET_CERTIFICATE): {
+        case (ALTERA_FCS_DEV_ATTESTATION_GET_CERTIFICATE): {
             if (data->com_paras.certificate.rsp_data_sz < ATTESTATION_CERTIFICATE_RSP_MAX_SZ) {
                 errno = EINVAL;
                 return -1;

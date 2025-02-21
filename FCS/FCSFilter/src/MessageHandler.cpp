@@ -35,100 +35,27 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Logger.h"
 #include "VerifierProtocol.h"
 
-void handleIncomingMessage(
+bool handleIncomingMessage(
     std::vector<uint8_t> &messageBuffer,
     std::vector<uint8_t> &responseBuffer)
 {
     VerifierProtocol verifierProtocol;
     if (!verifierProtocol.parseMessage(messageBuffer))
     {
+        // Error handled by BKPS
         Logger::log("Couldn't parse incoming message", Error);
         verifierProtocol.prepareResponseMessage(
             std::vector<uint8_t>(), responseBuffer, verifierProtocol.getErrorCode());
-        return;
+        return true;
     }
+    FcsCommunication* fcsCommunication = FcsCommunication::getFcsCommunication();
+    if (fcsCommunication == nullptr)
+    {
+        Logger::log("FCS communication is not supported on this device.", Error);
+        return false;
+    }
+    int32_t statusReturnedFromFcs = -1;
+    fcsCommunication->runCommandCode(verifierProtocol, responseBuffer, statusReturnedFromFcs);
 
-    std::vector<uint8_t> payloadFromFcs;
-    bool fcsCallSucceeded = false;
-    int32_t statusReturnedFromFcs;
-    switch (verifierProtocol.getCommandCode())
-    {
-        case getChipId:
-        {
-            fcsCallSucceeded = FcsCommunication::getChipId(
-                payloadFromFcs, statusReturnedFromFcs);
-        }
-        break;
-        case sigmaTeardown:
-        {
-            fcsCallSucceeded = FcsCommunication::sigmaTeardown(
-                verifierProtocol.getSigmaTeardownSessionId(),
-                statusReturnedFromFcs);
-        }
-        break;
-        case createAttestationSubKey:
-        {
-            fcsCallSucceeded = FcsCommunication::createAttestationSubkey(
-                verifierProtocol.getIncomingPayload(),
-                payloadFromFcs,
-                statusReturnedFromFcs);
-        }
-        break;
-        case getMeasurement:
-        {
-            fcsCallSucceeded = FcsCommunication::getMeasurement(
-                verifierProtocol.getIncomingPayload(),
-                payloadFromFcs,
-                statusReturnedFromFcs);
-        }
-        break;
-        case getAttestationCertificate:
-        {
-            fcsCallSucceeded = FcsCommunication::getAttestationCertificate(
-                verifierProtocol.getCertificateRequest(),
-                payloadFromFcs,
-                statusReturnedFromFcs);
-            if (statusReturnedFromFcs == -1)
-            {
-                Logger::log("GET_ATTESTATION_CERTIFICATE not supported by the driver. Returning unknown command.");
-                verifierProtocol.prepareEmptyResponseMessage(
-                responseBuffer, unknownCommand);
-                return;
-            }
-        }
-        break;
-        case sigmaM1:
-        case sigmaM3:
-        case sigmaEnc:
-        case mctp:
-        case getIdCode:
-        case getDeviceIdentity:
-        {
-            fcsCallSucceeded = FcsCommunication::mailboxGeneric(
-                verifierProtocol.getCommandCode(),
-                verifierProtocol.getIncomingPayload(),
-                payloadFromFcs,
-                statusReturnedFromFcs);
-        }
-        break;
-        default:
-        {
-            Logger::log("Command code not recognized: "
-                + std::to_string(verifierProtocol.getCommandCode()));
-            verifierProtocol.prepareEmptyResponseMessage(
-                responseBuffer, unknownCommand);
-            return;
-        }
-        break;
-    }
-    if (!fcsCallSucceeded)
-    {
-        /*
-        don't prepare any message, server should disconnect
-        - emulates system console behavior
-        */
-        return;
-    }
-    verifierProtocol.prepareResponseMessage(
-        payloadFromFcs, responseBuffer, statusReturnedFromFcs);
+    return true;
 }

@@ -30,11 +30,20 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************
 */
 
-#include <stdint.h>
+#include <cstdint>
+#include <map>
+#include <string>
+#include <cstring>
+#include <vector>
+
+typedef std::map<std::string, std::string> CMD_RESP_MAP;
 
 class FcsSimulator
 {
     public:
+        static CMD_RESP_MAP cmd_resp_map;
+        static std::vector<uint8_t> hexStringToByteArray(std::string hexString);
+        static int fcs_get_response(const char* cmd_name, uint8_t* response_buffer, uint32_t* size);
         static uint32_t expectedSessionId;
         static uint32_t expectedCreateSubkeyCommandLength;
         static uint32_t expectedGetMeasurementCommandLength;

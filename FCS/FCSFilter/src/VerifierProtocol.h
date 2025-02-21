@@ -46,21 +46,6 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Certificate request field consists of last 5 bits in word. The rest is reserved
 #define GET_ATT_CERT_CERTIFICATE_REQUEST_MASK 0xFF
 
-enum CommandCode
-{
-    getIdCode = 0x10,
-    getChipId = 0x12,
-    sigmaM1 = 0xd2,
-    sigmaM3 = 0xd3,
-    sigmaEnc = 0xd4,
-    sigmaTeardown = 0xd5,
-    getAttestationCertificate = 0x181,
-    createAttestationSubKey = 0x182,
-    getMeasurement = 0x183,
-    mctp = 0x194,
-    getDeviceIdentity = 0x500
-};
-
 enum ErrorCode
 {
     noError = 0x00,
@@ -85,9 +70,17 @@ class VerifierProtocol
         uint32_t getSigmaTeardownSessionId();
         uint8_t getCertificateRequest();
 
-        std::vector<uint8_t> &getIncomingPayload()
+        std::vector<uint8_t>& getIncomingPayload()
         {
             return incomingPayload;
+        }
+        void setIncomingPayload(std::vector<uint8_t> payload)
+        {
+            incomingPayload = payload;
+        }
+        void setCommandCode(uint32_t commandCode)
+        {
+            incomingHeader.code = commandCode;
         }
         ErrorCode getErrorCode()
         {
@@ -100,11 +93,11 @@ class VerifierProtocol
         size_t getPayloadOffset();
         static inline std::unordered_map<uint32_t, size_t> payloadSizeMap =
         {
-            { sigmaTeardown, 8 },
-            { getAttestationCertificate, 4 },
-            { getChipId, 0 },
-            { getDeviceIdentity, 0 },
-            { getIdCode, 0 },
+            { SDM_COMMAND_CODE::SIGMA_TEARDOWN, 8 },
+            { SDM_COMMAND_CODE::GET_ATTESTATION_CERTIFICATE, 4 },
+            { SDM_COMMAND_CODE::GET_CHIPID, 0 },
+            { SDM_COMMAND_CODE::GET_DEVICE_IDENTITY, 0 },
+            { SDM_COMMAND_CODE::GET_JTAG_IDCODE, 0 }
         };
         std::vector<uint8_t> incomingPayload;
         CommandHeader incomingHeader;

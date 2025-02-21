@@ -29,46 +29,44 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***************************************************************************
 */
+struct altera_fcs_dev {
 
-#ifndef TCPSERVER_H
-#define TCPSERVER_H
+    struct fcs_qspi_read {
+        char* buffer;
+    };
 
-#include <stddef.h>
-#include <stdint.h>
-#include <sys/poll.h>
-#include <vector>
+    struct fcs_chipid {
+        uint32_t chip_id_lo;
+        uint32_t chip_id_hi;
+    };
 
-class TcpServer
-{
-    public:
-        void run(
-            uint32_t portNumber,
-            bool (*onMessage)(
-                std::vector<uint8_t>&, std::vector<uint8_t>&));
-        void closeSockets();
+    struct fcs_idcode {
+        uint32_t idcode;
+    };
 
-    private:
-        void setup(uint32_t portNumber);
-        void dropUnusedConnections();
-        void handleEventIfAny(
-            pollfd &socket,
-            bool (*onMessage)(
-                std::vector<uint8_t>&, std::vector<uint8_t>&));
-        void acceptConnection();
-        void closeConnectionAndEnableForReuse(pollfd &socket);
+    struct fcs_attestation_certificate {
+        char*    cert;
+        uint32_t cert_size;
+    };
 
-        static const uint32_t kMaxNumberOfConnections = 20;
-        static const uint32_t kPollTimeoutInMilliseconds = 60 * 1000;
+    struct fcs_mctp {
+        char* mctp_resp;
+        int   resp_len;
+    };
 
-        // 1 server socket + client sockets
-        static const uint32_t kNumberOfSockets = kMaxNumberOfConnections + 1;
-        static const uint32_t kMaxMessageSizeInBytes = 10000;
+    struct fcs_device_identity {
+        char* dev_identity;
+        int   dev_identity_length;
+    };
 
-        std::vector<uint8_t> messageBuffer
-            = std::vector<uint8_t>(kMaxMessageSizeInBytes);
-
-        pollfd sockets[kNumberOfSockets];
-        int serverSocketFd = -1;
+    /* command parameters */
+    union {
+        struct fcs_qspi_read                c_qspi_read;
+        struct fcs_chipid	                c_chipid;
+        struct fcs_idcode	                c_idcode;
+        struct fcs_attestation_certificate	c_attestation_certificate;
+        struct fcs_mctp                     c_mctp;
+        struct fcs_device_identity          c_device_identity;
+    } com_paras;
 };
 
-#endif /* TCPSERVER_H */

@@ -79,9 +79,9 @@ bool VerifierProtocol::parseMessage(std::vector<uint8_t> &messageBuffer)
 size_t VerifierProtocol::getPayloadOffset()
 {
     size_t messageReservedBytesCount = 0;
-    if (incomingHeader.code == sigmaTeardown
-        || incomingHeader.code == createAttestationSubKey
-        || incomingHeader.code == getMeasurement)
+    if (incomingHeader.code == SDM_COMMAND_CODE::SIGMA_TEARDOWN
+        || incomingHeader.code == SDM_COMMAND_CODE::CREATE_ATTESTATION_SUBKEY
+        || incomingHeader.code == SDM_COMMAND_CODE::GET_MEASUREMENT)
     {
         messageReservedBytesCount = RESERVED_BYTES_COUNT;
     }
@@ -103,7 +103,7 @@ bool VerifierProtocol::isPayloadSizeCorrect()
 
 bool VerifierProtocol::isMagicWordCorrect()
 {
-    if (incomingHeader.code == sigmaTeardown)
+    if (incomingHeader.code == SDM_COMMAND_CODE::SIGMA_TEARDOWN)
     {
         uint32_t incomingMagic = Utils::decodeFromLittleEndianBuffer(
             incomingPayload);
@@ -172,13 +172,13 @@ uint32_t VerifierProtocol::getCommandCode()
 uint32_t VerifierProtocol::getSigmaTeardownSessionId()
 {
     //should never happen
-    if (getCommandCode() != sigmaTeardown)
+    if (getCommandCode() != SDM_COMMAND_CODE::SIGMA_TEARDOWN)
     {
         throw std::logic_error("Attempt to read SessionId from message of type other than sigmaTeardown");
     }
 
     //should never happen, as it is also checked during parsing
-    if (incomingPayload.size() < payloadSizeMap[sigmaTeardown])
+    if (incomingPayload.size() < payloadSizeMap[SDM_COMMAND_CODE::SIGMA_TEARDOWN])
     {
         throw std::logic_error("getSigmaTeardownSessionId: Message Size too small");
     }
@@ -189,13 +189,13 @@ uint32_t VerifierProtocol::getSigmaTeardownSessionId()
 uint8_t VerifierProtocol::getCertificateRequest()
 {
     //should never happen
-    if (getCommandCode() != getAttestationCertificate)
+    if (getCommandCode() != SDM_COMMAND_CODE::GET_ATTESTATION_CERTIFICATE)
     {
         throw std::logic_error("Attempt to read certificate request from message of type other than getAttestationCertificate");
     }
 
     //should never happen, as it is also checked during parsing
-    if (incomingPayload.size() < payloadSizeMap[getAttestationCertificate])
+    if (incomingPayload.size() < payloadSizeMap[SDM_COMMAND_CODE::GET_ATTESTATION_CERTIFICATE])
     {
         throw std::logic_error("getCertificateRequest: Message Size too small");
     }
