@@ -32,62 +32,62 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "gtest/gtest.h"
 
-#include "FcsCommunication.h"
+#include "FcsCommunicationFcsIoctl.h"
 #include "FcsSimulator.h"
 
-TEST(FcsCommunicationUT, intel_fcs_dev_ioctlSizeTest)
+TEST(FcsCommunicationFcsIoctlUT, altera_fcs_dev_ioctlSizeTest)
 {
-    EXPECT_EQ((size_t)256, sizeof(intel_fcs_dev_ioctl));
+    EXPECT_EQ((size_t)256, sizeof(altera_fcs_dev_ioctl));
 }
 
-TEST(FcsCommunicationUT, getChipIdTest)
+TEST(FcsCommunicationFcsIoctlUT, getChipIdTest)
 {
     std::vector<uint8_t> expectedPayload {0x5A, 0xEC, 0xAC, 0x18, 0xCC, 0xC6, 0x82, 0x07};
     std::vector<uint8_t> payload;
     int32_t status;
-    EXPECT_TRUE(FcsCommunication::getChipId(payload, status));
+    EXPECT_TRUE(FcsCommunicationFcsIoctl::getChipId(payload, status));
     EXPECT_EQ(0, status);
     EXPECT_EQ(expectedPayload, payload);
 }
 
-TEST(FcsCommunicationUT, sigmaTeardownTest)
+TEST(FcsCommunicationFcsIoctlUT, sigmaTeardownTest)
 {
     FcsSimulator::expectedSessionId = 0xFFFFFFFF;
     int32_t status;
-    EXPECT_TRUE(FcsCommunication::sigmaTeardown(FcsSimulator::expectedSessionId, status));
+    EXPECT_TRUE(FcsCommunicationFcsIoctl::sigmaTeardown(FcsSimulator::expectedSessionId, status));
     EXPECT_EQ(0, status);
-    EXPECT_TRUE(FcsCommunication::sigmaTeardown(0xAAAA, status));
+    EXPECT_TRUE(FcsCommunicationFcsIoctl::sigmaTeardown(0xAAAA, status));
     EXPECT_EQ(-1, status);
 }
 
-TEST(FcsCommunicationUT, createAttestationSubkeyTest)
+TEST(FcsCommunicationFcsIoctlUT, createAttestationSubkeyTest)
 {
     FcsSimulator::expectedCreateSubkeyCommandLength = 1000;
     std::vector<uint8_t> payload(FcsSimulator::expectedCreateSubkeyCommandLength, 0x11);
     std::vector<uint8_t> output;
     int32_t status;
-    EXPECT_TRUE(FcsCommunication::createAttestationSubkey(payload, output, status));
+    EXPECT_TRUE(FcsCommunicationFcsIoctl::createAttestationSubkey(payload, output, status));
     EXPECT_EQ(0, status);
     EXPECT_EQ((size_t)ATTESTATION_SUBKEY_RSP_MAX_SZ, output.size());
 }
 
-TEST(FcsCommunicationUT, getMeasurementTest)
+TEST(FcsCommunicationFcsIoctlUT, getMeasurementTest)
 {
     FcsSimulator::expectedGetMeasurementCommandLength = 2000;
     std::vector<uint8_t> payload(FcsSimulator::expectedGetMeasurementCommandLength, 0x11);
     std::vector<uint8_t> output;
     int32_t status;
-    EXPECT_TRUE(FcsCommunication::getMeasurement(payload, output, status));
+    EXPECT_TRUE(FcsCommunicationFcsIoctl::getMeasurement(payload, output, status));
     EXPECT_EQ(0, status);
     EXPECT_EQ(FcsSimulator::expectedGetMeasurementResponseLength, output.size());
 }
 
-TEST(FcsCommunicationUT, getAttestationCertificateTest)
+TEST(FcsCommunicationFcsIoctlUT, getAttestationCertificateTest)
 {
     FcsSimulator::expectedCertificateRequest = 0x03;
     std::vector<uint8_t> output;
     int32_t status;
-    EXPECT_TRUE(FcsCommunication::getAttestationCertificate(0x03, output, status));
+    EXPECT_TRUE(FcsCommunicationFcsIoctl::getAttestationCertificate(0x03, output, status));
     EXPECT_EQ(0, status);
     EXPECT_EQ(FcsSimulator::expectedGetAttCertResponseLength, output.size());
 }

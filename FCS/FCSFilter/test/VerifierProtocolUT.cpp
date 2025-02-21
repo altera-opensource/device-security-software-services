@@ -50,7 +50,7 @@ TEST(VerifierProtocolUT, parseMessage_getChipid)
     std::vector<uint8_t> input {0x12, 0x00, 0x00, 0x10};
     VerifierProtocol verifierProtocol;
     EXPECT_TRUE(verifierProtocol.parseMessage(input));
-    EXPECT_EQ(getChipId, verifierProtocol.getCommandCode());
+    EXPECT_EQ(SDM_COMMAND_CODE::GET_CHIPID, verifierProtocol.getCommandCode());
     EXPECT_EQ((size_t)0, verifierProtocol.getIncomingPayload().size());
     EXPECT_THROW(verifierProtocol.getCertificateRequest(), std::logic_error);
     EXPECT_THROW(verifierProtocol.getSigmaTeardownSessionId(), std::logic_error);
@@ -61,7 +61,7 @@ TEST(VerifierProtocolUT, parseMessage_sigmaTeardown)
     std::vector<uint8_t> input {0xd5, 0x30, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0xa4, 0xe2, 0x52, 0xb8, 0x01, 0x00, 0x00, 0x00};
     VerifierProtocol verifierProtocol;
     EXPECT_TRUE(verifierProtocol.parseMessage(input));
-    EXPECT_EQ(sigmaTeardown, verifierProtocol.getCommandCode());
+    EXPECT_EQ(SDM_COMMAND_CODE::SIGMA_TEARDOWN, verifierProtocol.getCommandCode());
     EXPECT_THROW(verifierProtocol.getCertificateRequest(), std::logic_error);
     EXPECT_EQ((uint32_t)1, verifierProtocol.getSigmaTeardownSessionId());
 }
@@ -71,7 +71,7 @@ TEST(VerifierProtocolUT, parseMessage_sigmaTeardown_negativeSessionId)
     std::vector<uint8_t> input {0xd5, 0x30, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0xa4, 0xe2, 0x52, 0xb8, 0xff, 0xff, 0xff, 0xff};
     VerifierProtocol verifierProtocol;
     EXPECT_TRUE(verifierProtocol.parseMessage(input));
-    EXPECT_EQ(sigmaTeardown, verifierProtocol.getCommandCode());
+    EXPECT_EQ(SDM_COMMAND_CODE::SIGMA_TEARDOWN, verifierProtocol.getCommandCode());
     EXPECT_THROW(verifierProtocol.getCertificateRequest(), std::logic_error);
     EXPECT_EQ(-1, static_cast<int32_t>(verifierProtocol.getSigmaTeardownSessionId()));
 }
@@ -111,7 +111,7 @@ TEST(VerifierProtocolUT, parseMessage_createSubkey)
     std::vector<uint8_t> input {0x82, 0x21, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0xaa, 0xbb, 0xcc, 0xdd};
     VerifierProtocol verifierProtocol;
     EXPECT_TRUE(verifierProtocol.parseMessage(input));
-    EXPECT_EQ(createAttestationSubKey, verifierProtocol.getCommandCode());
+    EXPECT_EQ(SDM_COMMAND_CODE::CREATE_ATTESTATION_SUBKEY, verifierProtocol.getCommandCode());
     EXPECT_THROW(verifierProtocol.getCertificateRequest(), std::logic_error);
     EXPECT_THROW(verifierProtocol.getSigmaTeardownSessionId(), std::logic_error);
     std::vector<uint8_t> expectedPayload{0xaa, 0xbb, 0xcc, 0xdd};
@@ -123,7 +123,7 @@ TEST(VerifierProtocolUT, parseMessage_getMeasurement)
     std::vector<uint8_t> input {0x83, 0x21, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0xaa, 0xbb, 0xcc, 0xdd};
     VerifierProtocol verifierProtocol;
     EXPECT_TRUE(verifierProtocol.parseMessage(input));
-    EXPECT_EQ(getMeasurement, verifierProtocol.getCommandCode());
+    EXPECT_EQ(SDM_COMMAND_CODE::GET_MEASUREMENT, verifierProtocol.getCommandCode());
     EXPECT_THROW(verifierProtocol.getCertificateRequest(), std::logic_error);
     EXPECT_THROW(verifierProtocol.getSigmaTeardownSessionId(), std::logic_error);
     std::vector<uint8_t> expectedPayload{0xaa, 0xbb, 0xcc, 0xdd};
@@ -135,7 +135,7 @@ TEST(VerifierProtocolUT, parseMessage_getCertificate)
     std::vector<uint8_t> input {0x81, 0x11, 0x00, 0x10, 0x01, 0x00, 0x00, 0x00};
     VerifierProtocol verifierProtocol;
     EXPECT_TRUE(verifierProtocol.parseMessage(input));
-    EXPECT_EQ(getAttestationCertificate, verifierProtocol.getCommandCode());
+    EXPECT_EQ(SDM_COMMAND_CODE::GET_ATTESTATION_CERTIFICATE, verifierProtocol.getCommandCode());
     EXPECT_EQ((uint8_t)1, verifierProtocol.getCertificateRequest());
     EXPECT_THROW(verifierProtocol.getSigmaTeardownSessionId(), std::logic_error);
 }
@@ -145,7 +145,7 @@ TEST(VerifierProtocolUT, parseMessage_getCertificate_reservedBitsSet)
     std::vector<uint8_t> input {0x81, 0x11, 0x00, 0x10, 0xE1, 0xFF, 0xFF, 0xFF};
     VerifierProtocol verifierProtocol;
     EXPECT_TRUE(verifierProtocol.parseMessage(input));
-    EXPECT_EQ(getAttestationCertificate, verifierProtocol.getCommandCode());
+    EXPECT_EQ(SDM_COMMAND_CODE::GET_ATTESTATION_CERTIFICATE, verifierProtocol.getCommandCode());
     EXPECT_EQ((uint8_t)0xE1, verifierProtocol.getCertificateRequest());
     EXPECT_THROW(verifierProtocol.getSigmaTeardownSessionId(), std::logic_error);
 }
@@ -209,7 +209,7 @@ TEST(VerifierProtocolUT, parseMessage_mctp)
     VerifierProtocol verifierProtocol;
     EXPECT_TRUE(verifierProtocol.parseMessage(input));
 
-    EXPECT_EQ(mctp, verifierProtocol.getCommandCode());
+    EXPECT_EQ(SDM_COMMAND_CODE::MCTP, verifierProtocol.getCommandCode());
     EXPECT_THROW(verifierProtocol.getCertificateRequest(), std::logic_error);
     EXPECT_THROW(verifierProtocol.getSigmaTeardownSessionId(), std::logic_error);
     EXPECT_EQ(expectedPayload, verifierProtocol.getIncomingPayload());
@@ -220,7 +220,7 @@ TEST(VerifierProtocolUT, parseMessage_getIdCode)
     std::vector<uint8_t> input {0x10, 0x00, 0x00, 0x10};
     VerifierProtocol verifierProtocol;
     EXPECT_TRUE(verifierProtocol.parseMessage(input));
-    EXPECT_EQ(getIdCode, verifierProtocol.getCommandCode());
+    EXPECT_EQ(SDM_COMMAND_CODE::GET_JTAG_IDCODE, verifierProtocol.getCommandCode());
     EXPECT_EQ((size_t)0, verifierProtocol.getIncomingPayload().size());
     EXPECT_THROW(verifierProtocol.getCertificateRequest(), std::logic_error);
     EXPECT_THROW(verifierProtocol.getSigmaTeardownSessionId(), std::logic_error);
@@ -231,7 +231,7 @@ TEST(VerifierProtocolUT, parseMessage_getDeviceIdentity)
     std::vector<uint8_t> input {0x00, 0x05, 0x00, 0x10};
     VerifierProtocol verifierProtocol;
     EXPECT_TRUE(verifierProtocol.parseMessage(input));
-    EXPECT_EQ(getDeviceIdentity, verifierProtocol.getCommandCode());
+    EXPECT_EQ(SDM_COMMAND_CODE::GET_DEVICE_IDENTITY, verifierProtocol.getCommandCode());
     EXPECT_EQ((size_t)0, verifierProtocol.getIncomingPayload().size());
     EXPECT_THROW(verifierProtocol.getCertificateRequest(), std::logic_error);
     EXPECT_THROW(verifierProtocol.getSigmaTeardownSessionId(), std::logic_error);

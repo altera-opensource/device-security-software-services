@@ -33,5 +33,5 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vector>
 #include <stdint.h>
 
-void handleIncomingMessage(std::vector<uint8_t> &messageBuffer,
+bool handleIncomingMessage(std::vector<uint8_t> &messageBuffer,
                            std::vector<uint8_t> &responseBuffer);

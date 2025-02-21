@@ -1,10 +1,10 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /*
- * Copyright (C) 2020, Intel Corporation
+ * Copyright (C) 2020, Altera Corporation
  */
 
-#ifndef __INTEL_FCS_STRUCTS_H
-#define __INTEL_FCS_STRUCTS_H
+#ifndef __ALTERA_FCS_STRUCTS_H
+#define __ALTERA_FCS_STRUCTS_H
 
 #include <stdint.h>
 
@@ -20,7 +20,7 @@
 #define VAB_DATA_SZ		64
 
 #define FCS_USER_KEY		0
-#define FCS_INTEL_KEY		1
+#define FCS_ALTERA_KEY		1
 
 #define FCS_INCREMENT_COUNTER	0
 #define FCS_BASE_COUNTER	1
@@ -226,19 +226,19 @@ struct fcs_hash_384 {
 
 /*
  * enum fcs_hash_type - enumeration of hash types
- * @INTEL_FCS_HASH_SECP256: Hash type is SHA256
- * @INTEL_FCS_HASH_SECP384R1: Hash type is SHA384
+ * @ALTERA_FCS_HASH_SECP256: Hash type is SHA256
+ * @ALTERA_FCS_HASH_SECP384R1: Hash type is SHA384
  */
 enum fcs_hash_type {
-	INTEL_FCS_HASH_SECP256 = 1,
-	INTEL_FCS_HASH_SECP384R1 = 2
+	ALTERA_FCS_HASH_SECP256 = 1,
+	ALTERA_FCS_HASH_SECP384R1 = 2
 };
 
 /*
  * struct fcs_get_provision_header - Header of provision data
  * @provision_status: 0 = no provision done, 1 = sucessful provision
  *		      2 = provision error
- * @intel_key_status: 0 = No cancellation, 1 = cancelled
+ * @altera_key_status: 0 = No cancellation, 1 = cancelled
  * @test: Flag. when set don't write fuses, write to cache only
  * @co_sign_status: 0 = Not co-signed, 1 = co-signed
  * @root_hash_status: 0 = No cancellation, 1 = cancelled
@@ -251,7 +251,7 @@ enum fcs_hash_type {
 struct fcs_get_provision_header {
 #ifdef LITTLE_ENDIAN
 	uint32_t  provision_status;
-	uint32_t  intel_key_status;
+	uint32_t  altera_key_status;
 	uint32_t  type_hash:8;
 	uint32_t  num_hashes:8;
 	uint32_t  root_hash_status:3;
@@ -259,7 +259,7 @@ struct fcs_get_provision_header {
 	uint32_t  rsvd:12;
 #else
 	uint32_t  provision_status;
-	uint32_t  intel_key_status;
+	uint32_t  altera_key_status;
 	uint32_t  rsvd:12;
 	uint32_t  co_sign_status:1;
 	uint32_t  root_hash_status:3;

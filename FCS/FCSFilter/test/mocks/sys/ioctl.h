@@ -31,8 +31,8 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <stdint.h>
-#include "intel_fcs-ioctl.h"
-#include "intel_fcs_structs.h"
+#include "altera_fcs-ioctl.h"
+#include "altera_fcs_structs.h"
 
 static const uint16_t GET_IDCODE = 0x10;
 
@@ -40,4 +40,4 @@ static const uint16_t GET_IDCODE = 0x10;
 // but for simplicity it just returns command code
 #define _IOWR(identifier, commandCode, dataType) commandCode
 
-int ioctl (int fileDescriptor, unsigned long int commandCode, intel_fcs_dev_ioctl *data);
+int ioctl (int fileDescriptor, unsigned long int commandCode, altera_fcs_dev_ioctl *data);

@@ -1,42 +1,42 @@
 /* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
 /*
- * Copyright (C) 2020, Intel Corporation
+ * Copyright (C) 2020, Altera Corporation
  */
 
-#ifndef __INTEL_FCS_IOCTL_H
-#define __INTEL_FCS_IOCTL_H
+#ifndef __ALTERA_FCS_IOCTL_H
+#define __ALTERA_FCS_IOCTL_H
 
 #include <linux/types.h>
 
 /* the value may need be changed when upstream */
-#define INTEL_FCS_IOCTL		0xC0
-#define INTEL_CERT_STATUS_NONE	0xFFFFFFFF
+#define ALTERA_FCS_IOCTL		0xC0
+#define ALTERA_CERT_STATUS_NONE	0xFFFFFFFF
 
-/* define macro to be used to fix the size of struct intel_fcs_dev_ioctl */
-#define INTEL_FCS_IOCTL_MAX_SZ		256U
+/* define macro to be used to fix the size of struct altera_fcs_dev_ioctl */
+#define ALTERA_FCS_IOCTL_MAX_SZ		256U
 /* the header include the 8 bytes stucture padding and 4 bytes status */
-#define INTEL_FCS_IOCTL_HEADER_SZ	12U
-#define INTEL_FCS_IOCTL_PLACEHOLDER_SZ	(INTEL_FCS_IOCTL_MAX_SZ - \
-					 INTEL_FCS_IOCTL_HEADER_SZ) / 4
+#define ALTERA_FCS_IOCTL_HEADER_SZ	12U
+#define ALTERA_FCS_IOCTL_PLACEHOLDER_SZ	(ALTERA_FCS_IOCTL_MAX_SZ - \
+					 ALTERA_FCS_IOCTL_HEADER_SZ) / 4
 
 /**
  * enum fcs_vab_img_type - enumeration of image types
- * @INTEL_FCS_IMAGE_HPS: Image to validate is HPS image
- * @INTEL_FCS_IMAGE_BITSTREAM: Image to validate is bitstream
+ * @ALTERA_FCS_IMAGE_HPS: Image to validate is HPS image
+ * @ALTERA_FCS_IMAGE_BITSTREAM: Image to validate is bitstream
  */
 enum fcs_vab_img_type {
-	INTEL_FCS_IMAGE_HPS = 0,
-	INTEL_FCS_IMAGE_BITSTREAM = 1
+	ALTERA_FCS_IMAGE_HPS = 0,
+	ALTERA_FCS_IMAGE_BITSTREAM = 1
 };
 
 /**
  * enum fcs_certificate_test - enumeration of certificate test
- * @INTEL_FCS_NO_TEST: Write to eFuses
- * @INTEL_FCS_TEST: Write to cache, do not write eFuses
+ * @ALTERA_FCS_NO_TEST: Write to eFuses
+ * @ALTERA_FCS_TEST: Write to cache, do not write eFuses
  */
 enum fcs_certificate_test {
-	INTEL_FCS_NO_TEST = 0,
-	INTEL_FCS_TEST = 1
+	ALTERA_FCS_NO_TEST = 0,
+	ALTERA_FCS_TEST = 1
 };
 
 /**
@@ -62,14 +62,14 @@ struct fcs_mbox_send_cmd {
  * @data: placeholder of iotcl struct
  */
 struct fcs_placeholder {
-	uint32_t data[INTEL_FCS_IOCTL_PLACEHOLDER_SZ];
+	uint32_t data[ALTERA_FCS_IOCTL_PLACEHOLDER_SZ];
 };
 
 /**
- * struct intel_fcs_cert_test_word - certificate test word
+ * struct altera_fcs_cert_test_word - certificate test word
  * @test_word: firmware request test word be set to zero
  */
-struct intel_fcs_cert_test_word {
+struct altera_fcs_cert_test_word {
 	uint32_t test_word;
 };
 
@@ -106,7 +106,7 @@ struct fcs_key_manage_request {
  * @c_status: returned certificate status
  */
 struct fcs_certificate_request {
-	struct intel_fcs_cert_test_word test;
+	struct altera_fcs_cert_test_word test;
 	void *addr;
 	uint32_t size;
 	uint32_t c_status;
@@ -119,7 +119,7 @@ struct fcs_certificate_request {
  * @counter_value: counter value
  */
 struct fcs_single_certificate_request {
-	struct intel_fcs_cert_test_word test;
+	struct altera_fcs_cert_test_word test;
 	uint8_t counter_type;
 	uint32_t counter_value;
 };
@@ -181,10 +181,10 @@ struct fcs_attestation_chipid {
 };
 
 /**
- * struct intel_fcs_attestation_resv_word - attestation reserve word
+ * struct altera_fcs_attestation_resv_word - attestation reserve word
  * @resv_word: a reserve word required by firmware
  */
-struct intel_fcs_attestation_resv_word {
+struct altera_fcs_attestation_resv_word {
 	uint32_t resv_word;
 };
 
@@ -197,7 +197,7 @@ struct intel_fcs_attestation_resv_word {
  * @rsp_data_sz: response data size
  */
 struct fcs_attestation_subkey {
-	struct intel_fcs_attestation_resv_word resv;
+	struct altera_fcs_attestation_resv_word resv;
 	char *cmd_data;
 	uint32_t cmd_data_sz;
 	char *rsp_data;
@@ -213,7 +213,7 @@ struct fcs_attestation_subkey {
  * @rsp_data_sz: response data size
  */
 struct fcs_attestation_measuerments {
-	struct intel_fcs_attestation_resv_word resv;
+	struct altera_fcs_attestation_resv_word resv;
 	char *cmd_data;
 	uint32_t cmd_data_sz;
 	char *rsp_data;
@@ -417,7 +417,7 @@ struct fcs_sdos_data_ext {
 };
 
 /**
- * struct intel_fcs_dev_ioctl: common structure passed to Linux
+ * struct altera_fcs_dev_ioctl: common structure passed to Linux
  *	kernel driver for all commands.
  * @status: Used for the return code.
  *      -1 -- operation is not started
@@ -432,7 +432,7 @@ struct fcs_sdos_data_ext {
  * @d_decryption: AES decryption (SDOS)
  * @rn_gen: random number generator result
  */
-struct intel_fcs_dev_ioctl {
+struct altera_fcs_dev_ioctl {
 	/* used for return status code */
 	int status;
 
@@ -467,217 +467,217 @@ struct intel_fcs_dev_ioctl {
 };
 
 /**
- * intel_fcs_command_code - support fpga crypto service commands
+ * altera_fcs_command_code - support fpga crypto service commands
  *
  * Values are subject to change as a result of upstreaming.
  *
- * @INTEL_FCS_DEV_VERSION_CMD:
+ * @ALTERA_FCS_DEV_VERSION_CMD:
  *
- * @INTEL_FCS_DEV_MBOX_SEND_CMD:
+ * @ALTERA_FCS_DEV_MBOX_SEND_CMD:
  *
- * @INTEL_FCS_DEV_CERTIFICATE_CMD:
+ * @ALTERA_FCS_DEV_CERTIFICATE_CMD:
  *
- * @INTEL_FCS_DEV_VALIDATE_REQUEST_CMD:
+ * @ALTERA_FCS_DEV_VALIDATE_REQUEST_CMD:
  *
- * @INTEL_FCS_DEV_COUNTER_SET_CMD:
+ * @ALTERA_FCS_DEV_COUNTER_SET_CMD:
  *
- * @INTEL_FCS_DEV_COUNTER_SET_PREAUTHORIZED_CMD
+ * @ALTERA_FCS_DEV_COUNTER_SET_PREAUTHORIZED_CMD
  *
- * @INTEL_FCS_DEV_GET_PROVISION_DATA_CMD
+ * @ALTERA_FCS_DEV_GET_PROVISION_DATA_CMD
  *
- * @INTEL_FCS_DEV_DATA_ENCRYPTION_CMD:
+ * @ALTERA_FCS_DEV_DATA_ENCRYPTION_CMD:
  *
- * @INTEL_FCS_DEV_DATA_DECRYPTION_CMD:
+ * @ALTERA_FCS_DEV_DATA_DECRYPTION_CMD:
  *
- * @INTEL_FCS_DEV_RANDOM_NUMBER_GEN_CMD:
+ * @ALTERA_FCS_DEV_RANDOM_NUMBER_GEN_CMD:
  *
- * @INTEL_FCS_DEV_PSGSIGMA_TEARDOWN:
+ * @ALTERA_FCS_DEV_PSGSIGMA_TEARDOWN:
  *
- * @INTEL_FCS_DEV_CHIP_ID:
+ * @ALTERA_FCS_DEV_CHIP_ID:
  *
- * @INTEL_FCS_DEV_ATTESTATION_SUBKEY:
+ * @ALTERA_FCS_DEV_ATTESTATION_SUBKEY:
  *
- * @INTEL_FCS_DEV_ATTESTATION_MEASUREMENT:
+ * @ALTERA_FCS_DEV_ATTESTATION_MEASUREMENT:
  *
- * @INTEL_FCS_DEV_GET_ROM_PATCH_SHA384_CMD:
+ * @ALTERA_FCS_DEV_GET_ROM_PATCH_SHA384_CMD:
  *
- * @INTEL_FCS_DEV_CRYPTO_OPEN_SESSION_CMD:
+ * @ALTERA_FCS_DEV_CRYPTO_OPEN_SESSION_CMD:
  *
- * @INTEL_FCS_DEV_CRYPTO_CLOSE_SESSION_CMD:
+ * @ALTERA_FCS_DEV_CRYPTO_CLOSE_SESSION_CMD:
  *
- * @INTEL_FCS_DEV_RANDOM_NUMBER_GEN_EXT_CMD:
+ * @ALTERA_FCS_DEV_RANDOM_NUMBER_GEN_EXT_CMD:
  *
- * @INTEL_FCS_DEV_SDOS_DATA_EXT_CMD:
+ * @ALTERA_FCS_DEV_SDOS_DATA_EXT_CMD:
  */
-enum intel_fcs_command_code {
-	INTEL_FCS_DEV_COMMAND_NONE = 0,
-	INTEL_FCS_DEV_VERSION_CMD = 1,
-	INTEL_FCS_DEV_MBOX_SEND_CMD,
-	INTEL_FCS_DEV_CERTIFICATE_CMD = 0xB,
-	INTEL_FCS_DEV_VALIDATE_REQUEST_CMD = 0x78,
-	INTEL_FCS_DEV_COUNTER_SET_CMD,
-	INTEL_FCS_DEV_COUNTER_SET_PREAUTHORIZED_CMD,
-	INTEL_FCS_DEV_GET_PROVISION_DATA_CMD,
-	INTEL_FCS_DEV_DATA_ENCRYPTION_CMD = 0x7E,
-	INTEL_FCS_DEV_DATA_DECRYPTION_CMD,
-	INTEL_FCS_DEV_RANDOM_NUMBER_GEN_CMD,
-	INTEL_FCS_DEV_PSGSIGMA_TEARDOWN_CMD = 0x88,
-	INTEL_FCS_DEV_CHIP_ID_CMD,
-	INTEL_FCS_DEV_ATTESTATION_SUBKEY_CMD,
-	INTEL_FCS_DEV_ATTESTATION_MEASUREMENT_CMD,
-	INTEL_FCS_DEV_ATTESTATION_GET_CERTIFICATE_CMD,
-	INTEL_FCS_DEV_ATTESTATION_CERTIFICATE_RELOAD_CMD,
-	INTEL_FCS_DEV_GET_ROM_PATCH_SHA384_CMD,
-	INTEL_FCS_DEV_CRYPTO_OPEN_SESSION_CMD = 0xA0,
-	INTEL_FCS_DEV_CRYPTO_CLOSE_SESSION_CMD,
-	INTEL_FCS_DEV_CRYPTO_IMPORT_KEY_CMD,
-	INTEL_FCS_DEV_CRYPTO_EXPORT_KEY_CMD,
-	INTEL_FCS_DEV_CRYPTO_REMOVE_KEY_CMD,
-	INTEL_FCS_DEV_CRYPTO_GET_KEY_INFO_CMD,
-	INTEL_FCS_DEV_CRYPTO_AES_CRYPT_CMD,
-	INTEL_FCS_DEV_CRYPTO_GET_DIGEST_CMD,
-	INTEL_FCS_DEV_CRYPTO_MAC_VERIFY_CMD,
-	INTEL_FCS_DEV_CRYPTO_ECDSA_HASH_SIGNING_CMD,
-	INTEL_FCS_DEV_CRYPTO_ECDSA_SHA2_DATA_SIGNING_CMD,
-	INTEL_FCS_DEV_CRYPTO_ECDSA_HASH_VERIFY_CMD,
-	INTEL_FCS_DEV_CRYPTO_ECDSA_SHA2_DATA_VERIFY_CMD,
-	INTEL_FCS_DEV_CRYPTO_ECDSA_GET_PUBLIC_KEY_CMD,
-	INTEL_FCS_DEV_CRYPTO_ECDH_REQUEST_CMD,
-	INTEL_FCS_DEV_RANDOM_NUMBER_GEN_EXT_CMD,
-	INTEL_FCS_DEV_SDOS_DATA_EXT_CMD,
+enum altera_fcs_command_code {
+	ALTERA_FCS_DEV_COMMAND_NONE = 0,
+	ALTERA_FCS_DEV_VERSION_CMD = 1,
+	ALTERA_FCS_DEV_MBOX_SEND_CMD,
+	ALTERA_FCS_DEV_CERTIFICATE_CMD = 0xB,
+	ALTERA_FCS_DEV_VALIDATE_REQUEST_CMD = 0x78,
+	ALTERA_FCS_DEV_COUNTER_SET_CMD,
+	ALTERA_FCS_DEV_COUNTER_SET_PREAUTHORIZED_CMD,
+	ALTERA_FCS_DEV_GET_PROVISION_DATA_CMD,
+	ALTERA_FCS_DEV_DATA_ENCRYPTION_CMD = 0x7E,
+	ALTERA_FCS_DEV_DATA_DECRYPTION_CMD,
+	ALTERA_FCS_DEV_RANDOM_NUMBER_GEN_CMD,
+	ALTERA_FCS_DEV_PSGSIGMA_TEARDOWN_CMD = 0x88,
+	ALTERA_FCS_DEV_CHIP_ID_CMD,
+	ALTERA_FCS_DEV_ATTESTATION_SUBKEY_CMD,
+	ALTERA_FCS_DEV_ATTESTATION_MEASUREMENT_CMD,
+	ALTERA_FCS_DEV_ATTESTATION_GET_CERTIFICATE_CMD,
+	ALTERA_FCS_DEV_ATTESTATION_CERTIFICATE_RELOAD_CMD,
+	ALTERA_FCS_DEV_GET_ROM_PATCH_SHA384_CMD,
+	ALTERA_FCS_DEV_CRYPTO_OPEN_SESSION_CMD = 0xA0,
+	ALTERA_FCS_DEV_CRYPTO_CLOSE_SESSION_CMD,
+	ALTERA_FCS_DEV_CRYPTO_IMPORT_KEY_CMD,
+	ALTERA_FCS_DEV_CRYPTO_EXPORT_KEY_CMD,
+	ALTERA_FCS_DEV_CRYPTO_REMOVE_KEY_CMD,
+	ALTERA_FCS_DEV_CRYPTO_GET_KEY_INFO_CMD,
+	ALTERA_FCS_DEV_CRYPTO_AES_CRYPT_CMD,
+	ALTERA_FCS_DEV_CRYPTO_GET_DIGEST_CMD,
+	ALTERA_FCS_DEV_CRYPTO_MAC_VERIFY_CMD,
+	ALTERA_FCS_DEV_CRYPTO_ECDSA_HASH_SIGNING_CMD,
+	ALTERA_FCS_DEV_CRYPTO_ECDSA_SHA2_DATA_SIGNING_CMD,
+	ALTERA_FCS_DEV_CRYPTO_ECDSA_HASH_VERIFY_CMD,
+	ALTERA_FCS_DEV_CRYPTO_ECDSA_SHA2_DATA_VERIFY_CMD,
+	ALTERA_FCS_DEV_CRYPTO_ECDSA_GET_PUBLIC_KEY_CMD,
+	ALTERA_FCS_DEV_CRYPTO_ECDH_REQUEST_CMD,
+	ALTERA_FCS_DEV_RANDOM_NUMBER_GEN_EXT_CMD,
+	ALTERA_FCS_DEV_SDOS_DATA_EXT_CMD,
 };
 
-#define INTEL_FCS_DEV_VERSION_REQUEST \
-	_IOWR(INTEL_FCS_IOCTL, \
-	      INTEL_FCS_DEV_VERSION_CMD, struct intel_fcs_dev_ioctl)
+#define ALTERA_FCS_DEV_VERSION_REQUEST \
+	_IOWR(ALTERA_FCS_IOCTL, \
+	      ALTERA_FCS_DEV_VERSION_CMD, struct altera_fcs_dev_ioctl)
 
-#define INTEL_FCS_DEV_MBOX_SEND \
-	_IOWR(INTEL_FCS_IOCTL, \
-	      INTEL_FCS_DEV_MBOX_SEND_CMD, struct intel_fcs_dev_ioctl)
+#define ALTERA_FCS_DEV_MBOX_SEND \
+	_IOWR(ALTERA_FCS_IOCTL, \
+	      ALTERA_FCS_DEV_MBOX_SEND_CMD, struct altera_fcs_dev_ioctl)
 
-#define INTEL_FCS_DEV_VALIDATION_REQUEST \
-	_IOWR(INTEL_FCS_IOCTL, \
-	      INTEL_FCS_DEV_VALIDATE_REQUEST_CMD, struct intel_fcs_dev_ioctl)
+#define ALTERA_FCS_DEV_VALIDATION_REQUEST \
+	_IOWR(ALTERA_FCS_IOCTL, \
+	      ALTERA_FCS_DEV_VALIDATE_REQUEST_CMD, struct altera_fcs_dev_ioctl)
 
-#define INTEL_FCS_DEV_SEND_CERTIFICATE \
-	_IOWR(INTEL_FCS_IOCTL, \
-	      INTEL_FCS_DEV_CERTIFICATE_CMD, struct intel_fcs_dev_ioctl)
+#define ALTERA_FCS_DEV_SEND_CERTIFICATE \
+	_IOWR(ALTERA_FCS_IOCTL, \
+	      ALTERA_FCS_DEV_CERTIFICATE_CMD, struct altera_fcs_dev_ioctl)
 
-#define INTEL_FCS_DEV_COUNTER_SET_PREAUTHORIZED \
-	_IOWR(INTEL_FCS_IOCTL, \
-	      INTEL_FCS_DEV_COUNTER_SET_PREAUTHORIZED_CMD, struct intel_fcs_dev_ioctl)
+#define ALTERA_FCS_DEV_COUNTER_SET_PREAUTHORIZED \
+	_IOWR(ALTERA_FCS_IOCTL, \
+	      ALTERA_FCS_DEV_COUNTER_SET_PREAUTHORIZED_CMD, struct altera_fcs_dev_ioctl)
 
-#define INTEL_FCS_DEV_GET_PROVISION_DATA \
-	_IOWR(INTEL_FCS_IOCTL, \
-	      INTEL_FCS_DEV_GET_PROVISION_DATA_CMD, struct intel_fcs_dev_ioctl)
+#define ALTERA_FCS_DEV_GET_PROVISION_DATA \
+	_IOWR(ALTERA_FCS_IOCTL, \
+	      ALTERA_FCS_DEV_GET_PROVISION_DATA_CMD, struct altera_fcs_dev_ioctl)
 
-#define INTEL_FCS_DEV_DATA_ENCRYPTION \
-	_IOWR(INTEL_FCS_IOCTL, \
-	      INTEL_FCS_DEV_DATA_ENCRYPTION_CMD, struct intel_fcs_dev_ioctl)
+#define ALTERA_FCS_DEV_DATA_ENCRYPTION \
+	_IOWR(ALTERA_FCS_IOCTL, \
+	      ALTERA_FCS_DEV_DATA_ENCRYPTION_CMD, struct altera_fcs_dev_ioctl)
 
-#define INTEL_FCS_DEV_DATA_DECRYPTION \
-	_IOWR(INTEL_FCS_IOCTL, \
-	      INTEL_FCS_DEV_DATA_DECRYPTION_CMD, struct intel_fcs_dev_ioctl)
+#define ALTERA_FCS_DEV_DATA_DECRYPTION \
+	_IOWR(ALTERA_FCS_IOCTL, \
+	      ALTERA_FCS_DEV_DATA_DECRYPTION_CMD, struct altera_fcs_dev_ioctl)
 
-#define INTEL_FCS_DEV_RANDOM_NUMBER_GEN \
-	_IOWR(INTEL_FCS_IOCTL, \
-	      INTEL_FCS_DEV_RANDOM_NUMBER_GEN_CMD, struct intel_fcs_dev_ioctl)
+#define ALTERA_FCS_DEV_RANDOM_NUMBER_GEN \
+	_IOWR(ALTERA_FCS_IOCTL, \
+	      ALTERA_FCS_DEV_RANDOM_NUMBER_GEN_CMD, struct altera_fcs_dev_ioctl)
 
-#define INTEL_FCS_DEV_PSGSIGMA_TEARDOWN \
-	_IOWR(INTEL_FCS_IOCTL, \
-	      INTEL_FCS_DEV_PSGSIGMA_TEARDOWN_CMD, struct intel_fcs_dev_ioctl)
+#define ALTERA_FCS_DEV_PSGSIGMA_TEARDOWN \
+	_IOWR(ALTERA_FCS_IOCTL, \
+	      ALTERA_FCS_DEV_PSGSIGMA_TEARDOWN_CMD, struct altera_fcs_dev_ioctl)
 
-#define INTEL_FCS_DEV_CHIP_ID \
-	_IOWR(INTEL_FCS_IOCTL, \
-	      INTEL_FCS_DEV_CHIP_ID_CMD, struct intel_fcs_dev_ioctl)
+#define ALTERA_FCS_DEV_CHIP_ID \
+	_IOWR(ALTERA_FCS_IOCTL, \
+	      ALTERA_FCS_DEV_CHIP_ID_CMD, struct altera_fcs_dev_ioctl)
 
-#define INTEL_FCS_DEV_ATTESTATION_SUBKEY \
-	_IOWR(INTEL_FCS_IOCTL, \
-	      INTEL_FCS_DEV_ATTESTATION_SUBKEY_CMD, struct intel_fcs_dev_ioctl)
+#define ALTERA_FCS_DEV_ATTESTATION_SUBKEY \
+	_IOWR(ALTERA_FCS_IOCTL, \
+	      ALTERA_FCS_DEV_ATTESTATION_SUBKEY_CMD, struct altera_fcs_dev_ioctl)
 
-#define INTEL_FCS_DEV_ATTESTATION_MEASUREMENT \
-	_IOWR(INTEL_FCS_IOCTL, \
-	      INTEL_FCS_DEV_ATTESTATION_MEASUREMENT_CMD, struct intel_fcs_dev_ioctl)
+#define ALTERA_FCS_DEV_ATTESTATION_MEASUREMENT \
+	_IOWR(ALTERA_FCS_IOCTL, \
+	      ALTERA_FCS_DEV_ATTESTATION_MEASUREMENT_CMD, struct altera_fcs_dev_ioctl)
 
-#define INTEL_FCS_DEV_ATTESTATION_GET_CERTIFICATE \
-	_IOWR(INTEL_FCS_IOCTL, \
-	      INTEL_FCS_DEV_ATTESTATION_GET_CERTIFICATE_CMD, struct intel_fcs_dev_ioctl)
+#define ALTERA_FCS_DEV_ATTESTATION_GET_CERTIFICATE \
+	_IOWR(ALTERA_FCS_IOCTL, \
+	      ALTERA_FCS_DEV_ATTESTATION_GET_CERTIFICATE_CMD, struct altera_fcs_dev_ioctl)
 
-#define INTEL_FCS_DEV_ATTESTATION_CERTIFICATE_RELOAD \
-	_IOWR(INTEL_FCS_IOCTL, \
-	      INTEL_FCS_DEV_ATTESTATION_CERTIFICATE_RELOAD_CMD, struct intel_fcs_dev_ioctl)
+#define ALTERA_FCS_DEV_ATTESTATION_CERTIFICATE_RELOAD \
+	_IOWR(ALTERA_FCS_IOCTL, \
+	      ALTERA_FCS_DEV_ATTESTATION_CERTIFICATE_RELOAD_CMD, struct altera_fcs_dev_ioctl)
 
-#define INTEL_FCS_DEV_GET_ROM_PATCH_SHA384 \
-	_IOWR(INTEL_FCS_IOCTL, \
-	      INTEL_FCS_DEV_GET_ROM_PATCH_SHA384_CMD, struct intel_fcs_dev_ioctl)
+#define ALTERA_FCS_DEV_GET_ROM_PATCH_SHA384 \
+	_IOWR(ALTERA_FCS_IOCTL, \
+	      ALTERA_FCS_DEV_GET_ROM_PATCH_SHA384_CMD, struct altera_fcs_dev_ioctl)
 
-#define INTEL_FCS_DEV_CRYPTO_OPEN_SESSION \
-	_IOWR(INTEL_FCS_IOCTL, \
-	      INTEL_FCS_DEV_CRYPTO_OPEN_SESSION_CMD, struct intel_fcs_dev_ioctl)
+#define ALTERA_FCS_DEV_CRYPTO_OPEN_SESSION \
+	_IOWR(ALTERA_FCS_IOCTL, \
+	      ALTERA_FCS_DEV_CRYPTO_OPEN_SESSION_CMD, struct altera_fcs_dev_ioctl)
 
-#define INTEL_FCS_DEV_CRYPTO_CLOSE_SESSION \
-	_IOWR(INTEL_FCS_IOCTL, \
-	      INTEL_FCS_DEV_CRYPTO_CLOSE_SESSION_CMD, struct intel_fcs_dev_ioctl)
+#define ALTERA_FCS_DEV_CRYPTO_CLOSE_SESSION \
+	_IOWR(ALTERA_FCS_IOCTL, \
+	      ALTERA_FCS_DEV_CRYPTO_CLOSE_SESSION_CMD, struct altera_fcs_dev_ioctl)
 
-#define INTEL_FCS_DEV_CRYPTO_IMPORT_KEY \
-	_IOWR(INTEL_FCS_IOCTL, \
-	      INTEL_FCS_DEV_CRYPTO_IMPORT_KEY_CMD, struct intel_fcs_dev_ioctl)
+#define ALTERA_FCS_DEV_CRYPTO_IMPORT_KEY \
+	_IOWR(ALTERA_FCS_IOCTL, \
+	      ALTERA_FCS_DEV_CRYPTO_IMPORT_KEY_CMD, struct altera_fcs_dev_ioctl)
 
-#define INTEL_FCS_DEV_CRYPTO_EXPORT_KEY \
-	_IOWR(INTEL_FCS_IOCTL, \
-	      INTEL_FCS_DEV_CRYPTO_EXPORT_KEY_CMD, struct intel_fcs_dev_ioctl)
+#define ALTERA_FCS_DEV_CRYPTO_EXPORT_KEY \
+	_IOWR(ALTERA_FCS_IOCTL, \
+	      ALTERA_FCS_DEV_CRYPTO_EXPORT_KEY_CMD, struct altera_fcs_dev_ioctl)
 
-#define INTEL_FCS_DEV_CRYPTO_REMOVE_KEY \
-	_IOWR(INTEL_FCS_IOCTL, \
-	      INTEL_FCS_DEV_CRYPTO_REMOVE_KEY_CMD, struct intel_fcs_dev_ioctl)
+#define ALTERA_FCS_DEV_CRYPTO_REMOVE_KEY \
+	_IOWR(ALTERA_FCS_IOCTL, \
+	      ALTERA_FCS_DEV_CRYPTO_REMOVE_KEY_CMD, struct altera_fcs_dev_ioctl)
 
-#define INTEL_FCS_DEV_CRYPTO_GET_KEY_INFO \
-	_IOWR(INTEL_FCS_IOCTL, \
-	      INTEL_FCS_DEV_CRYPTO_GET_KEY_INFO_CMD, struct intel_fcs_dev_ioctl)
+#define ALTERA_FCS_DEV_CRYPTO_GET_KEY_INFO \
+	_IOWR(ALTERA_FCS_IOCTL, \
+	      ALTERA_FCS_DEV_CRYPTO_GET_KEY_INFO_CMD, struct altera_fcs_dev_ioctl)
 
-#define INTEL_FCS_DEV_CRYPTO_AES_CRYPT \
-	_IOWR(INTEL_FCS_IOCTL, \
-	      INTEL_FCS_DEV_CRYPTO_AES_CRYPT_CMD, struct intel_fcs_dev_ioctl)
+#define ALTERA_FCS_DEV_CRYPTO_AES_CRYPT \
+	_IOWR(ALTERA_FCS_IOCTL, \
+	      ALTERA_FCS_DEV_CRYPTO_AES_CRYPT_CMD, struct altera_fcs_dev_ioctl)
 
-#define INTEL_FCS_DEV_CRYPTO_GET_DIGEST \
-	_IOWR(INTEL_FCS_IOCTL, \
-	      INTEL_FCS_DEV_CRYPTO_GET_DIGEST_CMD, struct intel_fcs_dev_ioctl)
+#define ALTERA_FCS_DEV_CRYPTO_GET_DIGEST \
+	_IOWR(ALTERA_FCS_IOCTL, \
+	      ALTERA_FCS_DEV_CRYPTO_GET_DIGEST_CMD, struct altera_fcs_dev_ioctl)
 
-#define INTEL_FCS_DEV_CRYPTO_MAC_VERIFY \
-	_IOWR(INTEL_FCS_IOCTL, \
-	      INTEL_FCS_DEV_CRYPTO_MAC_VERIFY_CMD, struct intel_fcs_dev_ioctl)
+#define ALTERA_FCS_DEV_CRYPTO_MAC_VERIFY \
+	_IOWR(ALTERA_FCS_IOCTL, \
+	      ALTERA_FCS_DEV_CRYPTO_MAC_VERIFY_CMD, struct altera_fcs_dev_ioctl)
 
-#define INTEL_FCS_DEV_CRYPTO_ECDSA_HASH_SIGNING \
-	_IOWR(INTEL_FCS_IOCTL, \
-	      INTEL_FCS_DEV_CRYPTO_ECDSA_HASH_SIGNING_CMD, struct intel_fcs_dev_ioctl)
+#define ALTERA_FCS_DEV_CRYPTO_ECDSA_HASH_SIGNING \
+	_IOWR(ALTERA_FCS_IOCTL, \
+	      ALTERA_FCS_DEV_CRYPTO_ECDSA_HASH_SIGNING_CMD, struct altera_fcs_dev_ioctl)
 
-#define INTEL_FCS_DEV_CRYPTO_ECDSA_SHA2_DATA_SIGNING \
-	_IOWR(INTEL_FCS_IOCTL, \
-	      INTEL_FCS_DEV_CRYPTO_ECDSA_SHA2_DATA_SIGNING_CMD, struct intel_fcs_dev_ioctl)
+#define ALTERA_FCS_DEV_CRYPTO_ECDSA_SHA2_DATA_SIGNING \
+	_IOWR(ALTERA_FCS_IOCTL, \
+	      ALTERA_FCS_DEV_CRYPTO_ECDSA_SHA2_DATA_SIGNING_CMD, struct altera_fcs_dev_ioctl)
 
-#define INTEL_FCS_DEV_CRYPTO_ECDSA_HASH_VERIFY \
-	_IOWR(INTEL_FCS_IOCTL, \
-	      INTEL_FCS_DEV_CRYPTO_ECDSA_HASH_VERIFY_CMD, struct intel_fcs_dev_ioctl)
+#define ALTERA_FCS_DEV_CRYPTO_ECDSA_HASH_VERIFY \
+	_IOWR(ALTERA_FCS_IOCTL, \
+	      ALTERA_FCS_DEV_CRYPTO_ECDSA_HASH_VERIFY_CMD, struct altera_fcs_dev_ioctl)
 
-#define INTEL_FCS_DEV_CRYPTO_ECDSA_SHA2_DATA_VERIFY \
-	_IOWR(INTEL_FCS_IOCTL, \
-	      INTEL_FCS_DEV_CRYPTO_ECDSA_SHA2_DATA_VERIFY_CMD, struct intel_fcs_dev_ioctl)
+#define ALTERA_FCS_DEV_CRYPTO_ECDSA_SHA2_DATA_VERIFY \
+	_IOWR(ALTERA_FCS_IOCTL, \
+	      ALTERA_FCS_DEV_CRYPTO_ECDSA_SHA2_DATA_VERIFY_CMD, struct altera_fcs_dev_ioctl)
 
-#define INTEL_FCS_DEV_CRYPTO_ECDSA_GET_PUBLIC_KEY \
-	_IOWR(INTEL_FCS_IOCTL, \
-	      INTEL_FCS_DEV_CRYPTO_ECDSA_GET_PUBLIC_KEY_CMD, struct intel_fcs_dev_ioctl)
+#define ALTERA_FCS_DEV_CRYPTO_ECDSA_GET_PUBLIC_KEY \
+	_IOWR(ALTERA_FCS_IOCTL, \
+	      ALTERA_FCS_DEV_CRYPTO_ECDSA_GET_PUBLIC_KEY_CMD, struct altera_fcs_dev_ioctl)
 
-#define INTEL_FCS_DEV_CRYPTO_ECDH_REQUEST \
-	_IOWR(INTEL_FCS_IOCTL, \
-	      INTEL_FCS_DEV_CRYPTO_ECDH_REQUEST_CMD, struct intel_fcs_dev_ioctl)
+#define ALTERA_FCS_DEV_CRYPTO_ECDH_REQUEST \
+	_IOWR(ALTERA_FCS_IOCTL, \
+	      ALTERA_FCS_DEV_CRYPTO_ECDH_REQUEST_CMD, struct altera_fcs_dev_ioctl)
 
-#define INTEL_FCS_DEV_RANDOM_NUMBER_GEN_EXT \
-	_IOWR(INTEL_FCS_IOCTL, \
-	      INTEL_FCS_DEV_RANDOM_NUMBER_GEN_EXT_CMD, struct intel_fcs_dev_ioctl)
+#define ALTERA_FCS_DEV_RANDOM_NUMBER_GEN_EXT \
+	_IOWR(ALTERA_FCS_IOCTL, \
+	      ALTERA_FCS_DEV_RANDOM_NUMBER_GEN_EXT_CMD, struct altera_fcs_dev_ioctl)
 
-#define INTEL_FCS_DEV_SDOS_DATA_EXT \
-	_IOWR(INTEL_FCS_IOCTL, \
-	      INTEL_FCS_DEV_SDOS_DATA_EXT_CMD, struct intel_fcs_dev_ioctl)
+#define ALTERA_FCS_DEV_SDOS_DATA_EXT \
+	_IOWR(ALTERA_FCS_IOCTL, \
+	      ALTERA_FCS_DEV_SDOS_DATA_EXT_CMD, struct altera_fcs_dev_ioctl)
 
 #endif
 

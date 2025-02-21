@@ -1,7 +1,7 @@
 
 # BKPS dependency list
 ## Dependency License Report
-_2025-01-08 02:54:48 UTC_
+_2025-02-21 03:23:23 UTC_
 ## Apache 2
 
 **1** **Group:** `com.opencsv` **Name:** `opencsv` **Version:** `5.9` 
@@ -17,12 +17,12 @@ _2025-01-08 02:54:48 UTC_
 
 ## Apache License 2.0
 
-**3** **Group:** `io.swagger.core.v3` **Name:** `swagger-annotations` **Version:** `2.2.25` 
+**3** **Group:** `io.swagger.core.v3` **Name:** `swagger-annotations` **Version:** `2.2.28` 
 > - **Manifest Project URL**: [https://github.com/swagger-api/swagger-core/modules/swagger-annotations](https://github.com/swagger-api/swagger-core/modules/swagger-annotations)
 > - **Manifest License**: "Apache License 2.0";link="http://www.apache.org/licenses/LICENSE-2.0.html" (Not Packaged)
 > - **POM License**: Apache License 2.0 - [http://www.apache.org/licenses/LICENSE-2.0.html](http://www.apache.org/licenses/LICENSE-2.0.html)
-> - **Embedded license files**: [swagger-annotations-2.2.25.jar/META-INF/LICENSE](swagger-annotations-2.2.25.jar/META-INF/LICENSE) 
-    - [swagger-annotations-2.2.25.jar/META-INF/NOTICE](swagger-annotations-2.2.25.jar/META-INF/NOTICE)
+> - **Embedded license files**: [swagger-annotations-2.2.28.jar/META-INF/LICENSE](swagger-annotations-2.2.28.jar/META-INF/LICENSE) 
+    - [swagger-annotations-2.2.28.jar/META-INF/NOTICE](swagger-annotations-2.2.28.jar/META-INF/NOTICE)
 
 **4** **Group:** `jakarta.validation` **Name:** `jakarta.validation-api` **Version:** `3.0.2` 
 > - **Manifest Project URL**: [https://www.eclipse.org](https://www.eclipse.org)
@@ -366,17 +366,17 @@ _2025-01-08 02:54:48 UTC_
 > - **Embedded license files**: [commons-codec-1.16.1.jar/META-INF/LICENSE.txt](commons-codec-1.16.1.jar/META-INF/LICENSE.txt) 
     - [commons-codec-1.16.1.jar/META-INF/NOTICE.txt](commons-codec-1.16.1.jar/META-INF/NOTICE.txt)
 
-**65** **Group:** `commons-io` **Name:** `commons-io` **Version:** `2.17.0` 
+**65** **Group:** `commons-io` **Name:** `commons-io` **Version:** `2.18.0` 
 > - **Project URL**: [https://commons.apache.org/proper/commons-io/](https://commons.apache.org/proper/commons-io/)
 > - **POM License**: Apache-2.0 - [https://www.apache.org/licenses/LICENSE-2.0.txt](https://www.apache.org/licenses/LICENSE-2.0.txt)
-> - **Embedded license files**: [commons-io-2.17.0.jar/META-INF/LICENSE.txt](commons-io-2.17.0.jar/META-INF/LICENSE.txt) 
-    - [commons-io-2.17.0.jar/META-INF/NOTICE.txt](commons-io-2.17.0.jar/META-INF/NOTICE.txt)
+> - **Embedded license files**: [commons-io-2.18.0.jar/META-INF/LICENSE.txt](commons-io-2.18.0.jar/META-INF/LICENSE.txt) 
+    - [commons-io-2.18.0.jar/META-INF/NOTICE.txt](commons-io-2.18.0.jar/META-INF/NOTICE.txt)
 
-**66** **Group:** `net.java.dev.jna` **Name:** `jna` **Version:** `5.15.0` 
+**66** **Group:** `net.java.dev.jna` **Name:** `jna` **Version:** `5.16.0` 
 > - **POM Project URL**: [https://github.com/java-native-access/jna](https://github.com/java-native-access/jna)
 > - **POM License**: Apache-2.0 - [https://www.apache.org/licenses/LICENSE-2.0.txt](https://www.apache.org/licenses/LICENSE-2.0.txt)
 > - **POM License**: LGPL-2.1-or-later - [https://www.gnu.org/licenses/old-licenses/lgpl-2.1](https://www.gnu.org/licenses/old-licenses/lgpl-2.1)
-> - **Embedded license files**: [jna-5.15.0.jar/META-INF/LICENSE](jna-5.15.0.jar/META-INF/LICENSE)
+> - **Embedded license files**: [jna-5.16.0.jar/META-INF/LICENSE](jna-5.16.0.jar/META-INF/LICENSE)
 
 **67** **Group:** `org.apache.commons` **Name:** `commons-compress` **Version:** `1.25.0` 
 > - **Project URL**: [https://commons.apache.org/proper/commons-compress/](https://commons.apache.org/proper/commons-compress/)
@@ -390,11 +390,11 @@ _2025-01-08 02:54:48 UTC_
 > - **Embedded license files**: [commons-lang3-3.17.0.jar/META-INF/LICENSE.txt](commons-lang3-3.17.0.jar/META-INF/LICENSE.txt) 
     - [commons-lang3-3.17.0.jar/META-INF/NOTICE.txt](commons-lang3-3.17.0.jar/META-INF/NOTICE.txt)
 
-**69** **Group:** `org.apache.commons` **Name:** `commons-text` **Version:** `1.12.0` 
+**69** **Group:** `org.apache.commons` **Name:** `commons-text` **Version:** `1.13.0` 
 > - **Project URL**: [https://commons.apache.org/proper/commons-text](https://commons.apache.org/proper/commons-text)
 > - **POM License**: Apache-2.0 - [https://www.apache.org/licenses/LICENSE-2.0.txt](https://www.apache.org/licenses/LICENSE-2.0.txt)
-> - **Embedded license files**: [commons-text-1.12.0.jar/META-INF/LICENSE.txt](commons-text-1.12.0.jar/META-INF/LICENSE.txt) 
-    - [commons-text-1.12.0.jar/META-INF/NOTICE.txt](commons-text-1.12.0.jar/META-INF/NOTICE.txt)
+> - **Embedded license files**: [commons-text-1.13.0.jar/META-INF/LICENSE.txt](commons-text-1.13.0.jar/META-INF/LICENSE.txt) 
+    - [commons-text-1.13.0.jar/META-INF/NOTICE.txt](commons-text-1.13.0.jar/META-INF/NOTICE.txt)
 
 **70** **Group:** `org.apache.logging.log4j` **Name:** `log4j-api` **Version:** `2.23.1` 
 > - **Manifest License**: "Apache-2.0";link="https://www.apache.org/licenses/LICENSE-2.0.txt" (Not Packaged)
@@ -905,11 +905,11 @@ _2025-01-08 02:54:48 UTC_
 
 ## LGPL-2.1-or-later
 
-**133** **Group:** `net.java.dev.jna` **Name:** `jna` **Version:** `5.15.0` 
+**133** **Group:** `net.java.dev.jna` **Name:** `jna` **Version:** `5.16.0` 
 > - **POM Project URL**: [https://github.com/java-native-access/jna](https://github.com/java-native-access/jna)
 > - **POM License**: Apache-2.0 - [https://www.apache.org/licenses/LICENSE-2.0.txt](https://www.apache.org/licenses/LICENSE-2.0.txt)
 > - **POM License**: LGPL-2.1-or-later - [https://www.gnu.org/licenses/old-licenses/lgpl-2.1](https://www.gnu.org/licenses/old-licenses/lgpl-2.1)
-> - **Embedded license files**: [jna-5.15.0.jar/META-INF/LICENSE](jna-5.15.0.jar/META-INF/LICENSE)
+> - **Embedded license files**: [jna-5.16.0.jar/META-INF/LICENSE](jna-5.16.0.jar/META-INF/LICENSE)
 
 ## MIT License
 
@@ -1047,13 +1047,13 @@ _2025-01-08 02:54:48 UTC_
 > - **Embedded license files**: [jakarta.inject-api-2.0.1.jar/META-INF/LICENSE.txt](jakarta.inject-api-2.0.1.jar/META-INF/LICENSE.txt) 
     - [jakarta.inject-api-2.0.1.jar/META-INF/NOTICE.md](jakarta.inject-api-2.0.1.jar/META-INF/NOTICE.md)
 
-**156** **Group:** `net.javacrumbs.shedlock` **Name:** `shedlock-core` **Version:** `5.16.0` 
+**156** **Group:** `net.javacrumbs.shedlock` **Name:** `shedlock-core` **Version:** `6.0.2` 
 > - **POM License**: The Apache Software License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0.txt](https://www.apache.org/licenses/LICENSE-2.0.txt)
 
-**157** **Group:** `net.javacrumbs.shedlock` **Name:** `shedlock-provider-jdbc-template` **Version:** `5.16.0` 
+**157** **Group:** `net.javacrumbs.shedlock` **Name:** `shedlock-provider-jdbc-template` **Version:** `6.0.2` 
 > - **POM License**: The Apache Software License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0.txt](https://www.apache.org/licenses/LICENSE-2.0.txt)
 
-**158** **Group:** `net.javacrumbs.shedlock` **Name:** `shedlock-spring` **Version:** `5.16.0` 
+**158** **Group:** `net.javacrumbs.shedlock` **Name:** `shedlock-spring` **Version:** `6.0.2` 
 > - **POM License**: The Apache Software License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0.txt](https://www.apache.org/licenses/LICENSE-2.0.txt)
 
 **159** **Group:** `org.mapstruct` **Name:** `mapstruct` **Version:** `1.6.3` 
@@ -1083,7 +1083,7 @@ _2025-01-08 02:54:48 UTC_
 
 **166** **Group:** `com.intel.bkp.utils` **Name:** `Utils` **Version:** `unspecified` 
 
-**167** **Group:** `org.hibernate` **Name:** `hibernate-core` **Version:** `6.6.2.Final` 
+**167** **Group:** `org.hibernate` **Name:** `hibernate-core` **Version:** `6.6.5.Final` 
 
 ## Unlicense
 

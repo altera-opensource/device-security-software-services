@@ -36,6 +36,66 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stddef.h>
 #include <vector>
 
+enum SDM_COMMAND_CODE
+{
+    CERTIFICATE = 0x0B,
+    GET_JTAG_IDCODE = 0x10,
+    GET_CHIPID = 0x12,
+    QSPI_OPEN = 0x32,
+    QSPI_CLOSE = 0x33,
+    QSPI_SET_CS = 0x34,
+    QSPI_ERASE = 0x38,
+    QSPI_WRITE = 0x39,
+    QSPI_READ = 0x3A,
+    SIGMA_M1 = 0xD2,
+    SIGMA_M3 = 0xD3,
+    SIGMA_ENC = 0xD4,
+    SIGMA_TEARDOWN = 0xD5,
+    GET_ATTESTATION_CERTIFICATE = 0x181,
+    CREATE_ATTESTATION_SUBKEY = 0x182,
+    GET_MEASUREMENT = 0x183,
+    MCTP = 0x194,
+    GET_DEVICE_IDENTITY = 0x500
+};
+
+enum SDM_RESPONSE_CODE
+{
+    OK = 0,                               //0
+    INVALID_CMD,                          //1
+    UNKNOWN_BR,                           //2
+    UNKNOWN,                              //3
+    INVALID_COMMAND_PARAMS    = 0x04,     //4
+    CMD_INVALID_ON_SOURCE     = 0x06,     //6
+    CLIENT_ID_NO_MATCH        = 0x08,     //8
+    INVALID_ADDRESS           = 0x09,     //9
+    AUTHENTICATION_FAIL       = 0x0A,     //10
+    TIMEOUT                   = 0x0B,     //11
+    HW_NOT_READY              = 0x0C,     //12
+    HW_ERROR                  = 0x0D,     //13
+    SYNC_LOST                 = 0x0E,     //14
+    FUNCTION_NOT_SUPPORT      = 0x0F,     //15
+
+    QSPI_HW_ERROR             = 0x080,    //128
+    QSPI_ALREADY_OPEN         = 0x081,    //129
+    EFUSE_SYSTEM_FAILURE      = 0x082,    //130
+
+    NOT_CONFIGURED            = 0x100,    //256
+    DEVICE_BUSY               = 0x1FF,    //511
+    FLASH_ACCESS_DENIED       = 0x2FF,    //767
+    NO_VALID_RESP_AVAILABLE   = 0x2FF,    //767
+    RESPONSE_ERROR            = 0x3FF,    //1023
+
+    //INTEL PUF
+    INTEL_PUF_ACTIVATION_FAILED = 0x510,  //1296
+    PUF_HELPER_FILE_READ_ERROR  = 0x511,  //1297
+    NOT_PROVISIONED_TO_USE_INTEL_PUF  = 0x512,  //1298
+    NOT_FUSED_FOR_INTEL_PUF     = 0x513,  //1299
+    UDS_EFUSE_ERROR             = 0x514,  //1300
+
+    // Always add the new enum before here
+    LAST
+};
+
 class CommandHeader
 {
     public:

@@ -29,46 +29,45 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***************************************************************************
 */
+#ifndef FCS_EXCEPTION_H
+#define FCS_EXCEPTION_H
 
-#ifndef TCPSERVER_H
-#define TCPSERVER_H
+#include <exception>
+#include <system_error>
+#include <string>
 
-#include <stddef.h>
-#include <stdint.h>
-#include <sys/poll.h>
-#include <vector>
+class FcsException : public std::exception {
+protected:
+    std::string msg;
 
-class TcpServer
-{
-    public:
-        void run(
-            uint32_t portNumber,
-            bool (*onMessage)(
-                std::vector<uint8_t>&, std::vector<uint8_t>&));
-        void closeSockets();
-
-    private:
-        void setup(uint32_t portNumber);
-        void dropUnusedConnections();
-        void handleEventIfAny(
-            pollfd &socket,
-            bool (*onMessage)(
-                std::vector<uint8_t>&, std::vector<uint8_t>&));
-        void acceptConnection();
-        void closeConnectionAndEnableForReuse(pollfd &socket);
-
-        static const uint32_t kMaxNumberOfConnections = 20;
-        static const uint32_t kPollTimeoutInMilliseconds = 60 * 1000;
-
-        // 1 server socket + client sockets
-        static const uint32_t kNumberOfSockets = kMaxNumberOfConnections + 1;
-        static const uint32_t kMaxMessageSizeInBytes = 10000;
-
-        std::vector<uint8_t> messageBuffer
-            = std::vector<uint8_t>(kMaxMessageSizeInBytes);
-
-        pollfd sockets[kNumberOfSockets];
-        int serverSocketFd = -1;
+public:
+    const char* what() const noexcept override {
+        return msg.c_str();
+    }
 };
 
-#endif /* TCPSERVER_H */
+class FcsLibraryException : public FcsException {
+protected:
+    std::string msg;
+
+public:
+    const char* what() const noexcept override {
+        return msg.c_str();
+    }
+};
+
+class FcsLibraryNotFoundException : public FcsLibraryException {
+public:
+    explicit FcsLibraryNotFoundException (const char* errorMsg) {
+        msg = errorMsg;
+    }
+};
+
+class FcsLibraryFailedToInitializeException : public FcsLibraryException {
+public:
+    explicit FcsLibraryFailedToInitializeException (const char* errorMsg) {
+        msg = errorMsg;
+    }
+};
+
+#endif //FCS_EXCEPTION_H

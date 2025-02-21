@@ -41,7 +41,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 void TcpServer::run(
     uint32_t portNumber,
-    void (*onMessage)(std::vector<uint8_t>&, std::vector<uint8_t>&))
+    bool (*onMessage)(std::vector<uint8_t>&, std::vector<uint8_t>&))
 {
     setup(portNumber);
     Logger::log("Server started on port " + std::to_string(portNumber));
@@ -141,7 +141,7 @@ void TcpServer::dropUnusedConnections()
 
 void TcpServer::handleEventIfAny(
     pollfd &socket,
-    void (*onMessage)(std::vector<uint8_t>&, std::vector<uint8_t>&))
+    bool (*onMessage)(std::vector<uint8_t>&, std::vector<uint8_t>&))
 {
     if (socket.fd == serverSocketFd && socket.revents == POLLIN)
     {
@@ -168,20 +168,21 @@ void TcpServer::handleEventIfAny(
                 + std::to_string(socket.fd), Info);
             std::vector<uint8_t> responseBuffer;
 
-            onMessage(messageBuffer, responseBuffer);
-
-            if (responseBuffer.size() > 0)
+            if (onMessage(messageBuffer, responseBuffer))
             {
-                Logger::log("Sending Response: "
-                    + std::to_string(responseBuffer.size()) + " bytes", Info);
-                if (send(socket.fd, responseBuffer.data(), responseBuffer.size(), 0) == -1)
+                if (responseBuffer.size() > 0)
                 {
-                    Logger::logWithReturnCode("Send failed", errno, Error);
+                    Logger::log("Sending Response: "
+                        + std::to_string(responseBuffer.size()) + " bytes", Info);
+                    if (send(socket.fd, responseBuffer.data(), responseBuffer.size(), 0) == -1)
+                    {
+                        Logger::logWithReturnCode("Send failed", errno, Error);
+                    }
                 }
             }
             else
             {
-                Logger::log("No data to send. Closing connection", Info);
+                Logger::log("Closing connection", Info);
                 closeConnectionAndEnableForReuse(socket);
             }
         }

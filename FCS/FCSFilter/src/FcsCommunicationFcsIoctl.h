@@ -29,46 +29,42 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***************************************************************************
 */
+#ifndef FCS_COMMUNICATION_SIGMA_H
+#define FCS_COMMUNICATION_SIGMA_H
 
-#ifndef TCPSERVER_H
-#define TCPSERVER_H
+#include "FcsCommunication.h"
+#include "altera_fcs-ioctl.h"
+#include "altera_fcs_structs.h"
 
-#include <stddef.h>
-#include <stdint.h>
-#include <sys/poll.h>
-#include <vector>
-
-class TcpServer
+class FcsCommunicationFcsIoctl: public FcsCommunication
 {
     public:
-        void run(
-            uint32_t portNumber,
-            bool (*onMessage)(
-                std::vector<uint8_t>&, std::vector<uint8_t>&));
-        void closeSockets();
+        FcsCommunicationFcsIoctl() {}
+        ~FcsCommunicationFcsIoctl() {}
+
+        bool runCommandCode(VerifierProtocol verifierProtocol, std::vector<uint8_t>& responseBuffer, int32_t& statusReturnedFromFcs) override;
+        static bool getChipId(std::vector<uint8_t>& outBuffer, int32_t& fcsStatus);
+        static bool getMeasurement(
+                std::vector<uint8_t> inBuffer,
+                std::vector<uint8_t>& outBuffer,
+                int32_t& fcsStatus);
+        static bool getAttestationCertificate(
+                uint8_t certificateRequest,
+                std::vector<uint8_t>& outBuffer,
+                int32_t& fcsStatus);
+        static bool sigmaTeardown(uint32_t sessionId, int32_t& fcsStatus);
+        static bool createAttestationSubkey(
+                std::vector<uint8_t> inBuffer,
+                std::vector<uint8_t>& outBuffer,
+                int32_t& fcsStatus);
+        static bool mailboxGeneric(
+                uint32_t commandCode,
+                std::vector<uint8_t> inBuffer,
+                std::vector<uint8_t>& outBuffer,
+                int32_t& fcsStatus);
 
     private:
-        void setup(uint32_t portNumber);
-        void dropUnusedConnections();
-        void handleEventIfAny(
-            pollfd &socket,
-            bool (*onMessage)(
-                std::vector<uint8_t>&, std::vector<uint8_t>&));
-        void acceptConnection();
-        void closeConnectionAndEnableForReuse(pollfd &socket);
-
-        static const uint32_t kMaxNumberOfConnections = 20;
-        static const uint32_t kPollTimeoutInMilliseconds = 60 * 1000;
-
-        // 1 server socket + client sockets
-        static const uint32_t kNumberOfSockets = kMaxNumberOfConnections + 1;
-        static const uint32_t kMaxMessageSizeInBytes = 10000;
-
-        std::vector<uint8_t> messageBuffer
-            = std::vector<uint8_t>(kMaxMessageSizeInBytes);
-
-        pollfd sockets[kNumberOfSockets];
-        int serverSocketFd = -1;
+        static bool sendIoctl(altera_fcs_dev_ioctl* data, unsigned long CommandCode);
 };
 
-#endif /* TCPSERVER_H */
+#endif /* FCS_COMMUNICATION_SIGMA_H */

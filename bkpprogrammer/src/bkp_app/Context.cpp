@@ -143,7 +143,7 @@ Status_t Context::send_message(Message_t messageType,
     switch (messageType)
     {
         case Message_t::SEND_PACKET:
-            handleIncomingMessage(messageVector, responseVector);
+            status = handleIncomingMessage(messageVector, responseVector);
             break;
         case Message_t::PUSH_WRAPPED_KEY:
             writeWkeyToFile(messageVector);
