@@ -68,7 +68,7 @@ application:
 
 service:
     protocol:
-        sigma: true
+        sigma: false
         spdm: true
 
 lib-spdm-params:
