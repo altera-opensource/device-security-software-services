@@ -10,7 +10,7 @@ service:
         signing-key-threshold-days: 1
         sealing-key-threshold-days: 1
     protocol:
-        sigma: true
+        sigma: false
         spdm: true
 
 application:
